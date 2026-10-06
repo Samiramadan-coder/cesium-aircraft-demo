@@ -33,7 +33,10 @@ function locateInPolygon(point: ZonePoint, zone: FlightZone) {
 
     // Ray casting: count the edges crossed by a ray from the point (the
     // origin) toward +x. An odd count means the point is inside.
-    if (a.y > 0 !== b.y > 0 && a.x + ((0 - a.y) / (b.y - a.y)) * (b.x - a.x) > 0) {
+    if (
+      a.y > 0 !== b.y > 0 &&
+      a.x + ((0 - a.y) / (b.y - a.y)) * (b.x - a.x) > 0
+    ) {
       inside = !inside;
     }
 

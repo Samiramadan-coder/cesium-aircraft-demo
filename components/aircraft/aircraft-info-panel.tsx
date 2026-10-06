@@ -77,7 +77,7 @@ export function AircraftInfoPanel({
   const position = aircraft?.currentPosition ?? null;
   const name = aircraft ? (aircraft.callsign ?? aircraft.name) : "No aircraft";
   const description = aircraft
-    ? aircraft.name
+    ? `${aircraft.name} · ${aircraft.modelUrl?.split("/").pop() ?? "default model"}`
     : aircraftList.length > 0
       ? "Select an aircraft"
       : "Waiting for tracking data";
@@ -144,9 +144,7 @@ export function AircraftInfoPanel({
           />
           <Field
             label="Last update"
-            value={
-              position ? `${utcTime.format(position.timestamp)} UTC` : "—"
-            }
+            value={position ? `${utcTime.format(position.timestamp)} UTC` : "—"}
           />
           <Field
             label="Latitude"

@@ -16,7 +16,8 @@ import { getAircraftZoneState } from "@/lib/aircraft/zones";
 type Cesium = typeof CesiumModule;
 
 const CESIUM_BASE_URL = "/cesium"; // public/cesium, see scripts/copy-cesium-assets.mjs
-const AIRCRAFT_MODEL_URL = "/models/aircraft.glb";
+// Used for aircraft without a `modelUrl`, and when theirs fails to load.
+const DEFAULT_AIRCRAFT_MODEL_URL = "/models/aircraft.glb";
 
 const FEET_TO_METERS = 0.3048;
 
@@ -29,10 +30,64 @@ const INTERPOLATION_BUFFER_S = 1.5;
 const OVERVIEW_RANGE_M = 40_000;
 const OVERVIEW_PITCH_DEG = -35;
 
-// Added to the reported heading. 0 suits models whose nose points along
-// Cesium's +X axis (glTF +Z), like the Cesium Air sample. Use 90 / -90 / 180
-// if your aircraft.glb appears to fly sideways or backwards.
-const MODEL_HEADING_OFFSET_DEG = 0;
+type ModelSettings = {
+  /** Size multiplier; an aircraft's own `modelScale` takes precedence. */
+  scale: number;
+  /** Keeps the aircraft visible from far away; true scale up close. */
+  minimumPixelSize: number;
+  maximumScale: number;
+  // Degrees added to the reported attitude, for models whose native
+  // orientation differs. A heading offset of 0 suits models whose nose points
+  // along Cesium's +X axis (glTF +Z), like the Cesium Air sample. Use
+  // 90 / -90 / 180 if a model appears to fly sideways or backwards.
+  headingOffset: number;
+  pitchOffset: number;
+  rollOffset: number;
+};
+
+const DEFAULT_MODEL_SETTINGS: ModelSettings = {
+  scale: 1,
+  minimumPixelSize: 72,
+  maximumScale: 4000,
+  headingOffset: 0,
+  pitchOffset: 0,
+  rollOffset: 0,
+};
+
+// Per-model overrides of the defaults above, keyed by model URL. Add an entry
+// when a model needs a different size or orientation. Sources and licenses
+// of the model files are listed in public/models/CREDITS.md.
+const MODEL_SETTINGS: Record<string, Partial<ModelSettings>> = {
+  // Airliner, modelled in centimeter-like units: scaled to a ~31 m wingspan.
+  "/models/aircraft-1.glb": { scale: 0.02 },
+  // Light propeller aircraft, already in meters, but its nose points along
+  // glTF -Z, so it is turned around.
+  "/models/aircraft-2.glb": { headingOffset: 180 },
+  // Jet trainer: scaled to a ~10 m wingspan.
+  "/models/aircraft-3.glb": { scale: 0.075 },
+};
+
+// Whether each model URL can actually be loaded, checked once per URL.
+const modelChecks = new Map<string, Promise<boolean>>();
+
+function isModelAvailable(url: string) {
+  let check = modelChecks.get(url);
+  if (!check) {
+    check = fetch(url, { method: "HEAD" }).then(
+      (response) => response.ok,
+      () => false,
+    );
+    check.then((available) => {
+      if (!available) {
+        console.warn(
+          `Aircraft model ${url} not found, using ${DEFAULT_AIRCRAFT_MODEL_URL} instead.`,
+        );
+      }
+    });
+    modelChecks.set(url, check);
+  }
+  return check;
+}
 
 let cesiumPromise: Promise<Cesium> | undefined;
 
@@ -63,6 +118,10 @@ type AircraftTrack = {
   position: CesiumModule.SampledPositionProperty;
   orientation: CesiumModule.SampledProperty;
   trail: CesiumModule.PolylineGlowMaterialProperty;
+  /** The model this aircraft asked for, and the settings of the one shown. */
+  modelUrl: string | undefined;
+  modelScale: number | undefined;
+  modelSettings: ModelSettings;
   lastPoint: CesiumModule.Cartesian3;
   lastHeading: number;
   lastReport: AircraftUpdate | undefined;
@@ -268,6 +327,36 @@ function createAircraftScene(
     }
   }
 
+  function showModel(track: AircraftTrack, uri: string) {
+    const settings = { ...DEFAULT_MODEL_SETTINGS, ...MODEL_SETTINGS[uri] };
+    track.modelSettings = settings;
+    track.entity.model = new Cesium.ModelGraphics({
+      uri,
+      scale: track.modelScale ?? settings.scale,
+      minimumPixelSize: settings.minimumPixelSize,
+      maximumScale: settings.maximumScale,
+    });
+  }
+
+  // Gives one aircraft its model. Aircraft may share a model or each have
+  // their own; a model that cannot be loaded is replaced by the default one.
+  function setTrackModel(
+    track: AircraftTrack,
+    modelUrl: string | undefined,
+    modelScale: number | undefined,
+  ) {
+    track.modelUrl = modelUrl;
+    track.modelScale = modelScale;
+    showModel(track, modelUrl ?? DEFAULT_AIRCRAFT_MODEL_URL);
+    if (!modelUrl) return;
+    isModelAvailable(modelUrl).then((available) => {
+      if (available || track.modelUrl !== modelUrl || viewer.isDestroyed()) {
+        return;
+      }
+      showModel(track, DEFAULT_AIRCRAFT_MODEL_URL);
+    });
+  }
+
   function createTrack(update: AircraftUpdate): AircraftTrack {
     const position = new Cesium.SampledPositionProperty();
     position.forwardExtrapolationType = Cesium.ExtrapolationType.HOLD;
@@ -287,12 +376,6 @@ function createAircraftScene(
       name: update.name ?? update.id,
       position,
       orientation,
-      model: {
-        uri: AIRCRAFT_MODEL_URL,
-        // Keeps the aircraft visible from far away; true scale up close.
-        minimumPixelSize: 72,
-        maximumScale: 4000,
-      },
       label: {
         text: update.callsign ?? update.name ?? update.id,
         font: "12px monospace",
@@ -310,15 +393,20 @@ function createAircraftScene(
       },
     });
 
-    return {
+    const track: AircraftTrack = {
       entity,
       position,
       orientation,
       trail,
+      modelUrl: undefined,
+      modelScale: undefined,
+      modelSettings: DEFAULT_MODEL_SETTINGS,
       lastPoint: Cesium.Cartesian3.ZERO,
       lastHeading: 0,
       lastReport: undefined,
     };
+    setTrackModel(track, update.modelUrl, update.modelScale);
+    return track;
   }
 
   function followSelectedAircraft() {
@@ -347,18 +435,27 @@ function createAircraftScene(
       update.lat,
       update.altitude * FEET_TO_METERS,
     );
-    const hpr = new Cesium.HeadingPitchRoll(
-      Cesium.Math.toRadians(update.heading + MODEL_HEADING_OFFSET_DEG),
-      Cesium.Math.toRadians(update.pitch ?? 0),
-      Cesium.Math.toRadians(update.roll ?? 0),
-    );
 
     let track = tracks.get(update.id);
     const isNew = !track;
     if (!track) {
       track = createTrack(update);
       tracks.set(update.id, track);
+    } else {
+      // Updates may omit the model fields; only a different value changes it.
+      const modelUrl = update.modelUrl ?? track.modelUrl;
+      const modelScale = update.modelScale ?? track.modelScale;
+      if (modelUrl !== track.modelUrl || modelScale !== track.modelScale) {
+        setTrackModel(track, modelUrl, modelScale);
+      }
     }
+
+    const { headingOffset, pitchOffset, rollOffset } = track.modelSettings;
+    const hpr = new Cesium.HeadingPitchRoll(
+      Cesium.Math.toRadians(update.heading + headingOffset),
+      Cesium.Math.toRadians((update.pitch ?? 0) + pitchOffset),
+      Cesium.Math.toRadians((update.roll ?? 0) + rollOffset),
+    );
 
     track.position.addSample(time, point);
     track.orientation.addSample(

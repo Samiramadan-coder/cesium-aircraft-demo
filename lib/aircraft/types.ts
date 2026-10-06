@@ -18,6 +18,10 @@ export type Aircraft = {
   id: string;
   name: string;
   callsign?: string;
+  /** glTF / GLB to render this aircraft with; the default model if omitted. */
+  modelUrl?: string;
+  /** Multiplies the model's size; overrides the model's own default scale. */
+  modelScale?: number;
   currentPosition: AircraftPosition;
 };
 
@@ -25,12 +29,15 @@ export type Aircraft = {
  * One tracking update for one aircraft. Any data source (mock, WebSocket,
  * ...) only has to produce this shape. An unknown `id` creates the aircraft.
  * `timestamp` defaults to "now"; `pitch` / `roll` (degrees) are optional and
- * default to level flight.
+ * default to level flight. `modelUrl` / `modelScale` choose how the aircraft
+ * looks and may change at any time.
  */
 export type AircraftUpdate = Omit<AircraftPosition, "timestamp"> & {
   id: string;
   name?: string;
   callsign?: string;
+  modelUrl?: string;
+  modelScale?: number;
   timestamp?: number;
   pitch?: number;
   roll?: number;
@@ -56,11 +63,7 @@ export type FlightZone = {
  * within the polygon horizontally but outside the altitude band.
  */
 export type AircraftZoneState =
-  | "outside"
-  | "approaching"
-  | "inside"
-  | "above"
-  | "below";
+  "outside" | "approaching" | "inside" | "above" | "below";
 
 export type AircraftZoneStatus = {
   zone: FlightZone;

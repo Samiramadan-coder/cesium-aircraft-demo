@@ -20,10 +20,8 @@ export function useMockFlightFeed(
 ) {
   const [flights] = useState(() => {
     const startTimestamp = Date.now();
-    return MOCK_AIRCRAFT.map(({ id, name, callsign, route }) => ({
-      id,
-      name,
-      callsign,
+    return MOCK_AIRCRAFT.map(({ route, ...aircraft }) => ({
+      aircraft,
       simulation: createMockFlight(route, startTimestamp),
     }));
   });
@@ -38,8 +36,8 @@ export function useMockFlightFeed(
     let timer: ReturnType<typeof setTimeout>;
 
     const tick = () => {
-      for (const { id, name, callsign, simulation } of flights) {
-        onUpdate({ id, name, callsign, ...simulation.next() });
+      for (const { aircraft, simulation } of flights) {
+        onUpdate({ ...aircraft, ...simulation.next() });
       }
       due += UPDATE_INTERVAL_MS;
       timer = setTimeout(tick, Math.max(0, due - performance.now()));

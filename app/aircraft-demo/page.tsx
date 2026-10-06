@@ -64,6 +64,8 @@ export default function AircraftDemoPage() {
         id,
         name: update.name ?? known?.name ?? id,
         callsign: update.callsign ?? known?.callsign,
+        modelUrl: update.modelUrl ?? known?.modelUrl,
+        modelScale: update.modelScale ?? known?.modelScale,
         currentPosition: {
           lat,
           lng,
