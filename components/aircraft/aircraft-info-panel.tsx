@@ -9,7 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { Aircraft } from "@/lib/aircraft/types";
+import type {
+  Aircraft,
+  AircraftZoneState,
+  AircraftZoneStatus,
+} from "@/lib/aircraft/types";
+import { cn } from "@/lib/utils";
 
 const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const utcTime = new Intl.DateTimeFormat("en-GB", {
@@ -19,9 +24,30 @@ const utcTime = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
-function Field({ label, value }: { label: string; value: string }) {
+const ZONE_STATE_LABELS: Record<AircraftZoneState, string> = {
+  outside: "Outside",
+  approaching: "Approaching",
+  inside: "Inside",
+  above: "Above",
+  below: "Below",
+};
+
+function formatZoneStatus({ zone, state }: AircraftZoneStatus) {
+  const violation = zone.type === "restricted" && state === "inside";
+  return `${zone.name} · ${violation ? "Violation" : ZONE_STATE_LABELS[state]}`;
+}
+
+function Field({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className={cn("flex flex-col gap-0.5", className)}>
       <dt className="text-[0.65rem] font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </dt>
@@ -35,6 +61,8 @@ type AircraftInfoPanelProps = {
   aircraftList: Aircraft[];
   /** The selected aircraft, or null while none is selected. */
   aircraft: Aircraft | null;
+  /** The most relevant zone for the selected aircraft, or null if clear. */
+  zoneStatus: AircraftZoneStatus | null;
   paused: boolean;
   onSelectAircraft: (id: string) => void;
 };
@@ -42,6 +70,7 @@ type AircraftInfoPanelProps = {
 export function AircraftInfoPanel({
   aircraftList,
   aircraft,
+  zoneStatus,
   paused,
   onSelectAircraft,
 }: AircraftInfoPanelProps) {
@@ -126,6 +155,17 @@ export function AircraftInfoPanel({
           <Field
             label="Longitude"
             value={position ? position.lng.toFixed(4) : "—"}
+          />
+          <Field
+            label="Zone"
+            className="col-span-2"
+            value={
+              !position
+                ? "—"
+                : zoneStatus
+                  ? formatZoneStatus(zoneStatus)
+                  : "Clear of all zones"
+            }
           />
         </dl>
       </CardContent>

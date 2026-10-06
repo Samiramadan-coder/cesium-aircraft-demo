@@ -36,6 +36,37 @@ export type AircraftUpdate = Omit<AircraftPosition, "timestamp"> & {
   roll?: number;
 };
 
+export type FlightZone = {
+  id: string;
+  name: string;
+  /** Polygon outline, in order (either winding); not closed. */
+  coordinates: Array<{
+    lat: number;
+    lng: number;
+  }>;
+  /** Floor of the volume, feet */
+  minAltitude: number;
+  /** Ceiling of the volume, feet */
+  maxAltitude: number;
+  type?: "normal" | "warning" | "restricted";
+};
+
+/**
+ * Where an aircraft is relative to one zone. "above" / "below" mean it is
+ * within the polygon horizontally but outside the altitude band.
+ */
+export type AircraftZoneState =
+  | "outside"
+  | "approaching"
+  | "inside"
+  | "above"
+  | "below";
+
+export type AircraftZoneStatus = {
+  zone: FlightZone;
+  state: AircraftZoneState;
+};
+
 export type CameraMode = "follow" | "free";
 
 export type AircraftMapApi = {

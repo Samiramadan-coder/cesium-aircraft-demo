@@ -1,4 +1,4 @@
-import type { AircraftPosition } from "./types";
+import type { AircraftPosition, FlightZone } from "./types";
 
 export const UPDATE_INTERVAL_MS = 1000;
 
@@ -173,3 +173,50 @@ export function createMockFlight(
     },
   };
 }
+
+// Demo zones under the routes above. Temporary data source: the map and the
+// zone logic only ever see a FlightZone[], wherever it comes from.
+export const MOCK_FLIGHT_ZONES: FlightZone[] = [
+  {
+    id: "zone-training-a",
+    name: "Training Area A",
+    type: "normal",
+    minAltitude: 0,
+    maxAltitude: 3000,
+    coordinates: [
+      { lat: 25.22, lng: 56.385 },
+      { lat: 25.22, lng: 56.44 },
+      { lat: 25.31, lng: 56.455 },
+      { lat: 25.4, lng: 56.445 },
+      { lat: 25.4, lng: 56.39 },
+      { lat: 25.31, lng: 56.375 },
+    ],
+  },
+  {
+    id: "zone-caution-b",
+    name: "Caution Area B",
+    type: "warning",
+    minAltitude: 1000,
+    maxAltitude: 5000,
+    coordinates: [
+      { lat: 25.128, lng: 56.275 },
+      { lat: 25.125, lng: 56.305 },
+      { lat: 25.143, lng: 56.318 },
+      { lat: 25.162, lng: 56.3 },
+      { lat: 25.158, lng: 56.268 },
+    ],
+  },
+  {
+    id: "zone-restricted-c",
+    name: "Restricted Area C",
+    type: "restricted",
+    minAltitude: 0,
+    maxAltitude: 7000,
+    coordinates: [
+      { lat: 25.195, lng: 56.185 },
+      { lat: 25.19, lng: 56.235 },
+      { lat: 25.23, lng: 56.25 },
+      { lat: 25.24, lng: 56.2 },
+    ],
+  },
+];

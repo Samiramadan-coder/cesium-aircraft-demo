@@ -9,7 +9,9 @@ import type {
   AircraftMapApi,
   AircraftUpdate,
   CameraMode,
+  FlightZone,
 } from "@/lib/aircraft/types";
+import { getAircraftZoneState } from "@/lib/aircraft/zones";
 
 type Cesium = typeof CesiumModule;
 
@@ -58,7 +60,33 @@ type AircraftTrack = {
   trail: CesiumModule.PolylineGlowMaterialProperty;
   lastPoint: CesiumModule.Cartesian3;
   lastHeading: number;
+  lastReport: AircraftUpdate | undefined;
 };
+
+type ZoneAlert = "idle" | "approaching" | "inside";
+
+type ZoneRecord = {
+  zone: FlightZone;
+  entity: CesiumModule.Entity;
+  /** Aircraft currently inside or approaching this zone, by aircraft id. */
+  aircraftStates: Map<string, "inside" | "approaching">;
+  fill: CesiumModule.Color;
+  outline: CesiumModule.Color;
+};
+
+const ZONE_COLORS: Record<NonNullable<FlightZone["type"]>, string> = {
+  normal: "#34d399",
+  warning: "#fbbf24",
+  restricted: "#f87171",
+};
+
+const ZONE_FILL_ALPHA: Record<ZoneAlert, number> = {
+  idle: 0.14,
+  approaching: 0.26,
+  inside: 0.4,
+};
+
+const feet = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
 function createAircraftScene(
   Cesium: Cesium,
@@ -122,6 +150,118 @@ function createAircraftScene(
   let latestTime: CesiumModule.JulianDate | undefined;
   let cameraMode: CameraMode = "free";
 
+  // zone id -> its entity and current alert state. Zones are drawn as true
+  // 3D volumes: a polygon extruded from the zone's floor to its ceiling.
+  const zoneRecords = new Map<string, ZoneRecord>();
+
+  function styleZone(record: ZoneRecord) {
+    const states = Array.from(record.aircraftStates.values());
+    const alert: ZoneAlert = states.includes("inside")
+      ? "inside"
+      : states.length > 0
+        ? "approaching"
+        : "idle";
+    const type = record.zone.type ?? "normal";
+    const violation = type === "restricted" && alert === "inside";
+    const base = Cesium.Color.fromCssColorString(ZONE_COLORS[type]);
+
+    // Read by the entity's callback properties, so a state change only
+    // recolors the existing geometry instead of rebuilding it.
+    record.fill = base.withAlpha(violation ? 0.55 : ZONE_FILL_ALPHA[alert]);
+    record.outline = violation
+      ? Cesium.Color.WHITE
+      : base.withAlpha(alert === "idle" ? 0.7 : 1);
+
+    const { name, minAltitude, maxAltitude } = record.zone;
+    const text = `${name}\n${feet.format(minAltitude)} ft – ${feet.format(maxAltitude)} ft`;
+    record.entity.label!.text = new Cesium.ConstantProperty(
+      violation ? `${text}\nVIOLATION` : text,
+    );
+  }
+
+  /** Re-evaluates one aircraft against one zone; true if the zone changed. */
+  function evaluateZone(
+    record: ZoneRecord,
+    aircraftId: string,
+    report: AircraftUpdate,
+  ) {
+    const state = getAircraftZoneState(report, record.zone);
+    const previous = record.aircraftStates.get(aircraftId);
+    const next =
+      state === "inside" || state === "approaching" ? state : undefined;
+    if (next === previous) return false;
+    if (next) record.aircraftStates.set(aircraftId, next);
+    else record.aircraftStates.delete(aircraftId);
+    return true;
+  }
+
+  function createZone(zone: FlightZone): ZoneRecord {
+    const { coordinates, minAltitude, maxAltitude } = zone;
+    const count = Math.max(coordinates.length, 1);
+    const center = Cesium.Cartesian3.fromDegrees(
+      coordinates.reduce((sum, c) => sum + c.lng, 0) / count,
+      coordinates.reduce((sum, c) => sum + c.lat, 0) / count,
+      maxAltitude * FEET_TO_METERS,
+    );
+
+    const entity = viewer.entities.add({
+      name: zone.name,
+      position: center,
+      polygon: {
+        hierarchy: Cesium.Cartesian3.fromDegreesArray(
+          coordinates.flatMap((c) => [c.lng, c.lat]),
+        ),
+        // Zone altitudes are in feet; Cesium heights are in meters.
+        height: minAltitude * FEET_TO_METERS,
+        extrudedHeight: maxAltitude * FEET_TO_METERS,
+        material: new Cesium.ColorMaterialProperty(
+          new Cesium.CallbackProperty(() => record.fill, false),
+        ),
+        outline: true,
+        outlineColor: new Cesium.CallbackProperty(() => record.outline, false),
+      },
+      label: {
+        font: "12px sans-serif",
+        showBackground: true,
+        backgroundColor: Cesium.Color.BLACK.withAlpha(0.55),
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        pixelOffset: new Cesium.Cartesian2(0, -6),
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      },
+    });
+
+    const record: ZoneRecord = {
+      zone,
+      entity,
+      aircraftStates: new Map(),
+      fill: Cesium.Color.TRANSPARENT,
+      outline: Cesium.Color.TRANSPARENT,
+    };
+    for (const [id, track] of tracks) {
+      if (track.lastReport) evaluateZone(record, id, track.lastReport);
+    }
+    styleZone(record);
+    return record;
+  }
+
+  // Syncs the scene with a zone list: adds new zones, rebuilds only the ones
+  // whose definition changed (a new object for the same id) and removes the
+  // ones that are gone.
+  function setZones(zones: FlightZone[]) {
+    const ids = new Set(zones.map((zone) => zone.id));
+    for (const [id, record] of zoneRecords) {
+      if (ids.has(id)) continue;
+      viewer.entities.remove(record.entity);
+      zoneRecords.delete(id);
+    }
+    for (const zone of zones) {
+      const existing = zoneRecords.get(zone.id);
+      if (existing?.zone === zone) continue;
+      if (existing) viewer.entities.remove(existing.entity);
+      zoneRecords.set(zone.id, createZone(zone));
+    }
+  }
+
   function createTrack(update: AircraftUpdate): AircraftTrack {
     const position = new Cesium.SampledPositionProperty();
     position.forwardExtrapolationType = Cesium.ExtrapolationType.HOLD;
@@ -171,6 +311,7 @@ function createAircraftScene(
       trail,
       lastPoint: Cesium.Cartesian3.ZERO,
       lastHeading: 0,
+      lastReport: undefined,
     };
   }
 
@@ -225,6 +366,11 @@ function createAircraftScene(
     );
     track.lastPoint = point;
     track.lastHeading = update.heading;
+    track.lastReport = update;
+
+    for (const record of zoneRecords.values()) {
+      if (evaluateZone(record, update.id, update)) styleZone(record);
+    }
 
     // All aircraft share one render clock. Keep it a fixed distance behind
     // the newest sample of any aircraft. It then advances by itself in real
@@ -259,6 +405,9 @@ function createAircraftScene(
     // Removing the entity takes its model, label and trail with it.
     viewer.entities.remove(track.entity);
     tracks.delete(id);
+    for (const record of zoneRecords.values()) {
+      if (record.aircraftStates.delete(id)) styleZone(record);
+    }
   }
 
   function setSelectedAircraft(id: string | null) {
@@ -283,9 +432,13 @@ function createAircraftScene(
   );
   viewer.screenSpaceEventHandler.setInputAction(
     (click: CesiumModule.ScreenSpaceEventHandler.PositionedEvent) => {
-      const picked = scene.pick(click.position)?.id;
-      if (picked instanceof Cesium.Entity && tracks.has(picked.id)) {
-        onSelect(picked.id);
+      // Drill through, so an aircraft inside or behind a zone volume can
+      // still be clicked.
+      for (const { id: picked } of scene.drillPick(click.position, 5)) {
+        if (picked instanceof Cesium.Entity && tracks.has(picked.id)) {
+          onSelect(picked.id);
+          return;
+        }
       }
     },
     Cesium.ScreenSpaceEventType.LEFT_CLICK,
@@ -329,6 +482,7 @@ function createAircraftScene(
     updateAircraft,
     removeAircraft,
     resetCamera,
+    setZones,
     setSelectedAircraft,
     setCameraMode,
     setPaused,
@@ -337,6 +491,8 @@ function createAircraftScene(
 }
 
 type AircraftMapProps = {
+  /** Zones to draw; pass a new array (and new objects for changed zones) to update. */
+  zones: FlightZone[];
   selectedAircraftId: string | null;
   cameraMode: CameraMode;
   paused: boolean;
@@ -347,6 +503,7 @@ type AircraftMapProps = {
 };
 
 export default function AircraftMap({
+  zones,
   selectedAircraftId,
   cameraMode,
   paused,
@@ -357,6 +514,7 @@ export default function AircraftMap({
   const sceneRef = useRef<ReturnType<typeof createAircraftScene> | null>(null);
   // Latest props, for applying to a scene that finishes loading later.
   const settingsRef = useRef({
+    zones,
     selectedAircraftId,
     cameraMode,
     paused,
@@ -365,15 +523,17 @@ export default function AircraftMap({
 
   useEffect(() => {
     settingsRef.current = {
+      zones,
       selectedAircraftId,
       cameraMode,
       paused,
       onSelectAircraft,
     };
+    sceneRef.current?.setZones(zones);
     sceneRef.current?.setSelectedAircraft(selectedAircraftId);
     sceneRef.current?.setCameraMode(cameraMode);
     sceneRef.current?.setPaused(paused);
-  }, [selectedAircraftId, cameraMode, paused, onSelectAircraft]);
+  }, [zones, selectedAircraftId, cameraMode, paused, onSelectAircraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -386,6 +546,7 @@ export default function AircraftMap({
           containerRef.current,
           (id) => settingsRef.current.onSelectAircraft(id),
         );
+        aircraftScene.setZones(settingsRef.current.zones);
         aircraftScene.setSelectedAircraft(
           settingsRef.current.selectedAircraftId,
         );

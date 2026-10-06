@@ -10,7 +10,9 @@ import type {
   AircraftUpdate,
   CameraMode,
 } from "@/lib/aircraft/types";
+import { MOCK_FLIGHT_ZONES } from "@/lib/aircraft/mock-flight-data";
 import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
+import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
 
 // Cesium needs window/WebGL, so the map is loaded in the browser only.
 const AircraftMap = dynamic(
@@ -38,6 +40,12 @@ export default function AircraftDemoPage() {
     null,
   );
   const selectedAircraftId = selectedAircraft?.id ?? null;
+  // Zones are plain data. Replace the mock with zones loaded from an API
+  // (e.g. state filled by a fetch) and nothing else needs to change.
+  const zones = MOCK_FLIGHT_ZONES;
+  const zoneStatus = selectedAircraft
+    ? getPrimaryZoneStatus(selectedAircraft.currentPosition, zones)
+    : null;
   const [cameraMode, setCameraMode] = useState<CameraMode>("follow");
   const [paused, setPaused] = useState(false);
 
@@ -83,6 +91,7 @@ export default function AircraftDemoPage() {
   return (
     <main className="dark fixed inset-0 overflow-hidden bg-black text-foreground">
       <AircraftMap
+        zones={zones}
         selectedAircraftId={selectedAircraftId}
         cameraMode={cameraMode}
         paused={paused}
@@ -95,6 +104,7 @@ export default function AircraftDemoPage() {
           <AircraftInfoPanel
             aircraftList={aircraftList}
             aircraft={selectedAircraft}
+            zoneStatus={zoneStatus}
             paused={paused}
             onSelectAircraft={selectAircraft}
           />
