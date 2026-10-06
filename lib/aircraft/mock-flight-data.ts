@@ -18,57 +18,102 @@ type MockAircraft = {
   route: Waypoint[];
 };
 
-// Demo traffic around Fujairah (OMFJ), UAE. Every route is flown as a closed
+const METERS_PER_DEG_LAT = 111_320;
+
+/** Centre of the demo: everything below is laid out relative to it. */
+export const FALCON_AIRPORT = {
+  lat: 24.467333,
+  lng: 55.626056,
+};
+
+/** A point `eastKm` / `northKm` away from Falcon Airport. */
+function fromAirport(eastKm: number, northKm: number) {
+  const metersPerDegLng =
+    METERS_PER_DEG_LAT * Math.cos((FALCON_AIRPORT.lat * Math.PI) / 180);
+  return {
+    lat: +(FALCON_AIRPORT.lat + (northKm * 1000) / METERS_PER_DEG_LAT).toFixed(
+      6,
+    ),
+    lng: +(FALCON_AIRPORT.lng + (eastKm * 1000) / metersPerDegLng).toFixed(6),
+  };
+}
+
+// Demo traffic around Falcon Airport. Every route is flown as a closed
 // circuit, so the simulation never runs out of route. Add or remove entries
 // freely: nothing else depends on how many there are.
 export const MOCK_AIRCRAFT: MockAircraft[] = [
   {
-    // Scenic loop over the Hajar mountains.
+    // Arrives from the southwest, overflies the airport, continues northeast
+    // and returns around the south. 2,500-3,500 ft.
     id: "ac-001",
-    name: "Hajar Scenic",
+    name: "Southwest Arrival",
     callsign: "A6-CSM",
     route: [
-      { lat: 25.112, lng: 56.33, altitude: 2500, speed: 120 },
-      { lat: 25.17, lng: 56.26, altitude: 4500, speed: 145 },
-      { lat: 25.26, lng: 56.18, altitude: 6500, speed: 150 },
-      { lat: 25.33, lng: 56.05, altitude: 7500, speed: 155 },
-      { lat: 25.25, lng: 55.93, altitude: 7500, speed: 155 },
-      { lat: 25.12, lng: 55.98, altitude: 7000, speed: 150 },
-      { lat: 25.03, lng: 56.12, altitude: 6500, speed: 150 },
-      { lat: 25.04, lng: 56.27, altitude: 4500, speed: 135 },
+      { ...fromAirport(-8, -6), altitude: 3500, speed: 125 },
+      { ...fromAirport(-4, -3), altitude: 3000, speed: 120 },
+      { ...fromAirport(0, 0), altitude: 2500, speed: 115 },
+      { ...fromAirport(5, 3.5), altitude: 3000, speed: 120 },
+      { ...fromAirport(10, 7), altitude: 3500, speed: 130 },
+      { ...fromAirport(12, -1), altitude: 3500, speed: 130 },
+      { ...fromAirport(5, -9), altitude: 3500, speed: 130 },
+      { ...fromAirport(-5, -10.5), altitude: 3500, speed: 130 },
     ],
   },
   {
-    // Low, slow racetrack just off the Gulf of Oman coast.
+    // Crosses the zone from the northwest to the southeast, east of the
+    // airport, and returns around the north. 3,500-4,500 ft.
     id: "ac-002",
-    name: "Coastal Patrol",
+    name: "Northwest Crossing",
     callsign: "A6-KFK",
     route: [
-      { lat: 25.2, lng: 56.4, altitude: 1500, speed: 95 },
-      { lat: 25.35, lng: 56.42, altitude: 2500, speed: 105 },
-      { lat: 25.5, lng: 56.42, altitude: 3000, speed: 110 },
-      { lat: 25.52, lng: 56.5, altitude: 3000, speed: 110 },
-      { lat: 25.35, lng: 56.52, altitude: 2000, speed: 100 },
-      { lat: 25.18, lng: 56.48, altitude: 1500, speed: 95 },
+      { ...fromAirport(-7, 7.5), altitude: 4500, speed: 140 },
+      { ...fromAirport(-3, 3.5), altitude: 4000, speed: 135 },
+      { ...fromAirport(3, -2.5), altitude: 3500, speed: 130 },
+      { ...fromAirport(8, -7), altitude: 4000, speed: 135 },
+      { ...fromAirport(12.5, -2), altitude: 4500, speed: 140 },
+      { ...fromAirport(10, 6), altitude: 4500, speed: 140 },
+      { ...fromAirport(3, 10.5), altitude: 4500, speed: 140 },
     ],
   },
   {
-    // Higher, faster circuit crossing the whole area.
+    // Low, slow clockwise circuit around the outside of the zone.
+    // 1,500-3,000 ft.
     id: "ac-003",
-    name: "Highland Survey",
+    name: "Perimeter Patrol",
     callsign: "A6-HJR",
     route: [
-      { lat: 25.0, lng: 55.85, altitude: 9500, speed: 170 },
-      { lat: 25.2, lng: 55.8, altitude: 10500, speed: 180 },
-      { lat: 25.42, lng: 55.95, altitude: 11000, speed: 180 },
-      { lat: 25.45, lng: 56.15, altitude: 11000, speed: 180 },
-      { lat: 25.28, lng: 56.25, altitude: 10000, speed: 175 },
-      { lat: 25.08, lng: 56.08, altitude: 9500, speed: 170 },
+      { ...fromAirport(0, 8), altitude: 3000, speed: 105 },
+      { ...fromAirport(6.5, 4), altitude: 2500, speed: 100 },
+      { ...fromAirport(7, -3), altitude: 2000, speed: 100 },
+      { ...fromAirport(2, -7.5), altitude: 1500, speed: 95 },
+      { ...fromAirport(-5, -6.5), altitude: 2000, speed: 100 },
+      { ...fromAirport(-7.5, 0), altitude: 2500, speed: 105 },
+      { ...fromAirport(-5, 6), altitude: 3000, speed: 105 },
     ],
   },
 ];
 
-const METERS_PER_DEG_LAT = 111_320;
+// The airspace around Falcon Airport, roughly 4-5 km out in every direction.
+// Temporary data source: the map and the zone logic only ever see a
+// FlightZone[], wherever it comes from.
+export const MOCK_FLIGHT_ZONES: FlightZone[] = [
+  {
+    id: "zone-falcon",
+    name: "Falcon Airport Zone",
+    type: "normal",
+    minAltitude: 0,
+    maxAltitude: 5000,
+    coordinates: [
+      fromAirport(-4.5, -1.5),
+      fromAirport(-2, -4),
+      fromAirport(2.5, -3.5),
+      fromAirport(4.5, 0),
+      fromAirport(2.5, 3.5),
+      fromAirport(-2.5, 3.5),
+    ],
+  },
+];
+
 const KNOTS_TO_MPS = 0.514444;
 const TURN_RATE_DEG_S = 3; // standard rate turn
 const CLIMB_RATE_FT_S = 25; // 1,500 fpm
@@ -173,50 +218,3 @@ export function createMockFlight(
     },
   };
 }
-
-// Demo zones under the routes above. Temporary data source: the map and the
-// zone logic only ever see a FlightZone[], wherever it comes from.
-export const MOCK_FLIGHT_ZONES: FlightZone[] = [
-  {
-    id: "zone-training-a",
-    name: "Training Area A",
-    type: "normal",
-    minAltitude: 0,
-    maxAltitude: 3000,
-    coordinates: [
-      { lat: 25.22, lng: 56.385 },
-      { lat: 25.22, lng: 56.44 },
-      { lat: 25.31, lng: 56.455 },
-      { lat: 25.4, lng: 56.445 },
-      { lat: 25.4, lng: 56.39 },
-      { lat: 25.31, lng: 56.375 },
-    ],
-  },
-  {
-    id: "zone-caution-b",
-    name: "Caution Area B",
-    type: "warning",
-    minAltitude: 1000,
-    maxAltitude: 5000,
-    coordinates: [
-      { lat: 25.128, lng: 56.275 },
-      { lat: 25.125, lng: 56.305 },
-      { lat: 25.143, lng: 56.318 },
-      { lat: 25.162, lng: 56.3 },
-      { lat: 25.158, lng: 56.268 },
-    ],
-  },
-  {
-    id: "zone-restricted-c",
-    name: "Restricted Area C",
-    type: "restricted",
-    minAltitude: 0,
-    maxAltitude: 7000,
-    coordinates: [
-      { lat: 25.195, lng: 56.185 },
-      { lat: 25.19, lng: 56.235 },
-      { lat: 25.23, lng: 56.25 },
-      { lat: 25.24, lng: 56.2 },
-    ],
-  },
-];

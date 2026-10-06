@@ -24,6 +24,11 @@ const FEET_TO_METERS = 0.3048;
 // always a "next" sample to interpolate toward (must exceed the update interval).
 const INTERPOLATION_BUFFER_S = 1.5;
 
+// Overview camera (initial view and Reset): distance from the centre of the
+// flight area and downward tilt.
+const OVERVIEW_RANGE_M = 40_000;
+const OVERVIEW_PITCH_DEG = -35;
+
 // Added to the reported heading. 0 suits models whose nose points along
 // Cesium's +X axis (glTF +Z), like the Cesium Air sample. Use 90 / -90 / 180
 // if your aircraft.glb appears to fly sideways or backwards.
@@ -91,6 +96,7 @@ const feet = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 function createAircraftScene(
   Cesium: Cesium,
   container: HTMLDivElement,
+  center: { lat: number; lng: number },
   onSelect: (id: string) => void,
 ) {
   const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
@@ -450,24 +456,26 @@ function createAircraftScene(
     else viewer.trackedEntity = undefined;
   }
 
-  function resetCamera() {
+  // Overview of the flight area: looking north at the centre, tilted so the
+  // height of zones and the altitude of aircraft are visible.
+  function resetCamera(duration = 1.5) {
     viewer.trackedEntity = undefined;
-    if (tracks.size === 0) {
-      camera.flyHome(1.5);
-      return;
-    }
-    const area = Cesium.BoundingSphere.fromPoints(
-      Array.from(tracks.values(), (track) => track.lastPoint),
-    );
-    camera.flyToBoundingSphere(area, {
-      duration: 1.5,
-      offset: new Cesium.HeadingPitchRange(
-        0,
-        Cesium.Math.toRadians(-40),
-        Math.max(area.radius * 3, 45_000),
+    camera.flyToBoundingSphere(
+      new Cesium.BoundingSphere(
+        Cesium.Cartesian3.fromDegrees(center.lng, center.lat),
       ),
-    });
+      {
+        duration,
+        offset: new Cesium.HeadingPitchRange(
+          0,
+          Cesium.Math.toRadians(OVERVIEW_PITCH_DEG),
+          OVERVIEW_RANGE_M,
+        ),
+      },
+    );
   }
+  // Open on the flight area instead of the default whole-Earth view.
+  resetCamera(0);
 
   function setPaused(paused: boolean) {
     clock.shouldAnimate = !paused;
@@ -491,6 +499,8 @@ function createAircraftScene(
 }
 
 type AircraftMapProps = {
+  /** Centre of the flight area, used for the initial view and Reset. */
+  center: { lat: number; lng: number };
   /** Zones to draw; pass a new array (and new objects for changed zones) to update. */
   zones: FlightZone[];
   selectedAircraftId: string | null;
@@ -503,6 +513,7 @@ type AircraftMapProps = {
 };
 
 export default function AircraftMap({
+  center,
   zones,
   selectedAircraftId,
   cameraMode,
@@ -514,6 +525,7 @@ export default function AircraftMap({
   const sceneRef = useRef<ReturnType<typeof createAircraftScene> | null>(null);
   // Latest props, for applying to a scene that finishes loading later.
   const settingsRef = useRef({
+    center,
     zones,
     selectedAircraftId,
     cameraMode,
@@ -523,6 +535,7 @@ export default function AircraftMap({
 
   useEffect(() => {
     settingsRef.current = {
+      center,
       zones,
       selectedAircraftId,
       cameraMode,
@@ -533,7 +546,7 @@ export default function AircraftMap({
     sceneRef.current?.setSelectedAircraft(selectedAircraftId);
     sceneRef.current?.setCameraMode(cameraMode);
     sceneRef.current?.setPaused(paused);
-  }, [zones, selectedAircraftId, cameraMode, paused, onSelectAircraft]);
+  }, [center, zones, selectedAircraftId, cameraMode, paused, onSelectAircraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -544,6 +557,7 @@ export default function AircraftMap({
         const aircraftScene = createAircraftScene(
           Cesium,
           containerRef.current,
+          settingsRef.current.center,
           (id) => settingsRef.current.onSelectAircraft(id),
         );
         aircraftScene.setZones(settingsRef.current.zones);
@@ -556,7 +570,7 @@ export default function AircraftMap({
         onReady({
           updateAircraft: aircraftScene.updateAircraft,
           removeAircraft: aircraftScene.removeAircraft,
-          resetCamera: aircraftScene.resetCamera,
+          resetCamera: () => aircraftScene.resetCamera(),
         });
       })
       .catch((error) => console.error(error));

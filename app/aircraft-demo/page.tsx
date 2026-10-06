@@ -10,7 +10,10 @@ import type {
   AircraftUpdate,
   CameraMode,
 } from "@/lib/aircraft/types";
-import { MOCK_FLIGHT_ZONES } from "@/lib/aircraft/mock-flight-data";
+import {
+  FALCON_AIRPORT,
+  MOCK_FLIGHT_ZONES,
+} from "@/lib/aircraft/mock-flight-data";
 import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
 
@@ -46,7 +49,7 @@ export default function AircraftDemoPage() {
   const zoneStatus = selectedAircraft
     ? getPrimaryZoneStatus(selectedAircraft.currentPosition, zones)
     : null;
-  const [cameraMode, setCameraMode] = useState<CameraMode>("follow");
+  const [cameraMode, setCameraMode] = useState<CameraMode>("free");
   const [paused, setPaused] = useState(false);
 
   // Single entry point for tracking data. A WebSocket handler can call this
@@ -91,6 +94,7 @@ export default function AircraftDemoPage() {
   return (
     <main className="dark fixed inset-0 overflow-hidden bg-black text-foreground">
       <AircraftMap
+        center={FALCON_AIRPORT}
         zones={zones}
         selectedAircraftId={selectedAircraftId}
         cameraMode={cameraMode}
