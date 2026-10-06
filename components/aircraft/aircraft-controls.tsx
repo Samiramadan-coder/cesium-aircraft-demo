@@ -66,7 +66,7 @@ export function AircraftControls({
       <Card className="flex-row items-center gap-1 bg-card/80 p-1.5 shadow-xl backdrop-blur-md supports-backdrop-filter:bg-card/70">
         <ControlButton
           label="Follow"
-          hint="Follow aircraft — chase camera"
+          hint="Follow the selected aircraft — chase camera"
           active={cameraMode === "follow"}
           onClick={() => onCameraModeChange("follow")}
         >

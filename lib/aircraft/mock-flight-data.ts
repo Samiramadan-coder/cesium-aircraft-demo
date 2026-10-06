@@ -1,10 +1,5 @@
 import type { AircraftPosition } from "./types";
 
-export const MOCK_AIRCRAFT = {
-  callsign: "A6-CSM",
-  type: "Cesium Air · Demo flight",
-};
-
 export const UPDATE_INTERVAL_MS = 1000;
 
 type Waypoint = {
@@ -16,17 +11,61 @@ type Waypoint = {
   speed: number;
 };
 
-// Scenic loop out of Fujairah (OMFJ) over the Hajar mountains, UAE.
-// Flown as a closed circuit, so the simulation never runs out of route.
-export const MOCK_ROUTE: Waypoint[] = [
-  { lat: 25.112, lng: 56.33, altitude: 2500, speed: 120 },
-  { lat: 25.17, lng: 56.26, altitude: 4500, speed: 145 },
-  { lat: 25.26, lng: 56.18, altitude: 6500, speed: 150 },
-  { lat: 25.33, lng: 56.05, altitude: 7500, speed: 155 },
-  { lat: 25.25, lng: 55.93, altitude: 7500, speed: 155 },
-  { lat: 25.12, lng: 55.98, altitude: 7000, speed: 150 },
-  { lat: 25.03, lng: 56.12, altitude: 6500, speed: 150 },
-  { lat: 25.04, lng: 56.27, altitude: 4500, speed: 135 },
+type MockAircraft = {
+  id: string;
+  name: string;
+  callsign: string;
+  route: Waypoint[];
+};
+
+// Demo traffic around Fujairah (OMFJ), UAE. Every route is flown as a closed
+// circuit, so the simulation never runs out of route. Add or remove entries
+// freely: nothing else depends on how many there are.
+export const MOCK_AIRCRAFT: MockAircraft[] = [
+  {
+    // Scenic loop over the Hajar mountains.
+    id: "ac-001",
+    name: "Hajar Scenic",
+    callsign: "A6-CSM",
+    route: [
+      { lat: 25.112, lng: 56.33, altitude: 2500, speed: 120 },
+      { lat: 25.17, lng: 56.26, altitude: 4500, speed: 145 },
+      { lat: 25.26, lng: 56.18, altitude: 6500, speed: 150 },
+      { lat: 25.33, lng: 56.05, altitude: 7500, speed: 155 },
+      { lat: 25.25, lng: 55.93, altitude: 7500, speed: 155 },
+      { lat: 25.12, lng: 55.98, altitude: 7000, speed: 150 },
+      { lat: 25.03, lng: 56.12, altitude: 6500, speed: 150 },
+      { lat: 25.04, lng: 56.27, altitude: 4500, speed: 135 },
+    ],
+  },
+  {
+    // Low, slow racetrack just off the Gulf of Oman coast.
+    id: "ac-002",
+    name: "Coastal Patrol",
+    callsign: "A6-KFK",
+    route: [
+      { lat: 25.2, lng: 56.4, altitude: 1500, speed: 95 },
+      { lat: 25.35, lng: 56.42, altitude: 2500, speed: 105 },
+      { lat: 25.5, lng: 56.42, altitude: 3000, speed: 110 },
+      { lat: 25.52, lng: 56.5, altitude: 3000, speed: 110 },
+      { lat: 25.35, lng: 56.52, altitude: 2000, speed: 100 },
+      { lat: 25.18, lng: 56.48, altitude: 1500, speed: 95 },
+    ],
+  },
+  {
+    // Higher, faster circuit crossing the whole area.
+    id: "ac-003",
+    name: "Highland Survey",
+    callsign: "A6-HJR",
+    route: [
+      { lat: 25.0, lng: 55.85, altitude: 9500, speed: 170 },
+      { lat: 25.2, lng: 55.8, altitude: 10500, speed: 180 },
+      { lat: 25.42, lng: 55.95, altitude: 11000, speed: 180 },
+      { lat: 25.45, lng: 56.15, altitude: 11000, speed: 180 },
+      { lat: 25.28, lng: 56.25, altitude: 10000, speed: 175 },
+      { lat: 25.08, lng: 56.08, altitude: 9500, speed: 170 },
+    ],
+  },
 ];
 
 const METERS_PER_DEG_LAT = 111_320;
@@ -59,21 +98,24 @@ function bearingAndDistance(
 }
 
 /**
- * Small kinematic simulation that flies the route one tracking update at a
+ * Small kinematic simulation that flies a route one tracking update at a
  * time. Each call to `next()` advances the flight by one update interval and
  * returns what a tracker would report: turns are rate-limited, climbs and
  * speed changes are gradual, and heading always matches the actual track.
  */
-export function createMockFlight(startTimestamp = Date.now()) {
+export function createMockFlight(
+  route: Waypoint[],
+  startTimestamp = Date.now(),
+) {
   const dt = UPDATE_INTERVAL_MS / 1000;
-  const start = MOCK_ROUTE[0];
+  const start = route[0];
   let targetIndex = 1;
   let state: AircraftPosition = {
     lat: start.lat,
     lng: start.lng,
     altitude: start.altitude,
     speed: start.speed,
-    heading: bearingAndDistance(start, MOCK_ROUTE[1]).bearing,
+    heading: bearingAndDistance(start, route[1]).bearing,
     timestamp: startTimestamp,
   };
   let started = false;
@@ -85,11 +127,11 @@ export function createMockFlight(startTimestamp = Date.now()) {
         return state;
       }
 
-      let target = MOCK_ROUTE[targetIndex];
+      let target = route[targetIndex];
       let leg = bearingAndDistance(state, target);
       if (leg.distance < WAYPOINT_CAPTURE_M) {
-        targetIndex = (targetIndex + 1) % MOCK_ROUTE.length;
-        target = MOCK_ROUTE[targetIndex];
+        targetIndex = (targetIndex + 1) % route.length;
+        target = route[targetIndex];
         leg = bearingAndDistance(state, target);
       }
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AircraftControls } from "@/components/aircraft/aircraft-controls";
 import { AircraftInfoPanel } from "@/components/aircraft/aircraft-info-panel";
-import { MOCK_AIRCRAFT } from "@/lib/aircraft/mock-flight-data";
 import type {
+  Aircraft,
   AircraftMapApi,
-  AircraftPosition,
+  AircraftUpdate,
   CameraMode,
 } from "@/lib/aircraft/types";
 import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
@@ -29,33 +29,74 @@ const hasIonToken = Boolean(process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN);
 
 export default function AircraftDemoPage() {
   const [mapApi, setMapApi] = useState<AircraftMapApi | null>(null);
-  const [position, setPosition] = useState<AircraftPosition | null>(null);
+  // Latest state of every aircraft, keyed by id. Kept in a ref so the
+  // per-second updates of aircraft nobody is looking at don't re-render.
+  const aircraftById = useRef(new Map<string, Aircraft>());
+  // Who is on the map; only changes when an aircraft appears.
+  const [aircraftList, setAircraftList] = useState<Aircraft[]>([]);
+  const [selectedAircraft, setSelectedAircraft] = useState<Aircraft | null>(
+    null,
+  );
+  const selectedAircraftId = selectedAircraft?.id ?? null;
   const [cameraMode, setCameraMode] = useState<CameraMode>("follow");
   const [paused, setPaused] = useState(false);
 
   // Single entry point for tracking data. A WebSocket handler can call this
   // exact function later instead of the mock feed.
-  const handlePositionUpdate = useCallback(
-    (update: AircraftPosition) => {
-      mapApi?.updateAircraftPosition(update);
-      setPosition(update);
+  const updateAircraft = useCallback(
+    (update: AircraftUpdate) => {
+      mapApi?.updateAircraft(update);
+
+      const { id, lat, lng, altitude, speed, heading } = update;
+      const known = aircraftById.current.get(id);
+      const aircraft: Aircraft = {
+        id,
+        name: update.name ?? known?.name ?? id,
+        callsign: update.callsign ?? known?.callsign,
+        currentPosition: {
+          lat,
+          lng,
+          altitude,
+          speed,
+          heading,
+          timestamp: update.timestamp ?? Date.now(),
+        },
+      };
+      aircraftById.current.set(id, aircraft);
+
+      if (!known) setAircraftList(Array.from(aircraftById.current.values()));
+      // Refresh the info panel if this is the selected aircraft; the first
+      // aircraft to report is selected automatically.
+      setSelectedAircraft((selected) =>
+        !selected || selected.id === id ? aircraft : selected,
+      );
     },
     [mapApi],
   );
 
-  useMockFlightFeed(mapApi !== null && !paused, handlePositionUpdate);
+  const selectAircraft = useCallback((id: string) => {
+    setSelectedAircraft(aircraftById.current.get(id) ?? null);
+  }, []);
+
+  useMockFlightFeed(mapApi !== null && !paused, updateAircraft);
 
   return (
     <main className="dark fixed inset-0 overflow-hidden bg-black text-foreground">
-      <AircraftMap cameraMode={cameraMode} paused={paused} onReady={setMapApi} />
+      <AircraftMap
+        selectedAircraftId={selectedAircraftId}
+        cameraMode={cameraMode}
+        paused={paused}
+        onSelectAircraft={selectAircraft}
+        onReady={setMapApi}
+      />
 
       <div className="pointer-events-none absolute inset-0 flex flex-col items-start gap-3 p-4 sm:flex-row sm:justify-between">
         <div className="pointer-events-auto">
           <AircraftInfoPanel
-            name={MOCK_AIRCRAFT.callsign}
-            description={MOCK_AIRCRAFT.type}
-            position={position}
+            aircraftList={aircraftList}
+            aircraft={selectedAircraft}
             paused={paused}
+            onSelectAircraft={selectAircraft}
           />
         </div>
         <div className="pointer-events-auto">

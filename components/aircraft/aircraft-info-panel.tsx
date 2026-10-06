@@ -1,5 +1,6 @@
 import { Plane } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { AircraftPosition } from "@/lib/aircraft/types";
+import type { Aircraft } from "@/lib/aircraft/types";
 
 const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const utcTime = new Intl.DateTimeFormat("en-GB", {
@@ -30,18 +31,27 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 
 type AircraftInfoPanelProps = {
-  name: string;
-  description: string;
-  position: AircraftPosition | null;
+  /** Every aircraft currently tracked, for the selector. */
+  aircraftList: Aircraft[];
+  /** The selected aircraft, or null while none is selected. */
+  aircraft: Aircraft | null;
   paused: boolean;
+  onSelectAircraft: (id: string) => void;
 };
 
 export function AircraftInfoPanel({
-  name,
-  description,
-  position,
+  aircraftList,
+  aircraft,
   paused,
+  onSelectAircraft,
 }: AircraftInfoPanelProps) {
+  const position = aircraft?.currentPosition ?? null;
+  const name = aircraft ? (aircraft.callsign ?? aircraft.name) : "No aircraft";
+  const description = aircraft
+    ? aircraft.name
+    : aircraftList.length > 0
+      ? "Select an aircraft"
+      : "Waiting for tracking data";
   const status = !position ? "Acquiring" : paused ? "Paused" : "Live";
 
   return (
@@ -67,6 +77,22 @@ export function AircraftInfoPanel({
           </Badge>
         </div>
         <CardDescription className="text-xs">{description}</CardDescription>
+        {aircraftList.length > 1 && (
+          <div className="flex max-h-24 flex-wrap gap-1 overflow-y-auto pt-1">
+            {aircraftList.map(({ id, name, callsign }) => (
+              <Button
+                key={id}
+                size="xs"
+                variant={id === aircraft?.id ? "default" : "outline"}
+                aria-pressed={id === aircraft?.id}
+                className="font-mono"
+                onClick={() => onSelectAircraft(id)}
+              >
+                {callsign ?? name}
+              </Button>
+            ))}
+          </div>
+        )}
       </CardHeader>
       <Separator />
       <CardContent>
