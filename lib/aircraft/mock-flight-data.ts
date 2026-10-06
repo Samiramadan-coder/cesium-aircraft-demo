@@ -49,7 +49,7 @@ export const MOCK_AIRCRAFT: MockAircraft[] = [
     id: "ac-001",
     name: "Southwest Arrival",
     callsign: "A6-CSM",
-    modelUrl: "/models/aircraft-1.glb",
+    modelUrl: "/models/aircraft.glb",
     route: [
       { ...fromAirport(-8, -6), altitude: 3500, speed: 125 },
       { ...fromAirport(-4, -3), altitude: 3000, speed: 120 },
@@ -67,7 +67,7 @@ export const MOCK_AIRCRAFT: MockAircraft[] = [
     id: "ac-002",
     name: "Northwest Crossing",
     callsign: "A6-KFK",
-    modelUrl: "/models/aircraft-2.glb",
+    modelUrl: "/models/aircraft.glb",
     route: [
       { ...fromAirport(-7, 7.5), altitude: 4500, speed: 140 },
       { ...fromAirport(-3, 3.5), altitude: 4000, speed: 135 },
@@ -84,7 +84,7 @@ export const MOCK_AIRCRAFT: MockAircraft[] = [
     id: "ac-003",
     name: "Perimeter Patrol",
     callsign: "A6-HJR",
-    modelUrl: "/models/aircraft-3.glb",
+    modelUrl: "/models/aircraft.glb",
     route: [
       { ...fromAirport(0, 8), altitude: 3000, speed: 105 },
       { ...fromAirport(6.5, 4), altitude: 2500, speed: 100 },
