@@ -1,38 +1,46 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-import { AircraftControls } from "@/components/aircraft/aircraft-controls";
-import { AircraftInfoPanel } from "@/components/aircraft/aircraft-info-panel";
 import type {
   Aircraft,
+  CameraMode,
   AircraftMapApi,
   AircraftUpdate,
-  CameraMode,
 } from "@/lib/aircraft/types";
 import {
   FALCON_AIRPORT,
   MOCK_FLIGHT_ZONES,
 } from "@/lib/aircraft/mock-flight-data";
-import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
+
+import dynamic from "next/dynamic";
+import { useCallback, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
+import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
+import { AircraftControls } from "@/components/aircraft/aircraft-controls";
+import { AircraftInfoPanel } from "@/components/aircraft/aircraft-info-panel";
+
+function MapLoading() {
+  const t = useTranslations("AircraftDemo");
+  return (
+    <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
+      {t("loadingGlobe")}
+    </div>
+  );
+}
 
 // Cesium needs window/WebGL, so the map is loaded in the browser only.
 const AircraftMap = dynamic(
   () => import("@/components/aircraft/aircraft-map"),
   {
     ssr: false,
-    loading: () => (
-      <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">
-        Loading 3D globe…
-      </div>
-    ),
+    loading: () => <MapLoading />,
   },
 );
 
 const hasIonToken = Boolean(process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN);
 
 export default function AircraftDemoPage() {
+  const t = useTranslations("AircraftDemo");
   const [mapApi, setMapApi] = useState<AircraftMapApi | null>(null);
   // Latest state of every aircraft, keyed by id. Kept in a ref so the
   // per-second updates of aircraft nobody is looking at don't re-render.
@@ -132,8 +140,10 @@ export default function AircraftDemoPage() {
       {!hasIonToken && (
         <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center px-4">
           <p className="rounded-md bg-amber-500/15 px-3 py-1.5 text-xs text-amber-200 ring-1 ring-amber-500/30 backdrop-blur">
-            NEXT_PUBLIC_CESIUM_ION_TOKEN is not set — terrain and imagery may
-            not load. Add it to .env.local and restart.
+            {t("ionTokenMissing", {
+              variable: "NEXT_PUBLIC_CESIUM_ION_TOKEN",
+              file: ".env.local",
+            })}
           </p>
         </div>
       )}

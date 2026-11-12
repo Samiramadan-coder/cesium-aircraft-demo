@@ -1,0 +1,75 @@
+{
+  "Metadata": {
+    "title": "عرض تتبع الطائرات",
+    "description": "تتبع مباشر ثلاثي الأبعاد للطائرات ومناطق الطيران، مبني على Cesium و Next.js."
+  },
+  "HomePage": {
+    "nextLogoAlt": "شعار Next.js",
+    "vercelLogoAlt": "شعار Vercel",
+    "title": "للبدء، عدّل الملف <code>page.tsx</code>.",
+    "intro": "تبحث عن نقطة انطلاق أو مزيد من الإرشادات؟ تفضّل بزيارة <templates>القوالب</templates> أو مركز <learn>التعلّم</learn>.",
+    "deploy": "انشر الآن",
+    "docs": "التوثيق"
+  },
+  "AircraftDemo": {
+    "loadingGlobe": "جارٍ تحميل الكرة الأرضية ثلاثية الأبعاد…",
+    "ionTokenMissing": "لم يتم تعيين {variable} — قد لا يتم تحميل التضاريس والصور. أضفه إلى {file} ثم أعد التشغيل."
+  },
+  "AircraftControls": {
+    "follow": "تتبّع",
+    "followHint": "تتبّع الطائرة المحددة — كاميرا مطاردة",
+    "free": "حرّة",
+    "freeHint": "كاميرا حرّة — اسحب للتحريك والتدوير والإمالة",
+    "reset": "إعادة ضبط",
+    "resetHint": "إعادة الكاميرا إلى نظرة عامة على منطقة الطيران",
+    "pause": "إيقاف مؤقت",
+    "pauseHint": "إيقاف المحاكاة مؤقتًا",
+    "resume": "استئناف",
+    "resumeHint": "استئناف المحاكاة"
+  },
+  "AircraftInfoPanel": {
+    "noAircraft": "لا توجد طائرة",
+    "description": "{name} · {model}",
+    "defaultModel": "النموذج الافتراضي",
+    "selectAircraft": "اختر طائرة",
+    "waitingForData": "بانتظار بيانات التتبع",
+    "status": {
+      "acquiring": "جارٍ الالتقاط",
+      "paused": "متوقف مؤقتًا",
+      "live": "مباشر"
+    },
+    "fields": {
+      "altitude": "الارتفاع",
+      "groundSpeed": "السرعة الأرضية",
+      "heading": "الاتجاه",
+      "lastUpdate": "آخر تحديث",
+      "latitude": "خط العرض",
+      "longitude": "خط الطول",
+      "zone": "المنطقة"
+    },
+    "units": {
+      "feet": "{value} قدم",
+      "knots": "{value} عقدة",
+      "degrees": "{value}°",
+      "utcTime": "{time} UTC"
+    },
+    "noValue": "—",
+    "zoneStatus": "{zone} · {state}",
+    "zoneStates": {
+      "outside": "خارج",
+      "approaching": "يقترب",
+      "inside": "داخل",
+      "above": "فوق",
+      "below": "تحت",
+      "violation": "مخالفة"
+    },
+    "clearOfZones": "خارج جميع المناطق"
+  },
+  "LocaleSwitcher": {
+    "hint": "تغيير اللغة",
+    "locales": {
+      "en": "English",
+      "ar": "العربية"
+    }
+  }
+}

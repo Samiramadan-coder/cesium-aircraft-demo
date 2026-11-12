@@ -1,7 +1,15 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { LocateFixed, Move3d, Pause, Play, RotateCcw } from "lucide-react";
+import {
+  Languages,
+  LocateFixed,
+  Move3d,
+  Pause,
+  Play,
+  RotateCcw,
+} from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +19,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import type { CameraMode } from "@/lib/aircraft/types";
 
 function ControlButton({
@@ -46,6 +56,35 @@ function ControlButton({
   );
 }
 
+/** Switches to the next locale, keeping the current page. */
+function LocaleButton() {
+  const t = useTranslations("LocaleSwitcher");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { locales } = routing;
+  const next = locales[(locales.indexOf(locale) + 1) % locales.length];
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            size="sm"
+            variant="ghost"
+            lang={next}
+            onClick={() => router.replace(pathname, { locale: next })}
+          />
+        }
+      >
+        <Languages data-icon="inline-start" />
+        {t(`locales.${next}`)}
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{t("hint")}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 type AircraftControlsProps = {
   cameraMode: CameraMode;
   paused: boolean;
@@ -61,36 +100,38 @@ export function AircraftControls({
   onResetCamera,
   onPausedChange,
 }: AircraftControlsProps) {
+  const t = useTranslations("AircraftControls");
+
   return (
     <TooltipProvider delay={300}>
       <Card className="flex-row items-center gap-1 bg-card/80 p-1.5 shadow-xl backdrop-blur-md supports-backdrop-filter:bg-card/70">
         <ControlButton
-          label="Follow"
-          hint="Follow the selected aircraft — chase camera"
+          label={t("follow")}
+          hint={t("followHint")}
           active={cameraMode === "follow"}
           onClick={() => onCameraModeChange("follow")}
         >
           <LocateFixed data-icon="inline-start" />
         </ControlButton>
         <ControlButton
-          label="Free"
-          hint="Free camera — drag to pan, rotate and tilt"
+          label={t("free")}
+          hint={t("freeHint")}
           active={cameraMode === "free"}
           onClick={() => onCameraModeChange("free")}
         >
           <Move3d data-icon="inline-start" />
         </ControlButton>
         <ControlButton
-          label="Reset"
-          hint="Reset camera to the flight area overview"
+          label={t("reset")}
+          hint={t("resetHint")}
           onClick={onResetCamera}
         >
           <RotateCcw data-icon="inline-start" />
         </ControlButton>
         <Separator orientation="vertical" className="mx-1 h-5 self-center" />
         <ControlButton
-          label={paused ? "Resume" : "Pause"}
-          hint={paused ? "Resume simulation" : "Pause simulation"}
+          label={paused ? t("resume") : t("pause")}
+          hint={paused ? t("resumeHint") : t("pauseHint")}
           onClick={() => onPausedChange(!paused)}
         >
           {paused ? (
@@ -99,6 +140,8 @@ export function AircraftControls({
             <Pause data-icon="inline-start" />
           )}
         </ControlButton>
+        <Separator orientation="vertical" className="mx-1 h-5 self-center" />
+        <LocaleButton />
       </Card>
     </TooltipProvider>
   );

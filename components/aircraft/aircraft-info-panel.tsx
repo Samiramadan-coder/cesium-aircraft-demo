@@ -1,4 +1,5 @@
 import { Plane } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,33 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type {
-  Aircraft,
-  AircraftZoneState,
-  AircraftZoneStatus,
-} from "@/lib/aircraft/types";
+import type { Aircraft, AircraftZoneStatus } from "@/lib/aircraft/types";
 import { cn } from "@/lib/utils";
-
-const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
-const utcTime = new Intl.DateTimeFormat("en-GB", {
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  timeZone: "UTC",
-});
-
-const ZONE_STATE_LABELS: Record<AircraftZoneState, string> = {
-  outside: "Outside",
-  approaching: "Approaching",
-  inside: "Inside",
-  above: "Above",
-  below: "Below",
-};
-
-function formatZoneStatus({ zone, state }: AircraftZoneStatus) {
-  const violation = zone.type === "restricted" && state === "inside";
-  return `${zone.name} · ${violation ? "Violation" : ZONE_STATE_LABELS[state]}`;
-}
 
 function Field({
   label,
@@ -48,7 +24,7 @@ function Field({
 }) {
   return (
     <div className={cn("flex flex-col gap-0.5", className)}>
-      <dt className="text-[0.65rem] font-medium tracking-widest text-muted-foreground uppercase">
+      <dt className="text-[0.65rem] font-medium tracking-widest text-muted-foreground uppercase rtl:tracking-normal">
         {label}
       </dt>
       <dd className="font-mono text-sm tabular-nums">{value}</dd>
@@ -74,14 +50,42 @@ export function AircraftInfoPanel({
   paused,
   onSelectAircraft,
 }: AircraftInfoPanelProps) {
+  const t = useTranslations("AircraftInfoPanel");
+  const format = useFormatter();
+
   const position = aircraft?.currentPosition ?? null;
-  const name = aircraft ? (aircraft.callsign ?? aircraft.name) : "No aircraft";
+  const name = aircraft ? (aircraft.callsign ?? aircraft.name) : t("noAircraft");
   const description = aircraft
-    ? `${aircraft.name} · ${aircraft.modelUrl?.split("/").pop() ?? "default model"}`
+    ? t("description", {
+        name: aircraft.name,
+        model: aircraft.modelUrl?.split("/").pop() ?? t("defaultModel"),
+      })
     : aircraftList.length > 0
-      ? "Select an aircraft"
-      : "Waiting for tracking data";
-  const status = !position ? "Acquiring" : paused ? "Paused" : "Live";
+      ? t("selectAircraft")
+      : t("waitingForData");
+  const status = !position ? "acquiring" : paused ? "paused" : "live";
+
+  const integer = (value: number) =>
+    format.number(value, { maximumFractionDigits: 0 });
+  const coordinate = (value: number) =>
+    format.number(value, {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4,
+      useGrouping: false,
+    });
+
+  let zone = t("noValue");
+  if (position) {
+    if (!zoneStatus) zone = t("clearOfZones");
+    else {
+      const violation =
+        zoneStatus.zone.type === "restricted" && zoneStatus.state === "inside";
+      zone = t("zoneStatus", {
+        zone: zoneStatus.zone.name,
+        state: t(`zoneStates.${violation ? "violation" : zoneStatus.state}`),
+      });
+    }
+  }
 
   return (
     <Card
@@ -97,12 +101,12 @@ export function AircraftInfoPanel({
           <Badge variant="outline" className="gap-1.5">
             <span
               className={
-                status === "Live"
+                status === "live"
                   ? "size-1.5 rounded-full bg-emerald-400"
                   : "size-1.5 rounded-full bg-amber-400"
               }
             />
-            {status}
+            {t(`status.${status}`)}
           </Badge>
         </div>
         <CardDescription className="text-xs">{description}</CardDescription>
@@ -127,44 +131,59 @@ export function AircraftInfoPanel({
       <CardContent>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
           <Field
-            label="Altitude"
-            value={position ? `${integer.format(position.altitude)} ft` : "—"}
-          />
-          <Field
-            label="Ground speed"
-            value={position ? `${integer.format(position.speed)} kt` : "—"}
-          />
-          <Field
-            label="Heading"
+            label={t("fields.altitude")}
             value={
               position
-                ? `${String(Math.round(position.heading) % 360).padStart(3, "0")}°`
-                : "—"
+                ? t("units.feet", { value: integer(position.altitude) })
+                : t("noValue")
             }
           />
           <Field
-            label="Last update"
-            value={position ? `${utcTime.format(position.timestamp)} UTC` : "—"}
-          />
-          <Field
-            label="Latitude"
-            value={position ? position.lat.toFixed(4) : "—"}
-          />
-          <Field
-            label="Longitude"
-            value={position ? position.lng.toFixed(4) : "—"}
-          />
-          <Field
-            label="Zone"
-            className="col-span-2"
+            label={t("fields.groundSpeed")}
             value={
-              !position
-                ? "—"
-                : zoneStatus
-                  ? formatZoneStatus(zoneStatus)
-                  : "Clear of all zones"
+              position
+                ? t("units.knots", { value: integer(position.speed) })
+                : t("noValue")
             }
           />
+          <Field
+            label={t("fields.heading")}
+            value={
+              position
+                ? t("units.degrees", {
+                    value: format.number(Math.round(position.heading) % 360, {
+                      minimumIntegerDigits: 3,
+                      useGrouping: false,
+                    }),
+                  })
+                : t("noValue")
+            }
+          />
+          <Field
+            label={t("fields.lastUpdate")}
+            value={
+              position
+                ? t("units.utcTime", {
+                    time: format.dateTime(position.timestamp, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hourCycle: "h23",
+                      timeZone: "UTC",
+                    }),
+                  })
+                : t("noValue")
+            }
+          />
+          <Field
+            label={t("fields.latitude")}
+            value={position ? coordinate(position.lat) : t("noValue")}
+          />
+          <Field
+            label={t("fields.longitude")}
+            value={position ? coordinate(position.lng) : t("noValue")}
+          />
+          <Field label={t("fields.zone")} className="col-span-2" value={zone} />
         </dl>
       </CardContent>
     </Card>

@@ -1,0 +1,75 @@
+{
+  "Metadata": {
+    "title": "Aircraft Tracking Demo",
+    "description": "Live 3D aircraft tracking with flight zones, built on Cesium and Next.js."
+  },
+  "HomePage": {
+    "nextLogoAlt": "Next.js logo",
+    "vercelLogoAlt": "Vercel logomark",
+    "title": "To get started, edit the <code>page.tsx</code> file.",
+    "intro": "Looking for a starting point or more instructions? Head over to <templates>Templates</templates> or the <learn>Learning</learn> center.",
+    "deploy": "Deploy Now",
+    "docs": "Documentation"
+  },
+  "AircraftDemo": {
+    "loadingGlobe": "Loading 3D globe…",
+    "ionTokenMissing": "{variable} is not set — terrain and imagery may not load. Add it to {file} and restart."
+  },
+  "AircraftControls": {
+    "follow": "Follow",
+    "followHint": "Follow the selected aircraft — chase camera",
+    "free": "Free",
+    "freeHint": "Free camera — drag to pan, rotate and tilt",
+    "reset": "Reset",
+    "resetHint": "Reset camera to the flight area overview",
+    "pause": "Pause",
+    "pauseHint": "Pause simulation",
+    "resume": "Resume",
+    "resumeHint": "Resume simulation"
+  },
+  "AircraftInfoPanel": {
+    "noAircraft": "No aircraft",
+    "description": "{name} · {model}",
+    "defaultModel": "default model",
+    "selectAircraft": "Select an aircraft",
+    "waitingForData": "Waiting for tracking data",
+    "status": {
+      "acquiring": "Acquiring",
+      "paused": "Paused",
+      "live": "Live"
+    },
+    "fields": {
+      "altitude": "Altitude",
+      "groundSpeed": "Ground speed",
+      "heading": "Heading",
+      "lastUpdate": "Last update",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "zone": "Zone"
+    },
+    "units": {
+      "feet": "{value} ft",
+      "knots": "{value} kt",
+      "degrees": "{value}°",
+      "utcTime": "{time} UTC"
+    },
+    "noValue": "—",
+    "zoneStatus": "{zone} · {state}",
+    "zoneStates": {
+      "outside": "Outside",
+      "approaching": "Approaching",
+      "inside": "Inside",
+      "above": "Above",
+      "below": "Below",
+      "violation": "Violation"
+    },
+    "clearOfZones": "Clear of all zones"
+  },
+  "LocaleSwitcher": {
+    "hint": "Switch language",
+    "locales": {
+      "en": "English",
+      "ar": "العربية"
+    }
+  }
+}
