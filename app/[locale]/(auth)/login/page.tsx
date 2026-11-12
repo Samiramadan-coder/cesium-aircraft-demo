@@ -5,7 +5,6 @@ import { routing } from "@/i18n/routing";
 import { ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { FALCON_AIRPORT } from "@/lib/aircraft/flight-zones";
 import { hasLocale, useTranslations, type Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
@@ -17,21 +16,6 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "LoginPage" });
   return { title: t("metaTitle") };
 }
-
-/** 24.467333 -> "N 24°28′02″", the way coordinates appear on charts. */
-function toDms(value: number, positive: string, negative: string) {
-  const total = Math.round(Math.abs(value) * 3600);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${value >= 0 ? positive : negative} ${Math.floor(total / 3600)}°${pad(
-    Math.floor((total % 3600) / 60),
-  )}′${pad(total % 60)}″`;
-}
-
-const STATION_COORDINATES = `${toDms(FALCON_AIRPORT.lat, "N", "S")}  ${toDms(
-  FALCON_AIRPORT.lng,
-  "E",
-  "W",
-)}`;
 
 /** Concentric range rings behind the logo, like a radar scope. */
 function RangeRings() {
@@ -69,9 +53,7 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
 
   return (
     <div className="grid min-h-svh bg-background text-foreground lg:grid-cols-[1.1fr_1fr]">
-      {/* Brand panel */}
       <aside className="relative hidden overflow-hidden border-e border-border bg-card lg:flex lg:flex-col lg:justify-between lg:p-12">
-        {/* Faint chart grid and a warm glow from the logo. */}
         <div
           aria-hidden
           className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[56px_56px] opacity-40 mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
@@ -81,12 +63,7 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
           className="absolute top-1/2 left-1/2 size-130 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
         />
 
-        <p
-          dir="ltr"
-          className="relative font-mono text-xs tracking-widest text-primary/80 rtl:text-right"
-        >
-          {STATION_COORDINATES}
-        </p>
+        <div />
 
         <div className="relative flex flex-col items-center gap-10 text-center">
           <div className="relative w-full max-w-md">
