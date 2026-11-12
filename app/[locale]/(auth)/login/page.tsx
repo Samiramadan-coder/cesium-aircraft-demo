@@ -1,13 +1,13 @@
 import { use } from "react";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { routing } from "@/i18n/routing";
 import { ShieldCheck } from "lucide-react";
-import { hasLocale, useTranslations, type Locale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LoginForm } from "@/components/auth/login-form";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { routing } from "@/i18n/routing";
 import { FALCON_AIRPORT } from "@/lib/aircraft/mock-flight-data";
+import { hasLocale, useTranslations, type Locale } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 export async function generateMetadata({
   params,
@@ -78,7 +78,7 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
         />
         <div
           aria-hidden
-          className="absolute top-1/2 left-1/2 size-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
+          className="absolute top-1/2 left-1/2 size-130 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"
         />
 
         <p

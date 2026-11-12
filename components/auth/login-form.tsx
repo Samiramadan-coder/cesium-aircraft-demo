@@ -1,18 +1,30 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
-import { ArrowRight, Eye, EyeOff, LoaderCircle, Lock, Mail } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  Lock,
+  Mail,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useState, useTransition, type FormEvent } from "react";
+import { login } from "@/lib/actions/auth";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Errors = Partial<
-  Record<"email" | "password", "emailRequired" | "emailInvalid" | "passwordRequired">
+  Record<
+    "email" | "password",
+    "emailRequired" | "emailInvalid" | "passwordRequired"
+  >
 >;
 
 function validate(email: string, password: string): Errors {
@@ -47,7 +59,7 @@ export function LoginForm() {
     if (Object.keys(nextErrors).length > 0) return;
 
     startTransition(async () => {
-      // TODO: authenticate { email, password } against the auth API here.
+      await login();
       router.push("/");
     });
   }
