@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { login } from "@/lib/actions/auth";
+import { CALLBACK_URL_PARAM } from "@/lib/auth-routes";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLoginSchema, type LoginValues } from "@/lib/validations/auth";
@@ -29,13 +29,13 @@ import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
 
 export function LoginForm() {
   const t = useTranslations("LoginPage");
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
+    setError,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<LoginValues>({
     resolver: zodResolver(createLoginSchema((key) => t(`errors.${key}`))),
     defaultValues: { email: "", password: "" },
@@ -43,10 +43,30 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginValues) {
-    void values;
-    await login();
-    router.push("/");
+    // Read on submit instead of useSearchParams(), which would need a
+    // Suspense boundary on this statically rendered page
+    const callbackUrl = new URLSearchParams(window.location.search).get(
+      CALLBACK_URL_PARAM,
+    );
+    // Redirects on success, so this only returns a failure
+    const failure = await login(values, callbackUrl);
+    // A redirect can resolve the call with no result
+    if (!failure) return;
+
+    let shownOnField = false;
+    for (const [field, message] of Object.entries(failure.fieldErrors ?? {})) {
+      if (field === "email" || field === "password") {
+        setError(field, { message }, { shouldFocus: !shownOnField });
+        shownOnField = true;
+      }
+    }
+    if (failure.message && !shownOnField) {
+      setError("root.server", { message: failure.message });
+    }
   }
+
+  // Keep the button busy while the success redirect is in flight
+  const busy = isSubmitting || (isSubmitSuccessful && !errors.root);
 
   return (
     <form
@@ -54,6 +74,15 @@ export function LoginForm() {
       onSubmit={handleSubmit(onSubmit)}
       className="flex flex-col gap-5"
     >
+      {errors.root?.server && (
+        <p
+          role="alert"
+          className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm text-danger"
+        >
+          {errors.root.server.message}
+        </p>
+      )}
+
       <LabeledField
         id="email"
         label={t("email")}
@@ -108,10 +137,10 @@ export function LoginForm() {
 
       <Button
         type="submit"
-        disabled={isSubmitting}
+        disabled={busy}
         className="mt-2 h-11 rounded-lg bg-primary text-sm font-semibold tracking-wide text-primary-foreground shadow-[0_8px_24px_-8px] shadow-primary/50 hover:bg-primary/90"
       >
-        {isSubmitting ? (
+        {busy ? (
           <>
             <LoaderCircle className="animate-spin" />
             {t("submitting")}
