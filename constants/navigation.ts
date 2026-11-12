@@ -37,6 +37,9 @@ export const NAV_SECTIONS: NavSection[] = [
 
 export const NAV_ITEMS = NAV_SECTIONS.flatMap((section) => section.items);
 
+/** The user's own page, opened from the header's account menu. */
+export const PROFILE_PATH = "/profile";
+
 /** Whether `href` is the current page; "/" only matches itself. */
 export function isActiveHref(pathname: string, href: string) {
   if (href === "/") return pathname === "/";

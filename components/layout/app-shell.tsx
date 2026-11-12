@@ -3,9 +3,23 @@
 import { useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import type { CurrentUser } from "@/types/user";
+import type { AirportWeather } from "@/types/weather";
+
+type AppShellProps = {
+  user: CurrentUser;
+  weather: AirportWeather;
+  hasUnreadNotifications: boolean;
+  children: React.ReactNode;
+};
 
 /** Sidebar + header frame around every signed-in page. */
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  user,
+  weather,
+  hasUnreadNotifications,
+  children,
+}: AppShellProps) {
   // Mobile only; on large screens the sidebar is always shown.
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -15,6 +29,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AppHeader
+          user={user}
+          weather={weather}
+          hasUnreadNotifications={hasUnreadNotifications}
           sidebarOpen={sidebarOpen}
           onOpenSidebar={() => setSidebarOpen(true)}
         />

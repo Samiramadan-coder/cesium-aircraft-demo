@@ -115,7 +115,17 @@
     }
   },
   "Header": {
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "notificationsUnread": "Notifications (unread)",
+    "weather": "{station} Weather",
+    "accountMenu": "Account menu for {name}",
+    "profile": "Profile",
+    "signOut": "Sign out",
+    "roles": {
+      "super_admin": "Super Admin",
+      "admin": "Admin",
+      "operator": "Operator"
+    }
   },
   "Pages": {
     "comingSoon": "Coming soon",
@@ -133,6 +143,9 @@
     },
     "engineHours": {
       "description": "Engine and flight hours per aircraft, for maintenance planning, will appear here."
+    },
+    "profile": {
+      "description": "Your account details and preferences will appear here."
     }
   }
 }

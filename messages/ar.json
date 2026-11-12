@@ -115,7 +115,17 @@
     }
   },
   "Header": {
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "notificationsUnread": "الإشعارات (غير مقروءة)",
+    "weather": "طقس {station}",
+    "accountMenu": "قائمة حساب {name}",
+    "profile": "الملف الشخصي",
+    "signOut": "تسجيل الخروج",
+    "roles": {
+      "super_admin": "مدير عام",
+      "admin": "مدير",
+      "operator": "مشغّل"
+    }
   },
   "Pages": {
     "comingSoon": "قريبًا",
@@ -133,6 +143,9 @@
     },
     "engineHours": {
       "description": "ستظهر هنا ساعات المحرك والطيران لكل طائرة لتخطيط الصيانة."
+    },
+    "profile": {
+      "description": "ستظهر هنا بيانات حسابك وتفضيلاتك."
     }
   }
 }

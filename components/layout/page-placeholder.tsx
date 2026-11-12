@@ -1,16 +1,17 @@
 import type { LucideIcon } from "lucide-react";
+import { User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { NavItem } from "@/constants/navigation";
 import { NAV_ITEMS } from "@/constants/navigation";
 
+/** A sidebar section that isn't built yet, or the profile page. */
+export type PlaceholderPage = Exclude<NavItem["key"], "live"> | "profile";
+
 /** Empty state for a section that isn't built yet. */
-export function PagePlaceholder({
-  page,
-}: {
-  page: Exclude<NavItem["key"], "live">;
-}) {
+export function PagePlaceholder({ page }: { page: PlaceholderPage }) {
   const t = useTranslations("Pages");
-  const Icon: LucideIcon = NAV_ITEMS.find((item) => item.key === page)!.icon;
+  const Icon: LucideIcon =
+    NAV_ITEMS.find((item) => item.key === page)?.icon ?? User;
 
   return (
     <div className="flex min-h-full items-center justify-center p-6">

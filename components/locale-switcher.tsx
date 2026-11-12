@@ -21,10 +21,36 @@ export function useLocaleToggle() {
   };
 }
 
-/** Button labelled with the other language's name, keeping the current page. */
-export function LocaleSwitcher({ className }: { className?: string }) {
+/**
+ * Button labelled with the other language's name, keeping the current page.
+ * `iconOnly` shows just the icon, with the name as tooltip and label.
+ */
+export function LocaleSwitcher({
+  className,
+  iconOnly = false,
+}: {
+  className?: string;
+  iconOnly?: boolean;
+}) {
   const t = useTranslations("LocaleSwitcher");
   const { next, switchLocale } = useLocaleToggle();
+
+  if (iconOnly) {
+    const label = t(`locales.${next}`);
+    return (
+      <Button
+        variant="ghost"
+        size="icon-lg"
+        lang={next}
+        title={`${t("hint")} · ${label}`}
+        aria-label={label}
+        className={cn("text-foreground-2 hover:text-foreground", className)}
+        onClick={switchLocale}
+      >
+        <Languages className="size-5" />
+      </Button>
+    );
+  }
 
   return (
     <Button
