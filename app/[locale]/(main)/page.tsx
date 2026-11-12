@@ -6,14 +6,15 @@ import type {
   AircraftMapApi,
   AircraftUpdate,
 } from "@/lib/aircraft/types";
+
 import {
   FALCON_AIRPORT,
   MOCK_FLIGHT_ZONES,
 } from "@/lib/aircraft/mock-flight-data";
 
 import dynamic from "next/dynamic";
-import { useCallback, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useCallback, useRef, useState } from "react";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
 import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
 import { AircraftControls } from "@/components/aircraft/aircraft-controls";
