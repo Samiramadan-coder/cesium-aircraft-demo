@@ -93,5 +93,8 @@
       "en": "English",
       "ar": "العربية"
     }
+  },
+  "Api": {
+    "genericError": "Something went wrong. Please try again."
   }
 }
