@@ -1,4 +1,4 @@
-import type { AircraftPosition, FlightZone } from "./types";
+import type { AircraftPosition, FlightZone } from "@/types/aircraft";
 
 export const UPDATE_INTERVAL_MS = 1000;
 

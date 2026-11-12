@@ -63,7 +63,11 @@ export type FlightZone = {
  * within the polygon horizontally but outside the altitude band.
  */
 export type AircraftZoneState =
-  "outside" | "approaching" | "inside" | "above" | "below";
+  | "outside"
+  | "approaching"
+  | "inside"
+  | "above"
+  | "below";
 
 export type AircraftZoneStatus = {
   zone: FlightZone;

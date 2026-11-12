@@ -5,7 +5,7 @@ import type {
   CameraMode,
   AircraftMapApi,
   AircraftUpdate,
-} from "@/lib/aircraft/types";
+} from "@/types/aircraft";
 
 import {
   FALCON_AIRPORT,
