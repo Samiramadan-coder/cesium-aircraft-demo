@@ -152,17 +152,68 @@ const ZONE_FILL_ALPHA: Record<ZoneAlert, number> = {
 
 const feet = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
+// The 3D world under the aircraft comes from one of two sources:
+// - Google Photorealistic 3D Tiles, fetched straight from Google with a Google
+//   Maps API key. Terrain, buildings and imagery are all in the one tileset,
+//   so the globe is hidden. Google's logo and attributions are shown by
+//   Cesium's credit display, which must stay visible (Google Maps terms).
+// - Otherwise Cesium ion: World Terrain, Bing imagery and OSM Buildings.
+function addBaseScene(
+  Cesium: Cesium,
+  viewer: CesiumModule.Viewer,
+  googleMapsApiKey: string | undefined,
+) {
+  const { scene } = viewer;
+
+  if (googleMapsApiKey) {
+    scene.globe.show = false;
+    Cesium.createGooglePhotorealistic3DTileset({
+      key: googleMapsApiKey,
+      // The viewer has no geocoder, so no non-Google geocoder is used.
+      onlyUsingWithGoogleGeocoder: true,
+    })
+      .then((tileset) => {
+        if (viewer.isDestroyed()) tileset.destroy();
+        else scene.primitives.add(tileset);
+      })
+      .catch((error) => {
+        // Bad key, API not enabled, quota exceeded, ... Show the bare globe
+        // so the aircraft and zones still have a reference.
+        console.error("Failed to load Google Photorealistic 3D Tiles", error);
+        if (!viewer.isDestroyed()) scene.globe.show = true;
+      });
+    return;
+  }
+
+  // Let mountains hide the parts of the trail that are behind them.
+  scene.globe.depthTestAgainstTerrain = true;
+
+  Cesium.createOsmBuildingsAsync()
+    .then((buildings) => {
+      if (viewer.isDestroyed()) buildings.destroy();
+      else scene.primitives.add(buildings);
+    })
+    .catch(() => {
+      // Buildings are a nice-to-have; the demo works without them.
+    });
+}
+
 function createAircraftScene(
   Cesium: Cesium,
   container: HTMLDivElement,
   center: { lat: number; lng: number },
+  googleMapsApiKey: string | undefined,
   onSelect: (id: string) => void,
 ) {
   const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
   if (token) Cesium.Ion.defaultAccessToken = token;
 
   const viewer = new Cesium.Viewer(container, {
-    terrain: Cesium.Terrain.fromWorldTerrain(),
+    // With Google tiles nothing comes from Cesium ion: no ion terrain and no
+    // ion (Bing) base imagery.
+    ...(googleMapsApiKey
+      ? { baseLayer: false as const }
+      : { terrain: Cesium.Terrain.fromWorldTerrain() }),
     animation: false,
     timeline: false,
     baseLayerPicker: false,
@@ -176,8 +227,7 @@ function createAircraftScene(
   });
   const { scene, clock, camera } = viewer;
 
-  // Let mountains hide the parts of the trail that are behind them.
-  scene.globe.depthTestAgainstTerrain = true;
+  addBaseScene(Cesium, viewer, googleMapsApiKey);
 
   // Light the scene from the camera so the aircraft is never in the dark,
   // whatever time of day the tracking timestamps fall on.
@@ -189,14 +239,6 @@ function createAircraftScene(
       light.direction,
     );
   });
-
-  Cesium.createOsmBuildingsAsync()
-    .then((buildings) => {
-      if (!viewer.isDestroyed()) scene.primitives.add(buildings);
-    })
-    .catch(() => {
-      // Buildings are a nice-to-have; the demo works without them.
-    });
 
   // Local frame with X = north, Y = west, Z = up, so heading 0 points the
   // model's nose north and positive heading turns clockwise (compass convention).
@@ -598,6 +640,12 @@ function createAircraftScene(
 type AircraftMapProps = {
   /** Centre of the flight area, used for the initial view and Reset. */
   center: { lat: number; lng: number };
+  /**
+   * Google Maps API key (Map Tiles API) for Google Photorealistic 3D Tiles.
+   * Can differ per customer, so each one is billed on their own key. Without
+   * it the map falls back to Cesium ion. Read once, when the map is created.
+   */
+  googleMapsApiKey?: string;
   /** Zones to draw; pass a new array (and new objects for changed zones) to update. */
   zones: FlightZone[];
   selectedAircraftId: string | null;
@@ -611,6 +659,7 @@ type AircraftMapProps = {
 
 export default function AircraftMap({
   center,
+  googleMapsApiKey,
   zones,
   selectedAircraftId,
   cameraMode,
@@ -623,6 +672,7 @@ export default function AircraftMap({
   // Latest props, for applying to a scene that finishes loading later.
   const settingsRef = useRef({
     center,
+    googleMapsApiKey,
     zones,
     selectedAircraftId,
     cameraMode,
@@ -633,6 +683,7 @@ export default function AircraftMap({
   useEffect(() => {
     settingsRef.current = {
       center,
+      googleMapsApiKey,
       zones,
       selectedAircraftId,
       cameraMode,
@@ -643,7 +694,15 @@ export default function AircraftMap({
     sceneRef.current?.setSelectedAircraft(selectedAircraftId);
     sceneRef.current?.setCameraMode(cameraMode);
     sceneRef.current?.setPaused(paused);
-  }, [center, zones, selectedAircraftId, cameraMode, paused, onSelectAircraft]);
+  }, [
+    center,
+    googleMapsApiKey,
+    zones,
+    selectedAircraftId,
+    cameraMode,
+    paused,
+    onSelectAircraft,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -655,6 +714,7 @@ export default function AircraftMap({
           Cesium,
           containerRef.current,
           settingsRef.current.center,
+          settingsRef.current.googleMapsApiKey,
           (id) => settingsRef.current.onSelectAircraft(id),
         );
         aircraftScene.setZones(settingsRef.current.zones);

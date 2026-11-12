@@ -35,7 +35,12 @@ const AircraftMap = dynamic(
   },
 );
 
-const hasIonToken = Boolean(process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN);
+// Google Photorealistic 3D Tiles key; the map falls back to Cesium ion
+// without it. Can later come per customer from the backend instead.
+const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+const hasMapKey =
+  Boolean(googleMapsApiKey) ||
+  Boolean(process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN);
 
 export default function AircraftDemoPage() {
   const t = useTranslations("AircraftDemo");
@@ -102,6 +107,7 @@ export default function AircraftDemoPage() {
     <main className="dark fixed inset-0 overflow-hidden bg-black text-foreground">
       <AircraftMap
         center={FALCON_AIRPORT}
+        googleMapsApiKey={googleMapsApiKey}
         zones={zones}
         selectedAircraftId={selectedAircraftId}
         cameraMode={cameraMode}
@@ -134,11 +140,12 @@ export default function AircraftDemoPage() {
         </div>
       </div>
 
-      {!hasIonToken && (
+      {!hasMapKey && (
         <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center px-4">
           <p className="rounded-md bg-amber-500/15 px-3 py-1.5 text-xs text-amber-200 ring-1 ring-amber-500/30 backdrop-blur">
-            {t("ionTokenMissing", {
-              variable: "NEXT_PUBLIC_CESIUM_ION_TOKEN",
+            {t("mapKeyMissing", {
+              googleVariable: "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY",
+              ionVariable: "NEXT_PUBLIC_CESIUM_ION_TOKEN",
               file: ".env.local",
             })}
           </p>

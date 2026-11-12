@@ -13,7 +13,7 @@
   },
   "AircraftDemo": {
     "loadingGlobe": "Loading 3D globe…",
-    "ionTokenMissing": "{variable} is not set — terrain and imagery may not load. Add it to {file} and restart."
+    "mapKeyMissing": "Neither {googleVariable} nor {ionVariable} is set — terrain, buildings and imagery may not load. Add one to {file} and restart."
   },
   "AircraftControls": {
     "follow": "Follow",

@@ -13,7 +13,7 @@
   },
   "AircraftDemo": {
     "loadingGlobe": "جارٍ تحميل الكرة الأرضية ثلاثية الأبعاد…",
-    "ionTokenMissing": "لم يتم تعيين {variable} — قد لا يتم تحميل التضاريس والصور. أضفه إلى {file} ثم أعد التشغيل."
+    "mapKeyMissing": "لم يتم تعيين {googleVariable} ولا {ionVariable} — قد لا يتم تحميل التضاريس والمباني والصور. أضف أحدهما إلى {file} ثم أعد التشغيل."
   },
   "AircraftControls": {
     "follow": "تتبّع",
