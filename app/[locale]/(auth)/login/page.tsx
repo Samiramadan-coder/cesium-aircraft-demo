@@ -17,35 +17,6 @@ export async function generateMetadata({
   return { title: t("metaTitle") };
 }
 
-/** Concentric range rings behind the logo, like a radar scope. */
-function RangeRings() {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 600 600"
-      className="pointer-events-none absolute top-1/2 left-1/2 aspect-square w-[130%] max-w-none -translate-x-1/2 -translate-y-1/2 text-primary"
-    >
-      {[90, 160, 230, 295].map((r, i) => (
-        <circle
-          key={r}
-          cx="300"
-          cy="300"
-          r={r}
-          fill="none"
-          stroke="currentColor"
-          strokeOpacity={0.16 - i * 0.03}
-          strokeDasharray={i % 2 ? "2 6" : undefined}
-        />
-      ))}
-      <path
-        d="M300 0V600M0 300H600"
-        stroke="currentColor"
-        strokeOpacity="0.06"
-      />
-    </svg>
-  );
-}
-
 export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
   const { locale } = use(params);
   setRequestLocale(locale as Locale);
@@ -67,7 +38,6 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
 
         <div className="relative flex flex-col items-center gap-10 text-center">
           <div className="relative w-full max-w-md">
-            <RangeRings />
             <Image
               src="/brand/logo.png"
               alt={t("logoAlt")}
