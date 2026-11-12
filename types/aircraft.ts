@@ -51,6 +51,17 @@ export type FlightZone = {
     lat: number;
     lng: number;
   }>;
+  /** Areas cut out of the polygon, same format as `coordinates`. */
+  holes?: Array<
+    Array<{
+      lat: number;
+      lng: number;
+    }>
+  >;
+  /** CSS color; overrides the color of `type`. */
+  color?: string;
+  /** How close to the edge counts as "approaching"; a default if omitted. */
+  warningDistanceMeters?: number;
   /** Floor of the volume, feet */
   minAltitude: number;
   /** Ceiling of the volume, feet */

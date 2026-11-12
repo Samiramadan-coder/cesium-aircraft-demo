@@ -270,7 +270,9 @@ function createAircraftScene(
         : "idle";
     const type = record.zone.type ?? "normal";
     const violation = type === "restricted" && alert === "inside";
-    const base = Cesium.Color.fromCssColorString(ZONE_COLORS[type]);
+    const base = Cesium.Color.fromCssColorString(
+      record.zone.color ?? ZONE_COLORS[type],
+    );
 
     // Read by the entity's callback properties, so a state change only
     // recolors the existing geometry instead of rebuilding it.
@@ -315,8 +317,18 @@ function createAircraftScene(
       name: zone.name,
       position: center,
       polygon: {
-        hierarchy: Cesium.Cartesian3.fromDegreesArray(
-          coordinates.flatMap((c) => [c.lng, c.lat]),
+        hierarchy: new Cesium.PolygonHierarchy(
+          Cesium.Cartesian3.fromDegreesArray(
+            coordinates.flatMap((c) => [c.lng, c.lat]),
+          ),
+          zone.holes?.map(
+            (hole) =>
+              new Cesium.PolygonHierarchy(
+                Cesium.Cartesian3.fromDegreesArray(
+                  hole.flatMap((c) => [c.lng, c.lat]),
+                ),
+              ),
+          ),
         ),
         // Zone altitudes are in feet; Cesium heights are in meters.
         height: minAltitude * FEET_TO_METERS,

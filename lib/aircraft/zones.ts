@@ -13,14 +13,14 @@ const METERS_PER_DEG_LAT = 111_320;
 type ZonePoint = Pick<AircraftPosition, "lat" | "lng" | "altitude">;
 
 /**
- * Horizontal relation of a point to a zone polygon. Works on a flat local
- * projection in meters centred on the point, which is accurate to well under
- * a meter per kilometer at zone scale (tens of kilometers).
+ * Horizontal relation of a point to one ring of a polygon. Works on a flat
+ * local projection in meters centred on the point, which is accurate to well
+ * under a meter per kilometer at zone scale (tens of kilometers).
  */
-function locateInPolygon(point: ZonePoint, zone: FlightZone) {
+function locateInRing(point: ZonePoint, ring: FlightZone["coordinates"]) {
   const metersPerDegLng =
     METERS_PER_DEG_LAT * Math.cos((point.lat * Math.PI) / 180);
-  const vertices = zone.coordinates.map(({ lat, lng }) => ({
+  const vertices = ring.map(({ lat, lng }) => ({
     x: (lng - point.lng) * metersPerDegLng,
     y: (lat - point.lat) * METERS_PER_DEG_LAT,
   }));
@@ -57,6 +57,17 @@ function locateInPolygon(point: ZonePoint, zone: FlightZone) {
   return { inside, distanceToEdge };
 }
 
+/** Like `locateInRing`, but a point inside a hole is outside the zone. */
+function locateInPolygon(point: ZonePoint, zone: FlightZone) {
+  let { inside, distanceToEdge } = locateInRing(point, zone.coordinates);
+  for (const hole of zone.holes ?? []) {
+    const inHole = locateInRing(point, hole);
+    if (inHole.inside) inside = false;
+    distanceToEdge = Math.min(distanceToEdge, inHole.distanceToEdge);
+  }
+  return { inside, distanceToEdge };
+}
+
 /**
  * State of one aircraft position relative to one 3D zone. Altitudes are
  * compared in feet on both sides, the unit the app uses everywhere.
@@ -64,11 +75,12 @@ function locateInPolygon(point: ZonePoint, zone: FlightZone) {
  * "inside" needs both: within the polygon and within the altitude band.
  * "approaching" means outside the polygon, within `warningDistanceMeters` of
  * its edge, and at an altitude that would put the aircraft inside the volume.
+ * The distance defaults to the zone's own, then to ZONE_WARNING_DISTANCE_M.
  */
 export function getAircraftZoneState(
   point: ZonePoint,
   zone: FlightZone,
-  warningDistanceMeters = ZONE_WARNING_DISTANCE_M,
+  warningDistanceMeters = zone.warningDistanceMeters ?? ZONE_WARNING_DISTANCE_M,
 ): AircraftZoneState {
   const { inside, distanceToEdge } = locateInPolygon(point, zone);
   const below = point.altitude < zone.minAltitude;
@@ -96,7 +108,7 @@ const STATE_PRIORITY: Record<AircraftZoneState, number> = {
 export function getPrimaryZoneStatus(
   point: ZonePoint,
   zones: FlightZone[],
-  warningDistanceMeters = ZONE_WARNING_DISTANCE_M,
+  warningDistanceMeters?: number,
 ): AircraftZoneStatus | null {
   let primary: AircraftZoneStatus | null = null;
   for (const zone of zones) {

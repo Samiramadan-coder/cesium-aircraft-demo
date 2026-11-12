@@ -5,14 +5,14 @@ import type {
   CameraMode,
   AircraftMapApi,
   AircraftUpdate,
+  FlightZone,
 } from "@/types/aircraft";
 
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
-import { useMockFlightFeed } from "@/lib/aircraft/use-mock-flight-feed";
-import { FALCON_AIRPORT, FLIGHT_ZONES } from "@/lib/aircraft/flight-zones";
+import { FALCON_AIRPORT } from "@/lib/aircraft/flight-zones";
 import { AircraftControls } from "@/components/aircraft/aircraft-controls";
 import { AircraftInfoPanel } from "@/components/aircraft/aircraft-info-panel";
 
@@ -39,6 +39,10 @@ type AircraftDemoProps = {
   // without it. Can later come per customer from the backend instead.
   googleMapsApiKey?: string;
   hasMapKey: boolean;
+  /** Last known position of every tracked aircraft (GET /v1/tracking/live). */
+  initialAircraft: AircraftUpdate[];
+  /** Airspace to draw (GET /v1/tracking/live). */
+  zones: FlightZone[];
 };
 
 // Client side of the home page: the Cesium map and its live state.
@@ -46,6 +50,8 @@ type AircraftDemoProps = {
 export function AircraftDemo({
   googleMapsApiKey,
   hasMapKey,
+  initialAircraft,
+  zones,
 }: AircraftDemoProps) {
   const t = useTranslations("AircraftDemo");
   const [mapApi, setMapApi] = useState<AircraftMapApi | null>(null);
@@ -58,8 +64,6 @@ export function AircraftDemo({
     null,
   );
   const selectedAircraftId = selectedAircraft?.id ?? null;
-  // The airspace is fixed (see lib/aircraft/flight-zones.ts).
-  const zones = FLIGHT_ZONES;
   const zoneStatus = selectedAircraft
     ? getPrimaryZoneStatus(selectedAircraft.currentPosition, zones)
     : null;
@@ -105,7 +109,12 @@ export function AircraftDemo({
     setSelectedAircraft(aircraftById.current.get(id) ?? null);
   }, []);
 
-  useMockFlightFeed(mapApi !== null && !paused, updateAircraft);
+  // Put the snapshot from the server on the map once it is ready.
+  // TODO: live updates (WebSocket or polling) once agreed with the backend.
+  useEffect(() => {
+    if (!mapApi) return;
+    for (const update of initialAircraft) updateAircraft(update);
+  }, [mapApi, initialAircraft, updateAircraft]);
 
   return (
     // Fills the shell's content area (see components/layout/app-shell.tsx).
