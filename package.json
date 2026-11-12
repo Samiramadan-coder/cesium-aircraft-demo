@@ -5,7 +5,7 @@
   "scripts": {
     "cesium:assets": "node scripts/copy-cesium-assets.mjs",
     "predev": "npm run cesium:assets",
-    "dev": "next dev",
+    "dev": "next dev --experimental-https",
     "prebuild": "npm run cesium:assets",
     "build": "next build",
     "start": "next start",
