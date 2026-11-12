@@ -1,17 +1,25 @@
+import { api } from "@/lib/api/client";
+import { CurrentUser } from "@/types/user";
+import { AirportWeather } from "@/types/weather";
+import { Notifications } from "@/types/notifications";
 import { AppShell } from "@/components/layout/app-shell";
-import {
-  MOCK_AIRPORT_WEATHER,
-  MOCK_CURRENT_USER,
-  MOCK_HAS_UNREAD_NOTIFICATIONS,
-} from "@/lib/mock/header-data";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  // TODO: load these from the backend once the endpoints exist.
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [user, weather, notifications] = await Promise.all([
+    api.get<CurrentUser>("/v1/auth/me"),
+    api.get<AirportWeather>("/v1/weather/omef"),
+    api.get<Notifications>("/v1/notifications"),
+  ]);
+
   return (
     <AppShell
-      user={MOCK_CURRENT_USER}
-      weather={MOCK_AIRPORT_WEATHER}
-      hasUnreadNotifications={MOCK_HAS_UNREAD_NOTIFICATIONS}
+      user={user}
+      weather={weather}
+      hasUnreadNotifications={notifications.unreadCount > 0}
     >
       {children}
     </AppShell>

@@ -3,13 +3,13 @@
 import { Bell, Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { LocaleSwitcher } from "@/components/locale-switcher";
-import { UserMenu } from "@/components/layout/user-menu";
-import { WeatherBadge } from "@/components/layout/weather-badge";
 import { usePathname } from "@/i18n/navigation";
-import { NAV_ITEMS, PROFILE_PATH, isActiveHref } from "@/constants/navigation";
 import type { CurrentUser } from "@/types/user";
 import type { AirportWeather } from "@/types/weather";
+import { UserMenu } from "@/components/layout/user-menu";
+import { LocaleSwitcher } from "@/components/locale-switcher";
+import { WeatherBadge } from "@/components/layout/weather-badge";
+import { NAV_ITEMS, PROFILE_PATH, isActiveHref } from "@/constants/navigation";
 
 type AppHeaderProps = {
   user: CurrentUser;
@@ -60,6 +60,7 @@ export function AppHeader({
 
       <div className="flex items-center gap-1 sm:gap-2">
         <WeatherBadge weather={weather} />
+
         <Button
           variant="ghost"
           size="icon-lg"
@@ -70,7 +71,7 @@ export function AppHeader({
           <Bell className="size-5" />
           {hasUnreadNotifications && (
             <span
-              className="absolute end-2 top-1.5 size-2.5 rounded-full bg-red-500 ring-2 ring-card"
+              className="absolute inset-e-2 top-1.5 size-2.5 rounded-full bg-red-500 ring-2 ring-card"
               aria-hidden
             />
           )}

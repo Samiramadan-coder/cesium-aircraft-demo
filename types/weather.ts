@@ -1,10 +1,10 @@
 /** Current weather at the airport, as shown in the header. */
 export type AirportWeather = {
-  /** ICAO code of the airport, shown next to the temperature. */
+  observedAt: string;
+  source: string;
   station: string;
-  /** Air temperature, in °C. */
-  temperature: number;
-  /** WMO weather interpretation code (0 = clear sky, 3 = overcast, ...). */
+  temperatureC: number;
   weatherCode: number;
-  isDay: boolean;
+  windDirectionDeg: number;
+  windSpeedKt: number;
 };

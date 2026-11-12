@@ -32,19 +32,28 @@ function WeatherIcon({ code, isDay }: { code: number; isDay: boolean }) {
   return <CloudRain {...props} />; // 61-67, 80-82
 }
 
+/** Day between 06:00 and 18:00 UAE time (UTC+4); the API has no day/night flag. */
+function isDaytime(observedAt: string): boolean {
+  const date = new Date(observedAt);
+  if (Number.isNaN(date.getTime())) return true;
+  const hour = (date.getUTCHours() + 4) % 24;
+  return hour >= 6 && hour < 18;
+}
+
 /** Current temperature at the airport. */
 export function WeatherBadge({ weather }: { weather: AirportWeather }) {
   const t = useTranslations("Header");
   const label = t("weather", { station: weather.station });
+  const isDay = isDaytime(weather.observedAt);
 
   return (
     <div
       className="hidden h-9 items-center gap-2 rounded-full border border-border bg-card-2/60 px-3.5 text-sm sm:flex"
       title={label}
     >
-      <WeatherIcon code={weather.weatherCode} isDay={weather.isDay} />
+      <WeatherIcon code={weather.weatherCode} isDay={isDay} />
       <span className="font-semibold tabular-nums" dir="ltr">
-        {Math.round(weather.temperature)}°C
+        {Math.round(weather.temperatureC)}°C
       </span>
       <span className="hidden text-muted md:inline" aria-hidden>
         ·
