@@ -65,6 +65,28 @@
     },
     "clearOfZones": "Clear of all zones"
   },
+  "LoginPage": {
+    "metaTitle": "Sign in",
+    "logoAlt": "Emirates Falcons Aviation logo",
+    "tagline": "Real-time airspace monitoring and aircraft tracking",
+    "station": "Falcon Airport",
+    "title": "Sign in",
+    "subtitle": "Enter your credentials to access the flight tracking console",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "errors": {
+      "emailRequired": "Enter your email",
+      "emailInvalid": "Enter a valid email address",
+      "passwordRequired": "Enter your password"
+    },
+    "secure": "Secure, encrypted connection",
+    "copyright": "© {year} Emirates Falcons Aviation"
+  },
   "LocaleSwitcher": {
     "hint": "Switch language",
     "locales": {

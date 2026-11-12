@@ -9,7 +9,8 @@ import {
   Play,
   RotateCcw,
 } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import { useLocaleToggle } from "@/components/locale-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -19,8 +20,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 import type { CameraMode } from "@/lib/aircraft/types";
 
 function ControlButton({
@@ -59,11 +58,7 @@ function ControlButton({
 /** Switches to the next locale, keeping the current page. */
 function LocaleButton() {
   const t = useTranslations("LocaleSwitcher");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
-  const { locales } = routing;
-  const next = locales[(locales.indexOf(locale) + 1) % locales.length];
+  const { next, switchLocale } = useLocaleToggle();
 
   return (
     <Tooltip>
@@ -73,7 +68,7 @@ function LocaleButton() {
             size="sm"
             variant="ghost"
             lang={next}
-            onClick={() => router.replace(pathname, { locale: next })}
+            onClick={switchLocale}
           />
         }
       >

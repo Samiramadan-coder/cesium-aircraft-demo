@@ -65,6 +65,28 @@
     },
     "clearOfZones": "خارج جميع المناطق"
   },
+  "LoginPage": {
+    "metaTitle": "تسجيل الدخول",
+    "logoAlt": "شعار صقور الإمارات للطيران",
+    "tagline": "مراقبة المجال الجوي وتتبع الطائرات لحظة بلحظة",
+    "station": "مطار الفالكون",
+    "title": "تسجيل الدخول",
+    "subtitle": "أدخل بياناتك للوصول إلى لوحة تتبع الطيران",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "name@company.com",
+    "password": "كلمة المرور",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "submit": "دخول",
+    "submitting": "جارٍ الدخول…",
+    "errors": {
+      "emailRequired": "أدخل البريد الإلكتروني",
+      "emailInvalid": "البريد الإلكتروني غير صحيح",
+      "passwordRequired": "أدخل كلمة المرور"
+    },
+    "secure": "اتصال آمن ومشفّر",
+    "copyright": "© {year} صقور الإمارات للطيران"
+  },
   "LocaleSwitcher": {
     "hint": "تغيير اللغة",
     "locales": {

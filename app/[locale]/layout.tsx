@@ -4,19 +4,31 @@ import { notFound } from "next/navigation";
 import { getDirection, routing } from "@/i18n/routing";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Geist, Geist_Mono, Noto_Sans_Arabic } from "next/font/google";
+import {
+  Big_Shoulders,
+  Geist_Mono,
+  Hanken_Grotesk,
+  Noto_Sans_Arabic,
+} from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Brand fonts: Big Shoulders for display headings, Hanken Grotesk for text.
+const bigShoulders = Big_Shoulders({
+  variable: "--ff-big-shoulders",
   subsets: ["latin"],
 });
 
+const hankenGrotesk = Hanken_Grotesk({
+  variable: "--ff-hanken-grotesk",
+  subsets: ["latin"],
+});
+
+// Tabular flight data (altitude, coordinates, ...).
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
-// Geist has no Arabic glyphs; this is the fallback for Arabic text.
+// The brand fonts have no Arabic glyphs; this is the fallback for Arabic text.
 const notoSansArabic = Noto_Sans_Arabic({
   variable: "--font-arabic",
   subsets: ["arabic"],
@@ -52,7 +64,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={getDirection(locale)}
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSansArabic.variable} h-full antialiased`}
+      className={`${bigShoulders.variable} ${hankenGrotesk.variable} ${geistMono.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
