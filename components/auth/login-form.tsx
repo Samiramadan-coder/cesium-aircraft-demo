@@ -9,7 +9,11 @@ import {
   LoaderCircle,
 } from "lucide-react";
 
-import { createLoginSchema, type LoginValues } from "@/lib/validations/auth";
+import {
+  authFieldClasses,
+  iconClassName,
+  inputClassName,
+} from "@/constants/auth";
 
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -20,20 +24,8 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createLoginSchema, type LoginValues } from "@/lib/validations/auth";
 import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
-
-const inputClassName =
-  "h-11 rounded-lg border-border bg-background/60 ps-10 text-base text-foreground placeholder:text-muted/50 focus-visible:border-primary focus-visible:ring-primary/20 aria-invalid:border-danger aria-invalid:ring-danger/20 md:text-sm dark:bg-background/60";
-
-const iconClassName =
-  "pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-muted/70";
-
-// Shared look for every field in the auth forms
-const authFieldClasses = {
-  labelClassName:
-    "text-xs font-normal tracking-[0.14em] text-foreground-2 uppercase rtl:tracking-normal",
-  errorClassName: "text-xs text-danger",
-};
 
 export function LoginForm() {
   const t = useTranslations("LoginPage");
@@ -51,7 +43,6 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginValues) {
-    // TODO: pass `values` to the login action once the backend is ready.
     void values;
     await login();
     router.push("/");

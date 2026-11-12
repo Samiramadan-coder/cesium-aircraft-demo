@@ -1,12 +1,11 @@
-import { use } from "react";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import { ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { hasLocale, useTranslations, type Locale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { hasLocale, useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata({
   params,
@@ -17,9 +16,7 @@ export async function generateMetadata({
   return { title: t("metaTitle") };
 }
 
-export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
-  const { locale } = use(params);
-  setRequestLocale(locale as Locale);
+export default function LoginPage() {
   const t = useTranslations("LoginPage");
 
   return (
@@ -29,6 +26,7 @@ export default function LoginPage({ params }: PageProps<"/[locale]/login">) {
           aria-hidden
           className="absolute inset-0 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[56px_56px] opacity-40 mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
         />
+
         <div
           aria-hidden
           className="absolute top-1/2 left-1/2 size-130 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl"

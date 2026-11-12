@@ -1,13 +1,29 @@
+import * as rootParams from "next/root-params";
 import { hasLocale } from "next-intl";
+import { unstable_rethrow } from "next/navigation";
 import { getRequestConfig } from "next-intl/server";
 import { getLocaleFromRequest } from "@/lib/api/locale";
 import { routing } from "./routing";
 
-export default getRequestConfig(async ({ requestLocale }) => {
-  const requested = await requestLocale;
-  // No locale from the URL or setRequestLocale() means the request didn't go
-  // through the proxy (e.g. /api Route Handlers): use the cookie or
-  // Accept-Language instead of always falling back to the default locale.
+// The [locale] segment, read from the root layout's params. This replaces
+// setRequestLocale() in layouts/pages and keeps static rendering working.
+// `undefined` where root params aren't available yet (Route Handlers,
+// Server Actions)
+async function localeFromRootParams() {
+  try {
+    return await rootParams.locale();
+  } catch (error) {
+    unstable_rethrow(error);
+    return undefined;
+  }
+}
+
+export default getRequestConfig(async ({ locale: explicitLocale }) => {
+  // An explicit locale, e.g. getTranslations({ locale }), wins
+  const requested = explicitLocale ?? (await localeFromRootParams());
+  // No locale from the URL means the request didn't go through a [locale]
+  // route (e.g. /api Route Handlers): use the cookie or Accept-Language
+  // instead of always falling back to the default locale.
   const locale = hasLocale(routing.locales, requested)
     ? requested
     : ((await getLocaleFromRequest()) ?? routing.defaultLocale);
