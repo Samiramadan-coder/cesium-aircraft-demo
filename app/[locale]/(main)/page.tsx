@@ -7,10 +7,7 @@ import type {
   AircraftUpdate,
 } from "@/types/aircraft";
 
-import {
-  FALCON_AIRPORT,
-  MOCK_FLIGHT_ZONES,
-} from "@/lib/aircraft/mock-flight-data";
+import { FALCON_AIRPORT, FLIGHT_ZONES } from "@/lib/aircraft/flight-zones";
 
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
@@ -52,9 +49,8 @@ export default function AircraftDemoPage() {
     null,
   );
   const selectedAircraftId = selectedAircraft?.id ?? null;
-  // Zones are plain data. Replace the mock with zones loaded from an API
-  // (e.g. state filled by a fetch) and nothing else needs to change.
-  const zones = MOCK_FLIGHT_ZONES;
+  // The airspace is fixed (see lib/aircraft/flight-zones.ts).
+  const zones = FLIGHT_ZONES;
   const zoneStatus = selectedAircraft
     ? getPrimaryZoneStatus(selectedAircraft.currentPosition, zones)
     : null;

@@ -20,7 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { CameraMode } from "@/lib/aircraft/types";
+import type { CameraMode } from "@/types/aircraft";
 
 function ControlButton({
   label,

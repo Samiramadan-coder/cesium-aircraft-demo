@@ -10,7 +10,7 @@ import type {
   AircraftUpdate,
   CameraMode,
   FlightZone,
-} from "@/lib/aircraft/types";
+} from "@/types/aircraft";
 import { getAircraftZoneState } from "@/lib/aircraft/zones";
 
 type Cesium = typeof CesiumModule;

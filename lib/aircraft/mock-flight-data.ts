@@ -1,4 +1,5 @@
-import type { AircraftPosition, FlightZone } from "@/types/aircraft";
+import type { AircraftPosition } from "@/types/aircraft";
+import { FALCON_AIRPORT } from "./flight-zones";
 
 export const UPDATE_INTERVAL_MS = 1000;
 
@@ -20,12 +21,6 @@ type MockAircraft = {
 };
 
 const METERS_PER_DEG_LAT = 111_320;
-
-/** Centre of the demo: everything below is laid out relative to it. */
-export const FALCON_AIRPORT = {
-  lat: 24.467333,
-  lng: 55.626056,
-};
 
 /** A point `eastKm` / `northKm` away from Falcon Airport. */
 function fromAirport(eastKm: number, northKm: number) {
@@ -93,27 +88,6 @@ export const MOCK_AIRCRAFT: MockAircraft[] = [
       { ...fromAirport(-5, -6.5), altitude: 2000, speed: 100 },
       { ...fromAirport(-7.5, 0), altitude: 2500, speed: 105 },
       { ...fromAirport(-5, 6), altitude: 3000, speed: 105 },
-    ],
-  },
-];
-
-// The airspace around Falcon Airport, roughly 4-5 km out in every direction.
-// Temporary data source: the map and the zone logic only ever see a
-// FlightZone[], wherever it comes from.
-export const MOCK_FLIGHT_ZONES: FlightZone[] = [
-  {
-    id: "zone-falcon",
-    name: "Falcon Airport Zone",
-    type: "normal",
-    minAltitude: 0,
-    maxAltitude: 5000,
-    coordinates: [
-      fromAirport(-4.5, -1.5),
-      fromAirport(-2, -4),
-      fromAirport(2.5, -3.5),
-      fromAirport(4.5, 0),
-      fromAirport(2.5, 3.5),
-      fromAirport(-2.5, 3.5),
     ],
   },
 ];

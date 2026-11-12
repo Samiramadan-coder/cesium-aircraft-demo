@@ -6,7 +6,7 @@ import {
   MOCK_AIRCRAFT,
   UPDATE_INTERVAL_MS,
 } from "./mock-flight-data";
-import type { AircraftUpdate } from "./types";
+import type { AircraftUpdate } from "@/types/aircraft";
 
 /**
  * Stand-in for a live tracking feed: delivers one update per aircraft per

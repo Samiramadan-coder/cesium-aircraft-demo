@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 import { ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 import { LocaleSwitcher } from "@/components/locale-switcher";
-import { FALCON_AIRPORT } from "@/lib/aircraft/mock-flight-data";
+import { FALCON_AIRPORT } from "@/lib/aircraft/flight-zones";
 import { hasLocale, useTranslations, type Locale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 

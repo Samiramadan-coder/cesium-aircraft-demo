@@ -3,7 +3,7 @@ import type {
   AircraftZoneState,
   AircraftZoneStatus,
   FlightZone,
-} from "./types";
+} from "@/types/aircraft";
 
 /** How close to a zone's edge (horizontally) counts as "approaching". */
 export const ZONE_WARNING_DISTANCE_M = 500;

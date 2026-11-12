@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { Aircraft, AircraftZoneStatus } from "@/lib/aircraft/types";
+import type { Aircraft, AircraftZoneStatus } from "@/types/aircraft";
 import { cn } from "@/lib/utils";
 
 function Field({
