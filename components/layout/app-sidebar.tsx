@@ -82,7 +82,7 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
                     )}
                   >
                     {active && (
-                      <span className="absolute inset-y-1.5 start-0 w-0.5 rounded-full bg-primary" />
+                      <span className="absolute inset-y-1.5 inset-s-0 w-0.5 rounded-full bg-primary" />
                     )}
                     <Icon className="size-4 shrink-0" />
                     {t(`items.${key}`)}
