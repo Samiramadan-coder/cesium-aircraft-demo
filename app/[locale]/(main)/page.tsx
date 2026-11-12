@@ -104,7 +104,8 @@ export default function AircraftDemoPage() {
   useMockFlightFeed(mapApi !== null && !paused, updateAircraft);
 
   return (
-    <main className="dark fixed inset-0 overflow-hidden bg-black text-foreground">
+    // Fills the shell's content area (see components/layout/app-shell.tsx).
+    <div className="dark absolute inset-0 overflow-hidden bg-black text-foreground">
       <AircraftMap
         center={FALCON_AIRPORT}
         googleMapsApiKey={googleMapsApiKey}
@@ -151,6 +152,6 @@ export default function AircraftDemoPage() {
           </p>
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -96,5 +96,43 @@
   },
   "Api": {
     "genericError": "Something went wrong. Please try again."
+  },
+  "Navigation": {
+    "logoAlt": "Emirates Falcons Aviation logo",
+    "open": "Open menu",
+    "close": "Close menu",
+    "station": "Falcon Airport · Flight tracking console",
+    "sections": {
+      "flightTracking": "Flight Tracking"
+    },
+    "items": {
+      "live": "Live Flights",
+      "flights": "Flight History",
+      "zones": "Zones",
+      "alerts": "Alerts",
+      "trackers": "Trackers",
+      "engineHours": "Engine & Flight Hours"
+    }
+  },
+  "Header": {
+    "notifications": "Notifications"
+  },
+  "Pages": {
+    "comingSoon": "Coming soon",
+    "flights": {
+      "description": "Past flights with their routes, durations and replay will appear here."
+    },
+    "zones": {
+      "description": "The flight zones around the airport and their altitude limits will appear here."
+    },
+    "alerts": {
+      "description": "Zone violations, lost signals and other flight alerts will appear here."
+    },
+    "trackers": {
+      "description": "The tracking devices installed on each aircraft and their status will appear here."
+    },
+    "engineHours": {
+      "description": "Engine and flight hours per aircraft, for maintenance planning, will appear here."
+    }
   }
 }
