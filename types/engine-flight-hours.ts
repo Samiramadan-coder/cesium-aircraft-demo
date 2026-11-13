@@ -82,3 +82,13 @@ export type AircraftHoursDetails = {
 };
 
 // Pilots
+// GET /v1/tracking/hours/pilots
+export type PilotHours = {
+  pilotId: string;
+  flights: number;
+  flightHours: number;
+  engineHours: number;
+  /** Unix epoch, milliseconds; null if the pilot hasn't flown yet */
+  lastFlightAt: number | null;
+  aircraftIds: string[];
+};

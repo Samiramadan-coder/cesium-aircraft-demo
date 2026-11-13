@@ -235,6 +235,16 @@
         "engine": "Engine",
         "violation": "Violation"
       }
+    },
+    "pilots": {
+      "pilot": "Pilot",
+      "flights": "Flights",
+      "flightHrs": "Flight hrs",
+      "engineHrs": "Engine hrs",
+      "aircraftFlown": "Aircraft flown",
+      "lastFlight": "Last flight",
+      "never": "Never",
+      "empty": "No pilot activity in this period."
     }
   }
 }

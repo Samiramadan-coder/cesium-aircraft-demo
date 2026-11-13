@@ -235,6 +235,16 @@
         "engine": "المحرك",
         "violation": "مخالفة"
       }
+    },
+    "pilots": {
+      "pilot": "الطيار",
+      "flights": "الرحلات",
+      "flightHrs": "ساعات الطيران",
+      "engineHrs": "ساعات المحرك",
+      "aircraftFlown": "الطائرات",
+      "lastFlight": "آخر رحلة",
+      "never": "لا يوجد",
+      "empty": "لا يوجد نشاط للطيارين في هذه الفترة."
     }
   }
 }
