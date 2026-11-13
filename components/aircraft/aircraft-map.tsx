@@ -167,11 +167,16 @@ function addBaseScene(
 
   if (googleMapsApiKey) {
     scene.globe.show = false;
-    Cesium.createGooglePhotorealistic3DTileset({
-      key: googleMapsApiKey,
-      // The viewer has no geocoder, so no non-Google geocoder is used.
-      onlyUsingWithGoogleGeocoder: true,
-    })
+    Cesium.createGooglePhotorealistic3DTileset(
+      {
+        key: googleMapsApiKey,
+        // The viewer has no geocoder, so no non-Google geocoder is used.
+        onlyUsingWithGoogleGeocoder: true,
+      },
+      // Sharper ground and buildings (default 16), at the cost of more
+      // tile downloads and memory.
+      { maximumScreenSpaceError: 8 },
+    )
       .then((tileset) => {
         if (viewer.isDestroyed()) tileset.destroy();
         else scene.primitives.add(tileset);
@@ -226,6 +231,10 @@ function createAircraftScene(
     selectionIndicator: false,
   });
   const { scene, clock, camera } = viewer;
+
+  // Render at the screen's real resolution instead of CSS pixels, so the
+  // scene is not blurry on scaled (HiDPI) displays.
+  viewer.useBrowserRecommendedResolution = false;
 
   addBaseScene(Cesium, viewer, googleMapsApiKey);
 

@@ -10,7 +10,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useLocaleToggle } from "@/components/locale-switcher";
+import { useLocaleToggle } from "@/components/common/locale-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";

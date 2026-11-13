@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { routing } from "@/i18n/routing";
 import { ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
-import { LocaleSwitcher } from "@/components/locale-switcher";
+import { LocaleSwitcher } from "@/components/common/locale-switcher";
 import { hasLocale, useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 

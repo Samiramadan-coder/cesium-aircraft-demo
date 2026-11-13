@@ -7,7 +7,7 @@ import { usePathname } from "@/i18n/navigation";
 import type { CurrentUser } from "@/types/user";
 import type { AirportWeather } from "@/types/weather";
 import { UserMenu } from "@/components/layout/user-menu";
-import { LocaleSwitcher } from "@/components/locale-switcher";
+import { LocaleSwitcher } from "@/components/common/locale-switcher";
 import { WeatherBadge } from "@/components/layout/weather-badge";
 import { NAV_ITEMS, PROFILE_PATH, isActiveHref } from "@/constants/navigation";
 
