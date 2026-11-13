@@ -160,6 +160,19 @@
       "totalFlights": "إجمالي الرحلات",
       "avgUtilization": "متوسط الاستخدام",
       "dueForService": "مستحقة للصيانة"
+    },
+    "pages": {
+      "fleet": "الأسطول",
+      "pilots": "الطيارون",
+      "dailyLog": "السجل اليومي",
+      "maintenance": "الصيانة"
+    },
+    "periods": {
+      "last30Days": "آخر 30 يومًا",
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "allTime": "كل الأوقات",
+      "custom": "نطاق مخصص"
     }
   }
 }

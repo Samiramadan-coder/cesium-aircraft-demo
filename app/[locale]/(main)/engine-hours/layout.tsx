@@ -2,6 +2,7 @@ import { api } from "@/lib/api/client";
 import { Aircraft } from "@/types/aircraft";
 import { KPIS } from "@/types/engine-flight-hours";
 import Header from "@/components/engine-flight-hours/header";
+import PageSwitcher from "@/components/engine-flight-hours/page-switcher";
 
 export default async function Layout({
   children,
@@ -15,6 +16,9 @@ export default async function Layout({
   return (
     <div className="p-4 sm:p-6 space-y-6">
       <Header kpis={aircrafts.kpis} />
+
+      <PageSwitcher />
+
       {children}
     </div>
   );

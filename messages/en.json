@@ -160,6 +160,19 @@
       "totalFlights": "Total flights",
       "avgUtilization": "Avg. utilization",
       "dueForService": "Due for service"
+    },
+    "pages": {
+      "fleet": "Fleet",
+      "pilots": "Pilots",
+      "dailyLog": "Daily log",
+      "maintenance": "Maintenance"
+    },
+    "periods": {
+      "last30Days": "Last 30 days",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "allTime": "All time",
+      "custom": "Custom range"
     }
   }
 }
