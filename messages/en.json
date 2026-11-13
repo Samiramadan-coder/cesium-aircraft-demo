@@ -111,7 +111,8 @@
       "zones": "Zones",
       "alerts": "Alerts",
       "trackers": "Trackers",
-      "engineHours": "Engine & Flight Hours"
+      "engineHours": "Engine & Flight Hours",
+      "staff": "Staff"
     }
   },
   "Header": {

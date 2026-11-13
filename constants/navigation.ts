@@ -6,12 +6,20 @@ import {
   Route,
   Satellite,
   TriangleAlert,
+  Users,
 } from "lucide-react";
 
 // Sidebar entries. `key` is the translation key under "Navigation.items"
 // and the page namespace under "Pages"; paths are unprefixed (no locale).
 export type NavItem = {
-  key: "live" | "flights" | "zones" | "alerts" | "trackers" | "engineHours";
+  key:
+    | "live"
+    | "flights"
+    | "zones"
+    | "alerts"
+    | "trackers"
+    | "engineHours"
+    | "staff";
   href: string;
   icon: LucideIcon;
 };
@@ -31,6 +39,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { key: "alerts", href: "/alerts", icon: TriangleAlert },
       { key: "trackers", href: "/trackers", icon: Satellite },
       { key: "engineHours", href: "/engine-hours", icon: Gauge },
+      { key: "staff", href: "/staff", icon: Users },
     ],
   },
 ];

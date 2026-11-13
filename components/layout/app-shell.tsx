@@ -31,7 +31,7 @@ export function AppShell({
           sidebarOpen={sidebarOpen}
           onOpenSidebar={() => setSidebarOpen(true)}
         />
-        {/* `relative` so full-bleed pages (the live map) can fill it. */}
+
         <main className="relative min-h-0 flex-1 overflow-y-auto">
           {children}
         </main>

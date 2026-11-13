@@ -9,7 +9,6 @@ import { NAV_SECTIONS, isActiveHref } from "@/constants/navigation";
 import { cn } from "@/lib/utils";
 
 type AppSidebarProps = {
-  /** Mobile only: whether the off-canvas sidebar is shown. */
   open: boolean;
   onClose: () => void;
 };
