@@ -361,14 +361,20 @@
         "powerSourceRequired": "Choose a power source",
         "engineInputRequired": "Choose how the engine is detected",
         "installedByRequired": "Choose who installed it"
-      }
+      },
+      "editTitle": "Edit device",
+      "editDescription": "Update this tracker's details.",
+      "saveChanges": "Save changes",
+      "retry": "Try again"
     },
     "menu": {
       "column": "Actions",
       "label": "Actions for {device}",
       "view": "View",
       "ping": "Send test ping",
-      "unlink": "Unlink"
+      "unlink": "Unlink",
+      "delete": "Delete",
+      "edit": "Edit"
     },
     "details": {
       "retry": "Try again",
@@ -430,6 +436,12 @@
           "disconnected": "Disconnected"
         }
       }
+    },
+    "deleteDialog": {
+      "title": "Delete device?",
+      "description": "<strong>{device}</strong> (<mono>{imei}</mono>) will be removed and stop appearing in tracking. This can't be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
     }
   }
 }

@@ -39,3 +39,31 @@ export async function getTrackerHealth(
     ),
   );
 }
+
+export async function deleteTracker(
+  trackerId: string,
+): Promise<ActionResult<unknown>> {
+  const result = await runAction(() =>
+    api.delete<unknown>(
+      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}`,
+    ),
+  );
+  // The table and the KPIs both change.
+  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
+  return result;
+}
+
+export async function updateTracker(
+  trackerId: string,
+  payload: Partial<TrackerPayload>,
+): Promise<ActionResult<unknown>> {
+  const result = await runAction(() =>
+    api.patch<unknown>(
+      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}`,
+      payload,
+    ),
+  );
+  // The table and the KPIs both change.
+  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
+  return result;
+}

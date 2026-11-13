@@ -361,14 +361,20 @@
         "powerSourceRequired": "اختر مصدر الطاقة",
         "engineInputRequired": "اختر طريقة اكتشاف تشغيل المحرك",
         "installedByRequired": "اختر من قام بالتركيب"
-      }
+      },
+      "editTitle": "تعديل الجهاز",
+      "editDescription": "حدّث بيانات جهاز التتبع.",
+      "saveChanges": "حفظ التعديلات",
+      "retry": "حاول مرة أخرى"
     },
     "menu": {
       "column": "الإجراءات",
       "label": "إجراءات الجهاز {device}",
       "view": "عرض",
       "ping": "إرسال اختبار اتصال",
-      "unlink": "فك الربط"
+      "unlink": "فك الربط",
+      "delete": "حذف",
+      "edit": "تعديل"
     },
     "details": {
       "retry": "حاول مرة أخرى",
@@ -430,6 +436,12 @@
           "disconnected": "انقطع الاتصال"
         }
       }
+    },
+    "deleteDialog": {
+      "title": "حذف الجهاز؟",
+      "description": "سيتم حذف <strong>{device}</strong> (<mono>{imei}</mono>) ولن يظهر في التتبع بعد ذلك. لا يمكن التراجع عن هذا الإجراء.",
+      "cancel": "إلغاء",
+      "confirm": "حذف"
     }
   }
 }

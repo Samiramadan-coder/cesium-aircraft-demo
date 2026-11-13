@@ -3,7 +3,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
 import type { KPIS } from "@/types/trackers";
-import AddTracker from "./add-tracker";
+import TrackerForm from "./tracker-form";
 
 export default function Header({ kpis }: { kpis: KPIS }) {
   const t = useTranslations("Trackers");
@@ -52,7 +52,7 @@ export default function Header({ kpis }: { kpis: KPIS }) {
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3">
-        <AddTracker
+        <TrackerForm
           trigger={
             <Button type="button" size="lg">
               <Plus />
