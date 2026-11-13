@@ -559,6 +559,63 @@
       "flightHours": "Flight hours",
       "violations": "Violations",
       "noData": "No data yet."
+    },
+    "details": {
+      "back": "Back to Flight History",
+      "title": "Flight {id}",
+      "print": "Print",
+      "exportKml": "Export KML",
+      "player": {
+        "play": "Play",
+        "pause": "Pause",
+        "restart": "Restart",
+        "seek": "Replay position",
+        "speed": "Speed",
+        "camera": "Camera",
+        "cameras": {
+          "follow": "Follow",
+          "overview": "Overview",
+          "topDown": "Top-down"
+        },
+        "takeoff": "Takeoff",
+        "landing": "Landing",
+        "noTrack": "No track was recorded for this flight.",
+        "mapUnavailable": "The 3D map could not be loaded."
+      },
+      "telemetry": {
+        "altitude": "Altitude (ft)",
+        "groundSpeed": "Ground Speed (kt)",
+        "distance": "Distance from OMEF (nm)",
+        "ceiling": "Ceiling {value} ft"
+      },
+      "aircraft": "Aircraft",
+      "pilot": "Pilot",
+      "noPilot": "No pilot assigned",
+      "date": "Date",
+      "stats": {
+        "flightTime": "Flight Time",
+        "engineTime": "Engine Time",
+        "maxAltitude": "Max Altitude",
+        "distance": "Distance"
+      },
+      "engine": {
+        "title": "Engine Start → Shutdown",
+        "engineStart": "Engine Start",
+        "takeoff": "Take-off",
+        "landing": "Landing",
+        "engineShutdown": "Engine Shutdown"
+      },
+      "compliance": {
+        "title": "Compliance Result",
+        "compliant": "No boundary or ceiling violations detected during this flight.",
+        "warnings": "Warnings were raised during this flight, but no violations.",
+        "violation": "Boundary or ceiling violations were detected during this flight."
+      },
+      "zoneEvents": {
+        "title": "Zone Events",
+        "empty": "No zone events recorded.",
+        "duration": "{value} min"
+      }
     }
   }
 }

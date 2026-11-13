@@ -24,7 +24,7 @@ function circleToPolygon(center: LatLon, radiusMeters: number) {
   });
 }
 
-function toFlightZone(zone: TrackedZone): FlightZone | null {
+export function toFlightZone(zone: TrackedZone): FlightZone | null {
   let coordinates: FlightZone["coordinates"];
   if (zone.type === "circle" && zone.center && zone.radiusMeters) {
     coordinates = circleToPolygon(zone.center, zone.radiusMeters);
@@ -48,7 +48,12 @@ function toFlightZone(zone: TrackedZone): FlightZone | null {
 
 /** Active zones from the snapshot, in the shape the map draws. */
 export function toFlightZones(snapshot: LiveTrackingSnapshot): FlightZone[] {
-  return snapshot.zones
+  return toActiveFlightZones(snapshot.zones);
+}
+
+/** Active zones, in the shape the map draws. */
+export function toActiveFlightZones(zones: TrackedZone[]): FlightZone[] {
+  return zones
     .filter((zone) => zone.active)
     .map(toFlightZone)
     .filter((zone): zone is FlightZone => zone !== null);

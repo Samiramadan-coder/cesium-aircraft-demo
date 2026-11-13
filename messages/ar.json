@@ -559,6 +559,63 @@
       "flightHours": "ساعات الطيران",
       "violations": "المخالفات",
       "noData": "لا توجد بيانات بعد."
+    },
+    "details": {
+      "back": "العودة إلى سجل الرحلات",
+      "title": "الرحلة {id}",
+      "print": "طباعة",
+      "exportKml": "تصدير KML",
+      "player": {
+        "play": "تشغيل",
+        "pause": "إيقاف مؤقت",
+        "restart": "من البداية",
+        "seek": "موضع الإعادة",
+        "speed": "السرعة",
+        "camera": "الكاميرا",
+        "cameras": {
+          "follow": "تتبع",
+          "overview": "نظرة عامة",
+          "topDown": "من أعلى"
+        },
+        "takeoff": "الإقلاع",
+        "landing": "الهبوط",
+        "noTrack": "لم يُسجَّل مسار لهذه الرحلة.",
+        "mapUnavailable": "تعذّر تحميل الخريطة ثلاثية الأبعاد."
+      },
+      "telemetry": {
+        "altitude": "الارتفاع (قدم)",
+        "groundSpeed": "السرعة الأرضية (عقدة)",
+        "distance": "المسافة من OMEF (ميل بحري)",
+        "ceiling": "السقف {value} قدم"
+      },
+      "aircraft": "الطائرة",
+      "pilot": "الطيار",
+      "noPilot": "لا يوجد طيار معيّن",
+      "date": "التاريخ",
+      "stats": {
+        "flightTime": "زمن الطيران",
+        "engineTime": "زمن المحرك",
+        "maxAltitude": "أقصى ارتفاع",
+        "distance": "المسافة"
+      },
+      "engine": {
+        "title": "تشغيل المحرك ← إيقافه",
+        "engineStart": "تشغيل المحرك",
+        "takeoff": "الإقلاع",
+        "landing": "الهبوط",
+        "engineShutdown": "إيقاف المحرك"
+      },
+      "compliance": {
+        "title": "نتيجة الالتزام",
+        "compliant": "لم تُرصد أي مخالفات للحدود أو السقف خلال هذه الرحلة.",
+        "warnings": "صدرت تحذيرات خلال هذه الرحلة، دون مخالفات.",
+        "violation": "رُصدت مخالفات للحدود أو السقف خلال هذه الرحلة."
+      },
+      "zoneEvents": {
+        "title": "أحداث المناطق",
+        "empty": "لم تُسجَّل أي أحداث للمناطق.",
+        "duration": "{value} د"
+      }
     }
   }
 }

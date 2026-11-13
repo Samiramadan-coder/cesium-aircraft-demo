@@ -11,15 +11,16 @@ import type {
   CameraMode,
   FlightZone,
 } from "@/types/aircraft";
+import {
+  type Cesium,
+  FEET_TO_METERS,
+  createViewer,
+  loadCesium,
+} from "@/lib/aircraft/cesium";
 import { getAircraftZoneState } from "@/lib/aircraft/zones";
 
-type Cesium = typeof CesiumModule;
-
-const CESIUM_BASE_URL = "/cesium"; // public/cesium, see scripts/copy-cesium-assets.mjs
 // Used for aircraft without a `modelUrl`, and when theirs fails to load.
 const DEFAULT_AIRCRAFT_MODEL_URL = "/models/aircraft.glb";
-
-const FEET_TO_METERS = 0.3048;
 
 // The aircraft is rendered this far behind the newest update, so there is
 // always a "next" sample to interpolate toward (must exceed the update interval).
@@ -89,30 +90,6 @@ function isModelAvailable(url: string) {
   return check;
 }
 
-let cesiumPromise: Promise<Cesium> | undefined;
-
-function loadCesium(): Promise<Cesium> {
-  cesiumPromise ??= new Promise<Cesium>((resolve, reject) => {
-    const globals = window as unknown as {
-      CESIUM_BASE_URL: string;
-      Cesium: Cesium;
-    };
-    // Tells Cesium where its workers, assets and widget images live.
-    globals.CESIUM_BASE_URL = CESIUM_BASE_URL;
-
-    const script = document.createElement("script");
-    script.src = `${CESIUM_BASE_URL}/Cesium.js`;
-    script.async = true;
-    script.onload = () => resolve(globals.Cesium);
-    script.onerror = () => {
-      cesiumPromise = undefined;
-      reject(new Error(`Failed to load ${script.src}`));
-    };
-    document.head.appendChild(script);
-  });
-  return cesiumPromise;
-}
-
 type AircraftTrack = {
   entity: CesiumModule.Entity;
   position: CesiumModule.SampledPositionProperty;
@@ -152,57 +129,6 @@ const ZONE_FILL_ALPHA: Record<ZoneAlert, number> = {
 
 const feet = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
-// The 3D world under the aircraft comes from one of two sources:
-// - Google Photorealistic 3D Tiles, fetched straight from Google with a Google
-//   Maps API key. Terrain, buildings and imagery are all in the one tileset,
-//   so the globe is hidden. Google's logo and attributions are shown by
-//   Cesium's credit display, which must stay visible (Google Maps terms).
-// - Otherwise Cesium ion: World Terrain, Bing imagery and OSM Buildings.
-function addBaseScene(
-  Cesium: Cesium,
-  viewer: CesiumModule.Viewer,
-  googleMapsApiKey: string | undefined,
-) {
-  const { scene } = viewer;
-
-  if (googleMapsApiKey) {
-    scene.globe.show = false;
-    Cesium.createGooglePhotorealistic3DTileset(
-      {
-        key: googleMapsApiKey,
-        // The viewer has no geocoder, so no non-Google geocoder is used.
-        onlyUsingWithGoogleGeocoder: true,
-      },
-      // Sharper ground and buildings (default 16), at the cost of more
-      // tile downloads and memory.
-      { maximumScreenSpaceError: 8 },
-    )
-      .then((tileset) => {
-        if (viewer.isDestroyed()) tileset.destroy();
-        else scene.primitives.add(tileset);
-      })
-      .catch((error) => {
-        // Bad key, API not enabled, quota exceeded, ... Show the bare globe
-        // so the aircraft and zones still have a reference.
-        console.error("Failed to load Google Photorealistic 3D Tiles", error);
-        if (!viewer.isDestroyed()) scene.globe.show = true;
-      });
-    return;
-  }
-
-  // Let mountains hide the parts of the trail that are behind them.
-  scene.globe.depthTestAgainstTerrain = true;
-
-  Cesium.createOsmBuildingsAsync()
-    .then((buildings) => {
-      if (viewer.isDestroyed()) buildings.destroy();
-      else scene.primitives.add(buildings);
-    })
-    .catch(() => {
-      // Buildings are a nice-to-have; the demo works without them.
-    });
-}
-
 function createAircraftScene(
   Cesium: Cesium,
   container: HTMLDivElement,
@@ -210,33 +136,8 @@ function createAircraftScene(
   googleMapsApiKey: string | undefined,
   onSelect: (id: string) => void,
 ) {
-  const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
-  if (token) Cesium.Ion.defaultAccessToken = token;
-
-  const viewer = new Cesium.Viewer(container, {
-    // With Google tiles nothing comes from Cesium ion: no ion terrain and no
-    // ion (Bing) base imagery.
-    ...(googleMapsApiKey
-      ? { baseLayer: false as const }
-      : { terrain: Cesium.Terrain.fromWorldTerrain() }),
-    animation: false,
-    timeline: false,
-    baseLayerPicker: false,
-    geocoder: false,
-    homeButton: false,
-    sceneModePicker: false,
-    navigationHelpButton: false,
-    fullscreenButton: false,
-    infoBox: false,
-    selectionIndicator: false,
-  });
+  const viewer = createViewer(Cesium, container, googleMapsApiKey);
   const { scene, clock, camera } = viewer;
-
-  // Render at the screen's real resolution instead of CSS pixels, so the
-  // scene is not blurry on scaled (HiDPI) displays.
-  viewer.useBrowserRecommendedResolution = false;
-
-  addBaseScene(Cesium, viewer, googleMapsApiKey);
 
   // Light the scene from the camera so the aircraft is never in the dark,
   // whatever time of day the tracking timestamps fall on.
