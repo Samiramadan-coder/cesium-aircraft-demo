@@ -42,7 +42,7 @@ import { Button } from "@/components/ui/button";
 import { ENGINEERS } from "@/constants/engineers";
 import { addTracker, getTracker, updateTracker } from "@/lib/actions/trackers";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, type Control } from "react-hook-form";
+import { Controller, useForm, useWatch, type Control } from "react-hook-form";
 import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
 
 // The theme's popover/muted colors are light; match the dark cards instead.
@@ -111,6 +111,7 @@ type LoadState =
  */
 export default function TrackerForm({
   trackerId,
+  models: modelsProp,
   trigger,
   open: openProp,
   onOpenChange,
@@ -118,6 +119,8 @@ export default function TrackerForm({
 }: {
   /** Edit this tracker instead of adding a new one. */
   trackerId?: string;
+  /** Model choices, from `/v1/firmware-versions`; falls back to TRACKER_MODELS. */
+  models?: string[];
   /** The element that opens the dialog, e.g. a <Button />. */
   trigger?: React.ReactElement;
   open?: boolean;
@@ -130,6 +133,8 @@ export default function TrackerForm({
   const [openState, setOpenState] = useState(false);
   const open = openProp ?? openState;
   const [load, setLoad] = useState<LoadState>({ status: "idle" });
+  const models = modelsProp?.length ? modelsProp : [...TRACKER_MODELS];
+  const firstModel = models[0];
 
   const {
     control,
@@ -145,13 +150,19 @@ export default function TrackerForm({
     defaultValues: DEFAULT_VALUES,
   });
 
-  const modelItems = TRACKER_MODELS.map((value) => ({ value, label: value }));
+  // A saved tracker may use a value that isn't in the list (e.g. an older
+  // model name); keep it selectable so editing doesn't silently change it.
+  const [currentModel, currentInstaller] = useWatch({
+    control,
+    name: ["model", "installedBy"],
+  });
+  const modelItems = withCurrent(models, currentModel);
   const simItems = SIM_CARRIERS.map(({ value }) => ({ value, label: value }));
   const powerItems = POWER_SOURCES.map((value) => ({
     value,
     label: t(`powerSources.${value}`),
   }));
-  const engineerItems = ENGINEERS.map((value) => ({ value, label: value }));
+  const engineerItems = withCurrent([...ENGINEERS], currentInstaller);
   const engineItems = ENGINE_INPUTS.map((value) => ({
     value,
     label: t(`engineInputs.${value}`),
@@ -178,9 +189,9 @@ export default function TrackerForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open
       loadTracker(trackerId);
     } else {
-      reset(DEFAULT_VALUES);
+      reset({ ...DEFAULT_VALUES, model: firstModel });
     }
-  }, [open, trackerId, loadTracker, reset]);
+  }, [open, trackerId, loadTracker, reset, firstModel]);
 
   function setOpen(next: boolean) {
     setOpenState(next);
@@ -432,6 +443,13 @@ export default function TrackerForm({
       </DialogContent>
     </Dialog>
   );
+}
+
+/** Select items for `values`, plus `current` when it isn't one of them. */
+function withCurrent(values: string[], current: string | undefined) {
+  const all =
+    current && !values.includes(current) ? [current, ...values] : values;
+  return all.map((value) => ({ value, label: value }));
 }
 
 function omitRegister(values: TrackerValues) {

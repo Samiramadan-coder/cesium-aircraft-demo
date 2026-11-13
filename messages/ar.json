@@ -479,6 +479,25 @@
       "description": "سيتم فك ربط <strong>{device}</strong> (<mono>{imei}</mono>) من <strong>{aircraft}</strong>. لن يتم تتبع الطائرة حتى يتم ربط جهاز بها مرة أخرى.",
       "cancel": "إلغاء",
       "confirm": "فك الربط"
+    },
+    "firmwareOutdated": "يتوفر تحديث: {version}",
+    "firmwareVersions": {
+      "button": "إصدارات البرنامج الثابت",
+      "title": "إصدارات البرنامج الثابت",
+      "description": "أحدث إصدار للبرنامج الثابت لكل طراز. الأجهزة التي تعمل بإصدار أقدم تُعلَّم كقديمة.",
+      "current": "أحدث إصدار لكل طراز",
+      "empty": "لا توجد إصدارات بعد.",
+      "formTitle": "إضافة إصدار أو تحديثه",
+      "model": "الطراز",
+      "version": "أحدث إصدار",
+      "editLabel": "تحديث {model}",
+      "close": "إغلاق",
+      "save": "حفظ",
+      "errors": {
+        "modelRequired": "أدخل الطراز",
+        "versionRequired": "أدخل الإصدار",
+        "versionInvalid": "استخدم صيغة مثل 03.29.09"
+      }
     }
   }
 }

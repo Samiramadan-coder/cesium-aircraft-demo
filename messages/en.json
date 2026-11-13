@@ -479,6 +479,25 @@
       "description": "<strong>{device}</strong> (<mono>{imei}</mono>) will be unlinked from <strong>{aircraft}</strong>. The aircraft will stop being tracked until a device is linked again.",
       "cancel": "Cancel",
       "confirm": "Unlink"
+    },
+    "firmwareOutdated": "Update available: {version}",
+    "firmwareVersions": {
+      "button": "Firmware versions",
+      "title": "Firmware versions",
+      "description": "The latest firmware release for each tracker model. Devices on an older version are flagged as outdated.",
+      "current": "Latest per model",
+      "empty": "No firmware versions yet.",
+      "formTitle": "Add or update a release",
+      "model": "Model",
+      "version": "Latest version",
+      "editLabel": "Update {model}",
+      "close": "Close",
+      "save": "Save",
+      "errors": {
+        "modelRequired": "Enter the model",
+        "versionRequired": "Enter the version",
+        "versionInvalid": "Use a version like 03.29.09"
+      }
     }
   }
 }

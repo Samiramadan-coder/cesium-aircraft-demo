@@ -13,11 +13,12 @@ import {
   SignalStrength,
   TrackerStatusBadge,
   compareVersions,
+  toDate,
 } from "./shared";
 import TrackerMenu from "./tracker-menu";
 
 import { cn } from "cn";
-import type { Tracker } from "@/types/trackers";
+import type { FirmwareVersion, Tracker } from "@/types/trackers";
 import type { TrackedAircraft } from "@/types/tracking";
 import { useFormatter, useNow, useTranslations } from "next-intl";
 
@@ -26,9 +27,12 @@ const JUST_NOW_MS = 60_000;
 export default function DataPreview({
   trackers: list,
   aircraft,
+  firmwareVersions,
 }: {
   trackers: Tracker[];
   aircraft: TrackedAircraft[];
+  /** Latest release per model, from `/v1/firmware-versions`. */
+  firmwareVersions: FirmwareVersion[];
 }) {
   const t = useTranslations("Trackers");
   const format = useFormatter();
@@ -57,19 +61,21 @@ export default function DataPreview({
     (item) => !trackers.some((tracker) => tracker.aircraft?.id === item.id),
   );
 
-  // TODO: the design highlights some firmware versions; assumed here to mark
-  // the newest one. Swap for an API flag if the backend provides one.
-  const latestFirmware = trackers
-    .map((tracker) => tracker.firmware)
-    .filter((value): value is string => Boolean(value))
-    .sort(compareVersions)
-    .at(-1);
+  const models = firmwareVersions.map((item) => item.model);
 
-  const lastSeen = (time: number | null) => {
-    if (time == null) return null;
-    return now.getTime() - time < JUST_NOW_MS
+  /** The tracker's own `firmwareLatest`, else the latest release for its model. */
+  const latestFor = (tracker: Tracker) =>
+    tracker.firmwareLatest ??
+    firmwareVersions.find((item) => item.model === tracker.model)
+      ?.latestVersion ??
+    null;
+
+  const lastSeen = (value: string | null) => {
+    const date = toDate(value);
+    if (!date) return null;
+    return now.getTime() - date.getTime() < JUST_NOW_MS
       ? t("justNow")
-      : format.relativeTime(time, now);
+      : format.relativeTime(date, now);
   };
 
   return (
@@ -97,6 +103,12 @@ export default function DataPreview({
               tracker.status === "notInstalled"
                 ? null
                 : lastSeen(tracker.lastSeenAt);
+            const latest = latestFor(tracker);
+            // Orange = older than the latest release for this model.
+            const outdated =
+              !!tracker.firmware &&
+              !!latest &&
+              compareVersions(tracker.firmware, latest) < 0;
 
             return (
               <TableRow
@@ -113,7 +125,7 @@ export default function DataPreview({
                   <AircraftCell aircraft={tracker.aircraft} />
                 </TableCell>
                 <TableCell>
-                  <p className="text-foreground">{tracker.simCarrier ?? "—"}</p>
+                  <p className="text-foreground">{tracker.sim ?? "—"}</p>
                   {tracker.simNumber && (
                     <p
                       dir="ltr"
@@ -144,10 +156,13 @@ export default function DataPreview({
                 <TableCell
                   className={cn(
                     "tabular-nums",
-                    tracker.firmware && tracker.firmware === latestFirmware
-                      ? "text-primary"
-                      : "text-foreground-2",
+                    outdated ? "text-primary" : "text-foreground-2",
                   )}
+                  title={
+                    outdated && latest
+                      ? t("firmwareOutdated", { version: latest })
+                      : undefined
+                  }
                 >
                   {tracker.firmware ?? "—"}
                 </TableCell>
@@ -156,6 +171,7 @@ export default function DataPreview({
                     tracker={tracker}
                     aircraft={tracker.aircraft}
                     availableAircraft={availableAircraft}
+                    models={models}
                   />
                 </TableCell>
               </TableRow>

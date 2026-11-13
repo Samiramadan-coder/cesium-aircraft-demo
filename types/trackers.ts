@@ -1,26 +1,70 @@
-// GET /v1/tracking/trackers
-// TODO: field names are inferred from the design; confirm against the API.
 export type TrackerStatus = "online" | "offline" | "notInstalled";
 
+// GET /v1/tracking/trackers (list) — the details endpoint returns the same
+// shape plus `connectionEvents`.
 export type Tracker = {
   id: string;
+  aircraftId: string | null;
+  traccarDeviceId: number | null;
   /** e.g. "Teltonika FMC650" */
   model: string;
   imei: string;
-  aircraftId: string | null;
+  serial: string | null;
   /** SIM operator, e.g. "e&", "du" */
-  simCarrier: string | null;
+  sim: string | null;
   simNumber: string | null;
+  apn: string | null;
+  firmware: string | null;
+  firmwareLatest: string | null;
   status: TrackerStatus;
-  /** Epoch ms of the last report */
-  lastSeenAt: number | null;
+  /** Seconds since the last report */
+  lastSeenSec: number | null;
+  /** ISO date */
+  lastSeenAt: string | null;
+
+  // Live status
   /** 0–100 */
   signalStrength: number | null;
   /** 0–100 */
   batteryPercent: number | null;
-  firmware: string | null;
+  /** "aircraft" | "internal" */
+  powerSource: string | null;
+  /** Volts */
+  powerVoltage: number | null;
+  /** "ignition" | "motion" */
+  engineInput: string | null;
+  engineOn: boolean | null;
+  gpsSatellites: number | null;
+  gpsAccuracyM: number | null;
+  lastPosition: { lat: number; lon: number } | null;
+
+  // Installation
+  /** ISO date */
+  installedAt: string | null;
+  installedBy: string | null;
+
+  // Configuration
+  serverAddress: string | null;
+  serverPort: number | null;
+  reportingIntervalFlightSec: number | null;
+  reportingIntervalGroundSec: number | null;
+  angleTriggerDeg: number | null;
+  distanceTriggerM: number | null;
 };
 
+// TODO: the API has only returned an empty list so far; shape is guessed.
+export type ConnectionEvent = {
+  type: "connected" | "disconnected";
+  /** Epoch ms or a date string */
+  time: number | string;
+};
+
+// GET /v1/tracking/trackers/{tracker}
+export type TrackerDetails = Tracker & {
+  connectionEvents: ConnectionEvent[];
+};
+
+// GET /v1/tracking/trackers/kpis
 export type KPIS = {
   avgBattery: number;
   avgSignal: number;
@@ -29,6 +73,22 @@ export type KPIS = {
   offline: number;
   online: number;
   total: number;
+};
+
+// GET /v1/tracking/trackers/{tracker}/health — one point per hour, last 24h
+export type HealthPoint = {
+  hoursAgo: number;
+  /** 0–100 */
+  signalStrength: number | null;
+  /** 0–100 */
+  batteryPercent: number | null;
+};
+
+// GET /v1/firmware-versions — the latest release per tracker model
+export type FirmwareVersion = {
+  id: string;
+  model: string;
+  latestVersion: string;
 };
 
 // POST /v1/tracking/trackers
@@ -46,81 +106,8 @@ export type TrackerPayload = {
   registerInTraccar: boolean;
 };
 
-// GET /v1/tracking/trackers/{tracker}
-// TODO: field names are inferred from the design; confirm against the API.
-export type TrackerDetails = {
-  id: string;
-  model: string;
-  imei: string;
-  serial: string | null;
-  status: TrackerStatus;
-  lastSeenAt: number | null;
-  firmware: string | null;
-  latestFirmware: string | null;
-  aircraftId: string | null;
-  /** Epoch ms or a date string — the API format is not confirmed yet */
-  installedAt: number | string | null;
-  installedBy: string | null;
-  /** SIM operator, e.g. "e&" */
-  sim: string | null;
-  simNumber: string | null;
-  apn: string | null;
-
-  // Live status — TODO: confirm names against the API.
-  /** 0–100 */
-  signalStrength: number | null;
-  /** 0–100 */
-  batteryPercent: number | null;
-  /** Volts */
-  powerVoltage: number | null;
-  /** "aircraft" | "internal" */
-  powerSource: string | null;
-  engineOn: boolean | null;
-  lastPosition: { lat: number; lon: number } | null;
-  gpsSatellites: number | null;
-  /** Meters */
-  gpsAccuracyM: number | null;
-
-  // Configuration — TODO: confirm names against the API.
-  serverHost: string | null;
-  serverPort: number | null;
-  /** Seconds between reports while airborne */
-  intervalInFlightS: number | null;
-  /** Seconds between reports on the ground */
-  intervalOnGroundS: number | null;
-  /** Degrees of heading change that force a report */
-  angleTriggerDeg: number | null;
-  /** Meters travelled that force a report */
-  distanceTriggerM: number | null;
-  /** "ignition" | "motion" — same values as the add-tracker payload */
-  engineInput: string | null;
-};
-
-// GET /v1/tracking/trackers/{tracker}/health
-// TODO: field names are inferred from the design; confirm against the API.
-export type HealthPoint = {
-  /** Epoch ms or a date string */
-  time: number | string;
-  /** 0–100 */
-  value: number;
-};
-
-export type ConnectionEvent = {
-  type: "connected" | "disconnected";
-  /** Epoch ms or a date string */
-  time: number | string;
-};
-
-export type TrackerHealth = {
-  /** Last 24h */
-  signalHistory: HealthPoint[];
-  /** Last 24h */
-  batteryHistory: HealthPoint[];
-  connectionEvents: ConnectionEvent[];
-};
-
 // POST /v1/tracking/trackers/{tracker}/firmware/check
-// TODO: field names are guessed; confirm against the API.
+// TODO: response shape is guessed; not called yet against the real API.
 export type FirmwareCheck = {
   currentVersion: string | null;
   latestVersion: string | null;
@@ -131,4 +118,10 @@ export type FirmwareCheck = {
 export type TrackerLinkPayload = {
   aircraftId: string;
   installedBy: string;
+};
+
+// POST /v1/firmware-versions
+export type FirmwareVersionPayload = {
+  model: string;
+  latestVersion: string;
 };

@@ -53,7 +53,9 @@ export default function PingTracker({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-border bg-card text-foreground sm:max-w-sm *:data-[slot=dialog-close]:text-foreground-2">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">{t("title")}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            {t("title")}
+          </DialogTitle>
           <DialogDescription className="text-foreground-2">
             {tracker.model} ·{" "}
             <span dir="ltr" className="font-mono tabular-nums">

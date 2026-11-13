@@ -5,8 +5,9 @@ import { api } from "@/lib/api/client";
 import { runAction, type ActionResult } from "@/lib/api/errors";
 import type {
   FirmwareCheck,
+  FirmwareVersionPayload,
   TrackerDetails,
-  TrackerHealth,
+  HealthPoint,
   TrackerLinkPayload,
   TrackerPayload,
 } from "@/types/trackers";
@@ -34,9 +35,9 @@ export async function getTracker(
 
 export async function getTrackerHealth(
   trackerId: string,
-): Promise<ActionResult<TrackerHealth>> {
+): Promise<ActionResult<HealthPoint[]>> {
   return runAction(() =>
-    api.get<TrackerHealth>(
+    api.get<HealthPoint[]>(
       `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/health`,
     ),
   );
@@ -120,6 +121,17 @@ export async function unlinkTracker(
     ),
   );
   // The aircraft column, status and KPIs all change.
+  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
+  return result;
+}
+
+export async function saveFirmwareVersion(
+  payload: FirmwareVersionPayload,
+): Promise<ActionResult<unknown>> {
+  const result = await runAction(() =>
+    api.post<unknown>("/v1/firmware-versions", payload),
+  );
+  // The firmware column, the "outdated" KPI and the model lists all change.
   if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
   return result;
 }

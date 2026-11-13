@@ -52,13 +52,17 @@ export default function DeleteTracker({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="border-border bg-card text-foreground sm:max-w-md *:data-[slot=dialog-close]:text-foreground-2">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">{t("title")}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            {t("title")}
+          </DialogTitle>
           <DialogDescription className="text-foreground-2">
             {t.rich("description", {
               device: tracker.model,
               imei: tracker.imei,
               strong: (chunks) => (
-                <strong className="font-medium text-foreground">{chunks}</strong>
+                <strong className="font-medium text-foreground">
+                  {chunks}
+                </strong>
               ),
               mono: (chunks) => (
                 <span dir="ltr" className="font-mono tabular-nums">

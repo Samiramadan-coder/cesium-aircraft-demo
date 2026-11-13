@@ -130,7 +130,10 @@ export default function TrackerSheet({
                     <Configuration details={details.data} />
                   </TabsContent>
                   <TabsContent value="health">
-                    <TrackerHealthTab trackerId={details.data.id} />
+                    <TrackerHealthTab
+                      trackerId={details.data.id}
+                      events={details.data.connectionEvents ?? []}
+                    />
                   </TabsContent>
                 </>
               )}
@@ -214,8 +217,8 @@ function Overview({
         value={details.firmware ?? empty}
         mono
         note={
-          details.latestFirmware &&
-          t("latestAvailable", { version: details.latestFirmware })
+          details.firmwareLatest &&
+          t("latestAvailable", { version: details.firmwareLatest })
         }
       />
       <Row
@@ -349,7 +352,11 @@ function Configuration({ details }: { details: TrackerDetails }) {
 
   return (
     <div className="space-y-2">
-      <Row label={t("serverHost")} value={details.serverHost ?? empty} mono />
+      <Row
+        label={t("serverHost")}
+        value={details.serverAddress ?? empty}
+        mono
+      />
       <Row
         label={t("serverPort")}
         value={details.serverPort != null ? String(details.serverPort) : empty}
@@ -357,11 +364,11 @@ function Configuration({ details }: { details: TrackerDetails }) {
       />
       <Row
         label={t("intervalInFlight")}
-        value={num(details.intervalInFlightS, "seconds")}
+        value={num(details.reportingIntervalFlightSec, "seconds")}
       />
       <Row
         label={t("intervalOnGround")}
-        value={num(details.intervalOnGroundS, "seconds")}
+        value={num(details.reportingIntervalGroundSec, "seconds")}
       />
       <Row
         label={t("angleTrigger")}

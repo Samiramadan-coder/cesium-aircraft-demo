@@ -38,12 +38,15 @@ export default function TrackerMenu({
   tracker,
   aircraft,
   availableAircraft,
+  models,
 }: {
   tracker: Tracker;
   /** The aircraft this tracker is installed on. */
   aircraft: TrackedAircraft | null;
   /** Aircraft without a tracker, offered by "Link to aircraft". */
   availableAircraft: TrackedAircraft[];
+  /** Tracker models offered by the edit form. */
+  models: string[];
 }) {
   const t = useTranslations("Trackers.menu");
   const [viewing, setViewing] = useState(false);
@@ -162,14 +165,11 @@ export default function TrackerMenu({
         onOpenChange={setCheckingFirmware}
       />
 
-      <PingTracker
-        tracker={tracker}
-        open={pinging}
-        onOpenChange={setPinging}
-      />
+      <PingTracker tracker={tracker} open={pinging} onOpenChange={setPinging} />
 
       <TrackerForm
         trackerId={tracker.id}
+        models={models}
         open={editing}
         onOpenChange={setEditing}
       />

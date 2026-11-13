@@ -1,4 +1,10 @@
-import { Battery, BatteryFull, BatteryLow, BatteryMedium, Plane } from "lucide-react";
+import {
+  Battery,
+  BatteryFull,
+  BatteryLow,
+  BatteryMedium,
+  Plane,
+} from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,7 +43,9 @@ export function SignalStrength({ value }: { value: number | null }) {
 
   if (value == null) return <span className="text-muted">—</span>;
 
-  const filled = Math.ceil((Math.max(0, Math.min(100, value)) / 100) * BARS.length);
+  const filled = Math.ceil(
+    (Math.max(0, Math.min(100, value)) / 100) * BARS.length,
+  );
 
   return (
     <div className="flex items-center gap-2">

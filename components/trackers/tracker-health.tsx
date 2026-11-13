@@ -6,28 +6,40 @@ import { cn } from "cn";
 import { getTrackerHealth } from "@/lib/actions/trackers";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { HealthPoint, TrackerHealth } from "@/types/trackers";
-import HealthChart from "./health-chart";
+import type { ConnectionEvent, HealthPoint } from "@/types/trackers";
+import HealthChart, { type HealthChartPoint } from "./health-chart";
 import { toDate } from "./shared";
 
 type HealthState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; data: TrackerHealth };
+  | { status: "ready"; data: HealthPoint[] };
 
 // The battery line has no theme token; a blue that stays readable on the card.
 const BATTERY_COLOR = "#5aa9e6";
 
-/** Drops points with an unparsable time and sorts oldest → newest. */
-function toSeries(points: HealthPoint[]) {
+/** One metric as chart points, skipping hours with no reading. */
+function toSeries(
+  points: HealthPoint[],
+  key: "signalStrength" | "batteryPercent",
+): HealthChartPoint[] {
   return points
-    .map((point) => ({ time: toDate(point.time)?.getTime(), value: point.value }))
-    .filter((point): point is { time: number; value: number } => point.time != null)
-    .sort((a, b) => a.time - b.time);
+    .filter((point) => point[key] != null)
+    .map((point) => ({ hoursAgo: point.hoursAgo, value: point[key] as number }))
+    .sort((a, b) => b.hoursAgo - a.hoursAgo);
 }
 
-/** The "Health" tab — loads when the tab is opened. */
-export default function TrackerHealthTab({ trackerId }: { trackerId: string }) {
+/**
+ * The "Health" tab: the 24h charts load when the tab opens; the connection
+ * events come with the tracker's details.
+ */
+export default function TrackerHealthTab({
+  trackerId,
+  events,
+}: {
+  trackerId: string;
+  events: ConnectionEvent[];
+}) {
   const t = useTranslations("Trackers.details");
   const [health, setHealth] = useState<HealthState>({ status: "loading" });
 
@@ -46,54 +58,54 @@ export default function TrackerHealthTab({ trackerId }: { trackerId: string }) {
     load(trackerId);
   }, [trackerId, load]);
 
-  if (health.status === "loading") {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-28 bg-card-2" />
-        <Skeleton className="h-28 bg-card-2" />
-        <Skeleton className="h-40 bg-card-2" />
-      </div>
-    );
-  }
+  return (
+    <div className="space-y-6">
+      {health.status === "loading" && (
+        <div className="space-y-6">
+          <Skeleton className="h-28 bg-card-2" />
+          <Skeleton className="h-28 bg-card-2" />
+        </div>
+      )}
 
-  if (health.status === "error") {
-    return (
-      <div className="space-y-3 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
-        <p>{health.message}</p>
-        <Button
-          size="sm"
-          variant="outline"
-          className="border-border bg-card text-foreground hover:bg-card-2"
-          onClick={() => load(trackerId)}
-        >
-          {t("retry")}
-        </Button>
-      </div>
-    );
-  }
+      {health.status === "error" && (
+        <div className="space-y-3 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+          <p>{health.message}</p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-border bg-card text-foreground hover:bg-card-2"
+            onClick={() => load(trackerId)}
+          >
+            {t("retry")}
+          </Button>
+        </div>
+      )}
 
-  return <Health data={health.data} />;
+      {health.status === "ready" && <Charts points={health.data} />}
+
+      <ConnectionEvents events={events} />
+    </div>
+  );
 }
 
-function Health({ data }: { data: TrackerHealth }) {
+function Charts({ points }: { points: HealthPoint[] }) {
   const t = useTranslations("Trackers.details.health");
 
   return (
-    <div className="space-y-6">
+    <>
       <ChartSection
         title={t("signalTitle")}
         label={t("signal")}
         color="var(--primary)"
-        points={data.signalHistory}
+        series={toSeries(points, "signalStrength")}
       />
       <ChartSection
         title={t("batteryTitle")}
         label={t("battery")}
         color={BATTERY_COLOR}
-        points={data.batteryHistory}
+        series={toSeries(points, "batteryPercent")}
       />
-      <ConnectionEvents events={data.connectionEvents} />
-    </div>
+    </>
   );
 }
 
@@ -101,15 +113,14 @@ function ChartSection({
   title,
   label,
   color,
-  points,
+  series,
 }: {
   title: string;
   label: string;
   color: string;
-  points: HealthPoint[];
+  series: HealthChartPoint[];
 }) {
   const t = useTranslations("Trackers.details.health");
-  const series = toSeries(points ?? []);
 
   return (
     <section className="space-y-2">
@@ -125,11 +136,7 @@ function ChartSection({
   );
 }
 
-function ConnectionEvents({
-  events,
-}: {
-  events: TrackerHealth["connectionEvents"];
-}) {
+function ConnectionEvents({ events }: { events: ConnectionEvent[] }) {
   const t = useTranslations("Trackers.details.health");
   const format = useFormatter();
 
