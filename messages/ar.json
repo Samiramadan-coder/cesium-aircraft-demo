@@ -147,5 +147,19 @@
     "profile": {
       "description": "ستظهر هنا بيانات حسابك وتفضيلاتك."
     }
+  },
+  "EngineHours": {
+    "title": "ساعات المحرك والطيران",
+    "subtitle": "إجمالي ساعات المحرك والطيران لكل طائرة، وتُستخدم لجدولة الصيانة.",
+    "logMaintenance": "تسجيل صيانة",
+    "hoursValue": "{value} س",
+    "overdue": "{count} متأخرة",
+    "kpis": {
+      "flightHours": "ساعات الطيران",
+      "engineHours": "ساعات المحرك",
+      "totalFlights": "إجمالي الرحلات",
+      "avgUtilization": "متوسط الاستخدام",
+      "dueForService": "مستحقة للصيانة"
+    }
   }
 }

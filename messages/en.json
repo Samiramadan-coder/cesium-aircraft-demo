@@ -147,5 +147,19 @@
     "profile": {
       "description": "Your account details and preferences will appear here."
     }
+  },
+  "EngineHours": {
+    "title": "Engine & Flight Hours",
+    "subtitle": "Accumulated engine and flight hours per aircraft, used for maintenance scheduling.",
+    "logMaintenance": "Log maintenance",
+    "hoursValue": "{value}h",
+    "overdue": "{count} overdue",
+    "kpis": {
+      "flightHours": "Flight hours",
+      "engineHours": "Engine hours",
+      "totalFlights": "Total flights",
+      "avgUtilization": "Avg. utilization",
+      "dueForService": "Due for service"
+    }
   }
 }
