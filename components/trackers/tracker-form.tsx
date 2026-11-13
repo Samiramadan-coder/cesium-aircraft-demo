@@ -1,13 +1,21 @@
 "use client";
 
+import { useState } from "react";
+import { LoaderCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "cn";
+import { ENGINEERS } from "@/constants/engineers";
+import { addTracker, getTracker, updateTracker } from "@/lib/actions/trackers";
 import {
   createTrackerSchema,
   type TrackerValues,
 } from "@/lib/validations/tracker";
-
+import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -15,46 +23,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { TrackerDetails } from "@/types/trackers";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
+  CancelButton,
+  ErrorNotice,
+  dialogContentClassName,
+  dialogFooterClassName,
+} from "./feedback";
+import {
+  FormSelect,
+  applyServerErrors,
+  controlClassName,
+  toItems,
+} from "@/components/form/form-controls";
 import {
   ENGINE_INPUTS,
   POWER_SOURCES,
   SIM_CARRIERS,
   TRACKER_MODELS,
 } from "./options";
+import { useOptionLabel } from "./shared";
+import { useLoad } from "@/hooks/use-load";
 
-import { useCallback, useEffect, useState } from "react";
-import { cn } from "cn";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { TrackerDetails } from "@/types/trackers";
-import { LoaderCircle } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ENGINEERS } from "@/constants/engineers";
-import { addTracker, getTracker, updateTracker } from "@/lib/actions/trackers";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, useWatch, type Control } from "react-hook-form";
-import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
-
-// The theme's popover/muted colors are light; match the dark cards instead.
-const controlClassName =
-  "w-full border-border bg-card-2/60 text-foreground placeholder:text-muted/70 hover:bg-card-2 aria-invalid:border-danger";
-const selectContentClassName = "bg-card text-foreground ring-border";
-const selectItemClassName =
-  "focus:bg-card-2 focus:text-foreground not-data-[variant=destructive]:focus:**:text-foreground";
-
-type FieldName = keyof TrackerValues;
-
-const FIELDS: readonly FieldName[] = [
+const FIELDS = [
   "imei",
   "model",
   "serial",
@@ -65,7 +58,7 @@ const FIELDS: readonly FieldName[] = [
   "engineInput",
   "installedBy",
   "registerInTraccar",
-];
+] as const satisfies readonly (keyof TrackerValues)[];
 
 const DEFAULT_VALUES: TrackerValues = {
   imei: "",
@@ -83,7 +76,6 @@ const DEFAULT_VALUES: TrackerValues = {
 /** Form values from a saved tracker; anything missing falls back to the defaults. */
 function toValues(details: TrackerDetails): TrackerValues {
   return {
-    ...DEFAULT_VALUES,
     imei: details.imei ?? "",
     model: details.model || DEFAULT_VALUES.model,
     serial: details.serial ?? "",
@@ -93,14 +85,17 @@ function toValues(details: TrackerDetails): TrackerValues {
     powerSource: details.powerSource || DEFAULT_VALUES.powerSource,
     engineInput: details.engineInput || DEFAULT_VALUES.engineInput,
     installedBy: details.installedBy || DEFAULT_VALUES.installedBy,
+    // Only applies when adding; never sent on edit.
     registerInTraccar: false,
   };
 }
 
-type LoadState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "error"; message: string };
+/** Select items for `values`, plus `current` when it isn't one of them. */
+function withCurrent(values: readonly string[], current: string | undefined) {
+  return toItems(
+    current && !values.includes(current) ? [current, ...values] : values,
+  );
+}
 
 /**
  * Add-tracker dialog, or — with `trackerId` — the edit dialog: it loads the
@@ -115,7 +110,6 @@ export default function TrackerForm({
   trigger,
   open: openProp,
   onOpenChange,
-  onSaved,
 }: {
   /** Edit this tracker instead of adding a new one. */
   trackerId?: string;
@@ -125,16 +119,14 @@ export default function TrackerForm({
   trigger?: React.ReactElement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Called after the tracker is saved. */
-  onSaved?: () => void;
 }) {
   const t = useTranslations("Trackers.addDialog");
+  const powerLabel = useOptionLabel("powerSources");
+  const engineLabel = useOptionLabel("engineInputs");
   const isEdit = trackerId != null;
   const [openState, setOpenState] = useState(false);
   const open = openProp ?? openState;
-  const [load, setLoad] = useState<LoadState>({ status: "idle" });
-  const models = modelsProp?.length ? modelsProp : [...TRACKER_MODELS];
-  const firstModel = models[0];
+  const models = modelsProp?.length ? modelsProp : TRACKER_MODELS;
 
   const {
     control,
@@ -150,6 +142,14 @@ export default function TrackerForm({
     defaultValues: DEFAULT_VALUES,
   });
 
+  // Editing: load the saved tracker each time the dialog opens.
+  const saved = useLoad(
+    open && trackerId ? trackerId : null,
+    getTracker,
+    (data) => reset(toValues(data)),
+  );
+  const ready = !isEdit || saved.state.status === "ready";
+
   // A saved tracker may use a value that isn't in the list (e.g. an older
   // model name); keep it selectable so editing doesn't silently change it.
   const [currentModel, currentInstaller] = useWatch({
@@ -157,43 +157,20 @@ export default function TrackerForm({
     name: ["model", "installedBy"],
   });
   const modelItems = withCurrent(models, currentModel);
-  const simItems = SIM_CARRIERS.map(({ value }) => ({ value, label: value }));
+  const engineerItems = withCurrent(ENGINEERS, currentInstaller);
+  const simItems = toItems(SIM_CARRIERS.map((item) => item.value));
   const powerItems = POWER_SOURCES.map((value) => ({
     value,
-    label: t(`powerSources.${value}`),
+    label: powerLabel(value),
   }));
-  const engineerItems = withCurrent([...ENGINEERS], currentInstaller);
   const engineItems = ENGINE_INPUTS.map((value) => ({
     value,
-    label: t(`engineInputs.${value}`),
+    label: engineLabel(value),
   }));
 
-  const loadTracker = useCallback(
-    async (id: string) => {
-      setLoad({ status: "loading" });
-      const result = await getTracker(id);
-      if (result.ok) {
-        reset(toValues(result.data));
-        setLoad({ status: "idle" });
-      } else {
-        setLoad({ status: "error", message: result.message });
-      }
-    },
-    [reset],
-  );
-
-  // Start fresh on every open: defaults when adding, the saved tracker when editing.
-  useEffect(() => {
-    if (!open) return;
-    if (trackerId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open
-      loadTracker(trackerId);
-    } else {
-      reset({ ...DEFAULT_VALUES, model: firstModel });
-    }
-  }, [open, trackerId, loadTracker, reset, firstModel]);
-
   function setOpen(next: boolean) {
+    // Adding starts from the defaults every time.
+    if (next && !isEdit) reset({ ...DEFAULT_VALUES, model: models[0] });
     setOpenState(next);
     onOpenChange?.(next);
   }
@@ -209,36 +186,23 @@ export default function TrackerForm({
   }
 
   async function onSubmit(values: TrackerValues) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { registerInTraccar, ...changes } = values;
     const result = trackerId
-      ? // Registering in Traccar only applies when adding.
-        await updateTracker(trackerId, omitRegister(values))
+      ? await updateTracker(trackerId, changes)
       : await addTracker(values);
 
-    if (result.ok) {
-      setOpen(false);
-      onSaved?.();
-      return;
-    }
-
-    let shownOnField = false;
-    for (const [field, message] of Object.entries(result.fieldErrors ?? {})) {
-      if ((FIELDS as readonly string[]).includes(field)) {
-        setError(
-          field as FieldName,
-          { message },
-          { shouldFocus: !shownOnField },
-        );
-        shownOnField = true;
-      }
-    }
-    if (!shownOnField) setError("root.server", { message: result.message });
+    if (result.ok) setOpen(false);
+    else applyServerErrors(result, FIELDS, setError);
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger render={trigger} />}
 
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-border bg-card text-foreground sm:max-w-xl *:data-[slot=dialog-close]:text-foreground-2">
+      <DialogContent
+        className={`${dialogContentClassName} max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-xl`}
+      >
         <form
           noValidate
           onSubmit={handleSubmit(onSubmit)}
@@ -254,41 +218,15 @@ export default function TrackerForm({
           </DialogHeader>
 
           {errors.root?.server && (
-            <p
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm text-danger"
-            >
-              {errors.root.server.message}
-            </p>
+            <ErrorNotice message={errors.root.server.message} />
           )}
 
-          {load.status === "loading" && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 9 }, (_, i) => (
-                <Skeleton
-                  key={i}
-                  className={cn("h-15 bg-card-2", i === 8 && "sm:col-span-2")}
-                />
-              ))}
-            </div>
+          {isEdit && saved.state.status === "loading" && <FormSkeleton />}
+          {isEdit && saved.state.status === "error" && (
+            <ErrorNotice message={saved.state.message} onRetry={saved.retry} />
           )}
 
-          {load.status === "error" && (
-            <div className="space-y-3 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
-              <p>{load.message}</p>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="border-border bg-card text-foreground hover:bg-card-2"
-                onClick={() => trackerId && loadTracker(trackerId)}
-              >
-                {t("retry")}
-              </Button>
-            </div>
-          )}
-
-          {load.status === "idle" && (
+          {ready && (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
                 <LabeledField
@@ -309,7 +247,7 @@ export default function TrackerForm({
                   />
                 </LabeledField>
 
-                <SelectField
+                <FormSelect
                   control={control}
                   name="model"
                   label={t("model")}
@@ -332,7 +270,7 @@ export default function TrackerForm({
                   />
                 </LabeledField>
 
-                <SelectField
+                <FormSelect
                   control={control}
                   name="sim"
                   label={t("sim")}
@@ -372,21 +310,21 @@ export default function TrackerForm({
                   />
                 </LabeledField>
 
-                <SelectField
+                <FormSelect
                   control={control}
                   name="powerSource"
                   label={t("powerSource")}
                   items={powerItems}
                 />
 
-                <SelectField
+                <FormSelect
                   control={control}
                   name="engineInput"
                   label={t("engineInput")}
                   items={engineItems}
                 />
 
-                <SelectField
+                <FormSelect
                   control={control}
                   name="installedBy"
                   label={t("installedBy")}
@@ -419,22 +357,9 @@ export default function TrackerForm({
             </>
           )}
 
-          <DialogFooter className="border-border bg-card-2/40">
-            <DialogClose
-              render={
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-border bg-card text-foreground hover:bg-card-2"
-                />
-              }
-            >
-              {t("cancel")}
-            </DialogClose>
-            <Button
-              type="submit"
-              disabled={isSubmitting || load.status !== "idle"}
-            >
+          <DialogFooter className={dialogFooterClassName}>
+            <CancelButton />
+            <Button type="submit" disabled={isSubmitting || !ready}>
               {isSubmitting && <LoaderCircle className="animate-spin" />}
               {isEdit ? t("saveChanges") : t("save")}
             </Button>
@@ -445,82 +370,15 @@ export default function TrackerForm({
   );
 }
 
-/** Select items for `values`, plus `current` when it isn't one of them. */
-function withCurrent(values: string[], current: string | undefined) {
-  const all =
-    current && !values.includes(current) ? [current, ...values] : values;
-  return all.map((value) => ({ value, label: value }));
-}
-
-function omitRegister(values: TrackerValues) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { registerInTraccar, ...rest } = values;
-  return rest;
-}
-
-type SelectFieldName =
-  "model" | "sim" | "powerSource" | "engineInput" | "installedBy";
-
-function SelectField({
-  control,
-  name,
-  label,
-  items,
-  onChange,
-  className,
-}: {
-  control: Control<TrackerValues>;
-  className?: string;
-  name: SelectFieldName;
-  label: string;
-  items: { value: string; label: string }[];
-  /** Runs after the value changes, with the previous and new values. */
-  onChange?: (previous: string, next: string) => void;
-}) {
+function FormSkeleton() {
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState: { error } }) => (
-        <LabeledField
-          id={name}
-          label={label}
-          error={error}
-          required
-          className={className}
-        >
-          <Select
-            items={items}
-            value={field.value}
-            onValueChange={(value) => {
-              const next = value ?? "";
-              const previous = field.value;
-              field.onChange(next);
-              onChange?.(previous, next);
-            }}
-          >
-            <SelectTrigger
-              {...fieldA11yProps(name, error)}
-              ref={field.ref}
-              onBlur={field.onBlur}
-              className={controlClassName}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={selectContentClassName}>
-              {items.map((item) => (
-                <SelectItem
-                  key={item.value}
-                  value={item.value}
-                  className={selectItemClassName}
-                >
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </LabeledField>
-      )}
-    />
+    <div className="grid gap-4 sm:grid-cols-2">
+      {Array.from({ length: 9 }, (_, i) => (
+        <Skeleton
+          key={i}
+          className={cn("h-15 bg-card-2", i === 8 && "sm:col-span-2")}
+        />
+      ))}
+    </div>
   );
 }

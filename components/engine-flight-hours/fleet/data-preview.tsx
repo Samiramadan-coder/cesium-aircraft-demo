@@ -1,31 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import AircraftCard from "./aircraft-card";
 import { useTranslations } from "next-intl";
-import AircraftSheet from "./aircraft-sheet";
-import { toMaintenanceAircraft } from "../maintainance/options";
 import type { TrackedPilot } from "@/types/tracking";
-import type { FleetAircraft } from "@/types/engine-flight-hours";
+import type {
+  FleetAircraft,
+  MaintenanceAircraftOption,
+} from "@/types/engine-flight-hours";
+import { EmptyState } from "../shared";
+import AircraftCard from "./aircraft-card";
+import AircraftSheet from "./aircraft-sheet";
 
 export default function DataPreview({
   aircraft,
   pilots,
+  maintenanceAircraft,
 }: {
   aircraft: FleetAircraft[];
   pilots: TrackedPilot[];
+  maintenanceAircraft: MaintenanceAircraftOption[];
 }) {
   const t = useTranslations("EngineHours");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = aircraft.find((item) => item.aircraftId === selectedId);
 
-  if (aircraft.length === 0) {
-    return (
-      <p className="rounded-xl bg-card p-8 text-center text-sm text-foreground-2 ring-1 ring-foreground/10">
-        {t("emptyFleet")}
-      </p>
-    );
-  }
+  if (aircraft.length === 0) return <EmptyState>{t("emptyFleet")}</EmptyState>;
 
   return (
     <>
@@ -42,10 +41,7 @@ export default function DataPreview({
       <AircraftSheet
         aircraft={selected ?? null}
         pilots={pilots}
-        maintenanceAircraft={toMaintenanceAircraft(
-          aircraft,
-          aircraft.flatMap((item) => (item.profile ? [item.profile] : [])),
-        )}
+        maintenanceAircraft={maintenanceAircraft}
         onClose={() => setSelectedId(null)}
       />
     </>

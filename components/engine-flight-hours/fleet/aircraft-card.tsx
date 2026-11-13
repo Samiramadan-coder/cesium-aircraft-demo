@@ -6,7 +6,7 @@ import {
   ServiceProgress,
   StatusBadge,
   useHours,
-} from "./shared";
+} from "../shared";
 
 export default function AircraftCard({
   aircraft,

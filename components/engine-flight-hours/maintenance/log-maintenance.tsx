@@ -3,13 +3,19 @@
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Controller, useForm, useWatch, type Control } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { logMaintenance } from "@/lib/actions/engine-hours";
 import {
   createMaintenanceSchema,
   type MaintenanceValues,
 } from "@/lib/validations/maintenance";
+import {
+  FormSelect,
+  applyServerErrors,
+  controlClassName,
+  toItems,
+} from "@/components/form/form-controls";
 import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,24 +28,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { MaintenanceAircraftOption } from "@/types/engine-flight-hours";
-import { SERVICE_TYPES } from "./options";
 import { ENGINEERS } from "@/constants/engineers";
-
-// The theme's popover/muted colors are light; match the dark cards instead.
-const controlClassName =
-  "w-full border-border bg-card-2/60 text-foreground hover:bg-card-2 aria-invalid:border-danger";
-const selectContentClassName = "bg-card text-foreground ring-border";
-const selectItemClassName =
-  "focus:bg-card-2 focus:text-foreground not-data-[variant=destructive]:focus:**:text-foreground";
+import type { MaintenanceAircraftOption } from "@/types/engine-flight-hours";
+import { SERVICE_TYPES } from "./service-types";
 
 const FIELDS = ["aircraftId", "type", "engineer", "notes"] as const;
 
@@ -50,7 +42,7 @@ function today() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
-export default function LogMaintainance({
+export default function LogMaintenance({
   trigger,
   aircraft,
   defaultAircraftId,
@@ -59,7 +51,7 @@ export default function LogMaintainance({
   /** The element that opens the dialog, e.g. a <Button />. */
   trigger: React.ReactElement;
   aircraft: MaintenanceAircraftOption[];
-  /** Preselects (and locks nothing — the user can still change it). */
+  /** Preselected aircraft; the user can still pick another one. */
   defaultAircraftId?: string;
   /** Called after the record is saved. */
   onLogged?: () => void;
@@ -97,7 +89,6 @@ export default function LogMaintainance({
     value,
     label: tServiceTypes(value),
   }));
-  const engineerItems = ENGINEERS.map((value) => ({ value, label: value }));
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
@@ -118,22 +109,13 @@ export default function LogMaintainance({
       notes: values.notes || null,
     });
 
-    if (result.ok) {
-      setOpen(false);
-      onLogged?.();
+    if (!result.ok) {
+      applyServerErrors(result, FIELDS, setError);
       return;
     }
 
-    let shownOnField = false;
-    for (const [field, message] of Object.entries(result.fieldErrors ?? {})) {
-      if ((FIELDS as readonly string[]).includes(field)) {
-        setError(field as (typeof FIELDS)[number], { message }, {
-          shouldFocus: !shownOnField,
-        });
-        shownOnField = true;
-      }
-    }
-    if (!shownOnField) setError("root.server", { message: result.message });
+    setOpen(false);
+    onLogged?.();
   }
 
   return (
@@ -160,32 +142,32 @@ export default function LogMaintainance({
             </p>
           )}
 
-          <SelectField
+          <FormSelect
             control={control}
             name="aircraftId"
             label={t("aircraft")}
             items={aircraftItems}
           />
 
-          <SelectField
+          <FormSelect
             control={control}
             name="type"
             label={t("serviceType")}
             items={typeItems}
           />
 
-          <SelectField
+          <FormSelect
             control={control}
             name="engineer"
             label={t("engineer")}
-            items={engineerItems}
+            items={toItems(ENGINEERS)}
           />
 
           <LabeledField id="notes" label={t("notes")} error={errors.notes}>
             <Textarea
               rows={3}
               placeholder={t("notesPlaceholder")}
-              className={`${controlClassName} min-h-20 resize-y placeholder:text-muted/70`}
+              className={`${controlClassName} min-h-20 resize-y`}
               {...fieldA11yProps("notes", errors.notes)}
               {...register("notes")}
             />
@@ -211,55 +193,5 @@ export default function LogMaintainance({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-type SelectFieldName = Exclude<keyof MaintenanceValues, "notes">;
-
-function SelectField({
-  control,
-  name,
-  label,
-  items,
-}: {
-  control: Control<MaintenanceValues>;
-  name: SelectFieldName;
-  label: string;
-  items: { value: string; label: string }[];
-}) {
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState: { error } }) => (
-        <LabeledField id={name} label={label} error={error}>
-          <Select
-            items={items}
-            value={field.value}
-            onValueChange={(value) => field.onChange(value ?? "")}
-          >
-            <SelectTrigger
-              {...fieldA11yProps(name, error)}
-              ref={field.ref}
-              onBlur={field.onBlur}
-              className={controlClassName}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={selectContentClassName}>
-              {items.map((item) => (
-                <SelectItem
-                  key={item.value}
-                  value={item.value}
-                  className={selectItemClassName}
-                >
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </LabeledField>
-      )}
-    />
   );
 }

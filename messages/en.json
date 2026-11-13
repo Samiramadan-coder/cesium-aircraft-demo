@@ -154,6 +154,11 @@
     "logMaintenance": "Log maintenance",
     "hoursValue": "{value}h",
     "overdue": "{count} overdue",
+    "errorPage": {
+      "title": "Couldn't load engine & flight hours",
+      "description": "Something went wrong while loading the hours data. Check your connection and try again.",
+      "reference": "Reference: {digest}"
+    },
     "kpis": {
       "flightHours": "Flight hours",
       "engineHours": "Engine hours",
@@ -339,16 +344,7 @@
       "installedBy": "Installed by",
       "registerInTraccar": "Register in Traccar",
       "registerInTraccarHint": "Also create the device on the Traccar server so it starts reporting positions.",
-      "cancel": "Cancel",
       "save": "Add device",
-      "powerSources": {
-        "internal": "Internal battery",
-        "aircraft": "Aircraft power"
-      },
-      "engineInputs": {
-        "motion": "Motion sensor",
-        "ignition": "Ignition wire"
-      },
       "errors": {
         "imeiRequired": "Enter the IMEI",
         "imeiInvalid": "IMEI must be 15 digits",
@@ -364,8 +360,7 @@
       },
       "editTitle": "Edit device",
       "editDescription": "Update this tracker's details.",
-      "saveChanges": "Save changes",
-      "retry": "Try again"
+      "saveChanges": "Save changes"
     },
     "menu": {
       "column": "Actions",
@@ -379,7 +374,6 @@
       "link": "Link to aircraft"
     },
     "details": {
-      "retry": "Try again",
       "tabs": {
         "overview": "Overview",
         "liveStatus": "Live status",
@@ -442,15 +436,12 @@
     "deleteDialog": {
       "title": "Delete device?",
       "description": "<strong>{device}</strong> (<mono>{imei}</mono>) will be removed and stop appearing in tracking. This can't be undone.",
-      "cancel": "Cancel",
       "confirm": "Delete"
     },
     "pingDialog": {
       "title": "Test ping",
       "sending": "Sending a test ping to the device…",
-      "sent": "Ping sent. The device should report back shortly.",
-      "close": "Close",
-      "retry": "Try again"
+      "sent": "Ping sent. The device should report back shortly."
     },
     "firmwareDialog": {
       "title": "Firmware check",
@@ -458,16 +449,13 @@
       "latest": "Latest version",
       "checking": "Checking for updates…",
       "upToDate": "Firmware is up to date.",
-      "updateAvailable": "Update available: {version}",
-      "close": "Close",
-      "retry": "Try again"
+      "updateAvailable": "Update available: {version}"
     },
     "linkDialog": {
       "title": "Link to aircraft",
       "aircraft": "Aircraft",
       "installedBy": "Installed by",
       "noAircraft": "Every aircraft already has a tracker. Unlink one first.",
-      "cancel": "Cancel",
       "save": "Link",
       "errors": {
         "aircraftRequired": "Choose an aircraft",
@@ -477,7 +465,6 @@
     "unlinkDialog": {
       "title": "Unlink from aircraft?",
       "description": "<strong>{device}</strong> (<mono>{imei}</mono>) will be unlinked from <strong>{aircraft}</strong>. The aircraft will stop being tracked until a device is linked again.",
-      "cancel": "Cancel",
       "confirm": "Unlink"
     },
     "firmwareOutdated": "Update available: {version}",
@@ -491,12 +478,31 @@
       "model": "Model",
       "version": "Latest version",
       "editLabel": "Update {model}",
-      "close": "Close",
       "save": "Save",
       "errors": {
         "modelRequired": "Enter the model",
         "versionRequired": "Enter the version",
         "versionInvalid": "Use a version like 03.29.09"
+      }
+    },
+    "common": {
+      "retry": "Try again",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "errorPage": {
+      "title": "Couldn't load trackers",
+      "description": "Something went wrong while loading the tracking devices. Check your connection and try again.",
+      "reference": "Reference: {digest}"
+    },
+    "options": {
+      "powerSources": {
+        "internal": "Internal battery",
+        "aircraft": "Aircraft power"
+      },
+      "engineInputs": {
+        "motion": "Motion sensor",
+        "ignition": "Ignition wire"
       }
     }
   }

@@ -10,6 +10,7 @@ import {
 import {
   AircraftCell,
   BatteryLevel,
+  EMPTY,
   SignalStrength,
   TrackerStatusBadge,
   compareVersions,
@@ -125,7 +126,7 @@ export default function DataPreview({
                   <AircraftCell aircraft={tracker.aircraft} />
                 </TableCell>
                 <TableCell>
-                  <p className="text-foreground">{tracker.sim ?? "—"}</p>
+                  <p className="text-foreground">{tracker.sim ?? EMPTY}</p>
                   {tracker.simNumber && (
                     <p
                       dir="ltr"
@@ -164,7 +165,7 @@ export default function DataPreview({
                       : undefined
                   }
                 >
-                  {tracker.firmware ?? "—"}
+                  {tracker.firmware ?? EMPTY}
                 </TableCell>
                 <TableCell className="pe-4 text-end">
                   <TrackerMenu

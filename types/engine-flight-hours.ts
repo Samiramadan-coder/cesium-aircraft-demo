@@ -40,6 +40,12 @@ export type AirCraft = {
   status: ServiceStatus;
 };
 
+// GET /v1/tracking/hours/fleet
+export type FleetHours = {
+  kpis: KPIS;
+  aircraft: AirCraft[];
+};
+
 /** Fleet hours merged with the aircraft's profile from `/v1/aircraft`. */
 export type FleetAircraft = AirCraft & {
   profile: TrackedAircraft | null;

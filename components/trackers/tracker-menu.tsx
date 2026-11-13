@@ -1,25 +1,6 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
 import { useState } from "react";
-import TrackerSheet from "./tracker-sheet";
-import DeleteTracker from "./delete-tracker";
-import TrackerForm from "./tracker-form";
-import PingTracker from "./ping-tracker";
-import CheckFirmware from "./check-firmware";
-import LinkTracker from "./link-tracker";
-import UnlinkTracker from "./unlink-tracker";
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import type { Tracker } from "@/types/trackers";
-import type { TrackedAircraft } from "@/types/tracking";
 import {
   Cable,
   CircuitBoard,
@@ -30,10 +11,35 @@ import {
   Trash2,
   Unlink,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { deleteTracker, unlinkTracker } from "@/lib/actions/trackers";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { Tracker } from "@/types/trackers";
+import type { TrackedAircraft } from "@/types/tracking";
+import CheckFirmware from "./check-firmware";
+import ConfirmDialog from "./confirm-dialog";
+import { richTags } from "./feedback";
+import LinkTracker from "./link-tracker";
+import PingTracker from "./ping-tracker";
+import { aircraftLabel } from "./shared";
+import TrackerForm from "./tracker-form";
+import TrackerSheet from "./tracker-sheet";
 
 const itemClassName =
   "gap-2.5 px-2 py-1.5 focus:bg-card-2 focus:text-foreground not-data-[variant=destructive]:focus:**:text-foreground";
 
+/** What the menu has opened; only one at a time. */
+type Opened =
+  "view" | "ping" | "firmware" | "link" | "unlink" | "edit" | "delete";
+
+/** The row's "⋯" menu and the sheet/dialogs it opens. */
 export default function TrackerMenu({
   tracker,
   aircraft,
@@ -48,14 +54,14 @@ export default function TrackerMenu({
   /** Tracker models offered by the edit form. */
   models: string[];
 }) {
-  const t = useTranslations("Trackers.menu");
-  const [viewing, setViewing] = useState(false);
-  const [pinging, setPinging] = useState(false);
-  const [linking, setLinking] = useState(false);
-  const [unlinking, setUnlinking] = useState(false);
-  const [checkingFirmware, setCheckingFirmware] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const t = useTranslations("Trackers");
+  const [opened, setOpened] = useState<Opened | null>(null);
+
+  /** `open`/`onOpenChange` props for the dialog that `key` opens. */
+  const dialog = (key: Opened) => ({
+    open: opened === key,
+    onOpenChange: (open: boolean) => setOpened(open ? key : null),
+  });
 
   return (
     <>
@@ -66,7 +72,7 @@ export default function TrackerMenu({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={t("label", { device: tracker.imei })}
+              aria-label={t("menu.label", { device: tracker.imei })}
               className="text-foreground-2 hover:bg-card-2 hover:text-foreground data-popup-open:bg-card-2"
             />
           }
@@ -76,49 +82,49 @@ export default function TrackerMenu({
 
         <DropdownMenuContent
           align="end"
-          className="w-44 bg-card text-foreground ring-border"
+          className="w-48 bg-card text-foreground ring-border"
         >
           <DropdownMenuItem
             className={itemClassName}
-            onClick={() => setViewing(true)}
+            onClick={() => setOpened("view")}
           >
             <Cable />
-            {t("view")}
+            {t("menu.view")}
           </DropdownMenuItem>
 
           <DropdownMenuItem
             className={itemClassName}
             disabled={tracker.status === "notInstalled"}
-            onClick={() => setPinging(true)}
+            onClick={() => setOpened("ping")}
           >
             <Radio />
-            {t("ping")}
+            {t("menu.ping")}
           </DropdownMenuItem>
 
           <DropdownMenuItem
             className={itemClassName}
-            onClick={() => setCheckingFirmware(true)}
+            onClick={() => setOpened("firmware")}
           >
             <CircuitBoard />
-            {t("checkFirmware")}
+            {t("menu.checkFirmware")}
           </DropdownMenuItem>
 
           {aircraft ? (
             <DropdownMenuItem
               variant="destructive"
               className={itemClassName}
-              onClick={() => setUnlinking(true)}
+              onClick={() => setOpened("unlink")}
             >
               <Unlink />
-              {t("unlink")}
+              {t("menu.unlink")}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
               className={itemClassName}
-              onClick={() => setLinking(true)}
+              onClick={() => setOpened("link")}
             >
               <Link2 />
-              {t("link")}
+              {t("menu.link")}
             </DropdownMenuItem>
           )}
 
@@ -126,64 +132,66 @@ export default function TrackerMenu({
 
           <DropdownMenuItem
             className={itemClassName}
-            onClick={() => setEditing(true)}
+            onClick={() => setOpened("edit")}
           >
             <Pencil />
-            {t("edit")}
+            {t("menu.edit")}
           </DropdownMenuItem>
 
           <DropdownMenuItem
             variant="destructive"
             className={itemClassName}
-            onClick={() => setDeleting(true)}
+            onClick={() => setOpened("delete")}
           >
             <Trash2 />
-            {t("delete")}
+            {t("menu.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {aircraft && (
-        <UnlinkTracker
-          tracker={tracker}
-          aircraft={aircraft}
-          open={unlinking}
-          onOpenChange={setUnlinking}
-        />
-      )}
+      <TrackerSheet
+        tracker={opened === "view" ? tracker : null}
+        aircraft={aircraft}
+        onClose={() => setOpened(null)}
+      />
+
+      <PingTracker tracker={tracker} {...dialog("ping")} />
+
+      <CheckFirmware tracker={tracker} {...dialog("firmware")} />
 
       <LinkTracker
         tracker={tracker}
         aircraft={availableAircraft}
-        open={linking}
-        onOpenChange={setLinking}
+        {...dialog("link")}
       />
 
-      <CheckFirmware
-        tracker={tracker}
-        open={checkingFirmware}
-        onOpenChange={setCheckingFirmware}
-      />
+      {aircraft && (
+        <ConfirmDialog
+          {...dialog("unlink")}
+          title={t("unlinkDialog.title")}
+          description={t.rich("unlinkDialog.description", {
+            device: tracker.model,
+            imei: tracker.imei,
+            aircraft: aircraftLabel(aircraft),
+            ...richTags,
+          })}
+          confirmLabel={t("unlinkDialog.confirm")}
+          onConfirm={() => unlinkTracker(tracker.id)}
+        />
+      )}
 
-      <PingTracker tracker={tracker} open={pinging} onOpenChange={setPinging} />
+      <TrackerForm trackerId={tracker.id} models={models} {...dialog("edit")} />
 
-      <TrackerForm
-        trackerId={tracker.id}
-        models={models}
-        open={editing}
-        onOpenChange={setEditing}
-      />
-
-      <DeleteTracker
-        tracker={tracker}
-        open={deleting}
-        onOpenChange={setDeleting}
-      />
-
-      <TrackerSheet
-        tracker={viewing ? tracker : null}
-        aircraft={aircraft}
-        onClose={() => setViewing(false)}
+      <ConfirmDialog
+        {...dialog("delete")}
+        title={t("deleteDialog.title")}
+        description={t.rich("deleteDialog.description", {
+          device: tracker.model,
+          imei: tracker.imei,
+          ...richTags,
+        })}
+        confirmLabel={t("deleteDialog.confirm")}
+        onConfirm={() => deleteTracker(tracker.id)}
       />
     </>
   );

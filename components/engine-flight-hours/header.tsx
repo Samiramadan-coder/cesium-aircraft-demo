@@ -5,7 +5,8 @@ import type {
   KPIS,
   MaintenanceAircraftOption,
 } from "@/types/engine-flight-hours";
-import LogMaintainance from "./maintainance/log-maintainance";
+import LogMaintenance from "./maintenance/log-maintenance";
+import { useHours } from "./shared";
 
 export default function Header({
   kpis,
@@ -16,11 +17,7 @@ export default function Header({
 }) {
   const t = useTranslations("EngineHours");
   const format = useFormatter();
-
-  const hours = (value: number) =>
-    t("hoursValue", {
-      value: format.number(value, { maximumFractionDigits: 1 }),
-    });
+  const hours = useHours({ minimumFractionDigits: 0 });
 
   const dueForService = kpis.dueSoonCount + kpis.overdueCount;
 
@@ -49,7 +46,7 @@ export default function Header({
           <p className="text-sm text-foreground-2">{t("subtitle")}</p>
         </div>
 
-        <LogMaintainance
+        <LogMaintenance
           aircraft={maintenanceAircraft}
           trigger={
             <Button type="button" size="lg">

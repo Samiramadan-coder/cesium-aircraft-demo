@@ -12,6 +12,34 @@ import { Badge } from "@/components/ui/badge";
 import type { TrackerStatus } from "@/types/trackers";
 import type { TrackedAircraft } from "@/types/tracking";
 
+/** Shown for a missing value. */
+export const EMPTY = "—";
+
+/** "Nov 13, 12:29 PM" — dates in the sheet and dialogs. */
+export const DATE_TIME_FORMAT = {
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+} as const;
+
+/** "A6-EFA — Falcon One", or just the registration. */
+export function aircraftLabel(aircraft: TrackedAircraft) {
+  return aircraft.name
+    ? `${aircraft.registration} — ${aircraft.name}`
+    : aircraft.registration;
+}
+
+/**
+ * Translated label for an API option value ("aircraft" → "Aircraft power"),
+ * falling back to the raw value for anything not in `Trackers.options`.
+ */
+export function useOptionLabel(group: "powerSources" | "engineInputs") {
+  const t = useTranslations(`Trackers.options.${group}`);
+  return (value: string) =>
+    t.has(value as "internal") ? t(value as "internal") : value;
+}
+
 const STATUS_STYLES: Record<TrackerStatus, string> = {
   online: "border-success/40 bg-success/10 text-success",
   offline: "border-danger/50 bg-danger/10 text-danger",
@@ -41,7 +69,7 @@ const BARS = [0.4, 0.6, 0.8, 1];
 export function SignalStrength({ value }: { value: number | null }) {
   const format = useFormatter();
 
-  if (value == null) return <span className="text-muted">—</span>;
+  if (value == null) return <span className="text-muted">{EMPTY}</span>;
 
   const filled = Math.ceil(
     (Math.max(0, Math.min(100, value)) / 100) * BARS.length,
@@ -71,7 +99,7 @@ export function SignalStrength({ value }: { value: number | null }) {
 export function BatteryLevel({ value }: { value: number | null }) {
   const format = useFormatter();
 
-  if (value == null) return <span className="text-muted">—</span>;
+  if (value == null) return <span className="text-muted">{EMPTY}</span>;
 
   const Icon =
     value >= 75

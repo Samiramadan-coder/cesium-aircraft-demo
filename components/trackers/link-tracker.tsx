@@ -3,41 +3,35 @@
 import { useEffect } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Controller, useForm, type Control } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ENGINEERS } from "@/constants/engineers";
 import { linkTracker } from "@/lib/actions/trackers";
 import {
   createTrackerLinkSchema,
   type TrackerLinkValues,
 } from "@/lib/validations/tracker-link";
-import { ENGINEERS } from "@/constants/engineers";
-import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Tracker } from "@/types/trackers";
 import type { TrackedAircraft } from "@/types/tracking";
-
-// The theme's popover/muted colors are light; match the dark cards instead.
-const controlClassName =
-  "w-full border-border bg-card-2/60 text-foreground hover:bg-card-2 aria-invalid:border-danger";
-const selectContentClassName = "bg-card text-foreground ring-border";
-const selectItemClassName =
-  "focus:bg-card-2 focus:text-foreground not-data-[variant=destructive]:focus:**:text-foreground";
+import {
+  CancelButton,
+  ErrorNotice,
+  Panel,
+  TrackerLabel,
+  dialogContentClassName,
+  dialogFooterClassName,
+} from "./feedback";
+import { FormSelect, applyServerErrors, toItems } from "@/components/form/form-controls";
+import { aircraftLabel } from "./shared";
 
 const FIELDS = ["aircraftId", "installedBy"] as const;
 
@@ -76,39 +70,18 @@ export default function LinkTracker({
 
   const aircraftItems = aircraft.map((item) => ({
     value: item.id,
-    label: item.name
-      ? `${item.registration} — ${item.name}`
-      : item.registration,
+    label: aircraftLabel(item),
   }));
-  const engineerItems = ENGINEERS.map((value) => ({ value, label: value }));
 
   async function onSubmit(values: TrackerLinkValues) {
     const result = await linkTracker(tracker.id, values);
-
-    if (result.ok) {
-      onOpenChange(false);
-      return;
-    }
-
-    let shownOnField = false;
-    for (const [field, message] of Object.entries(result.fieldErrors ?? {})) {
-      if ((FIELDS as readonly string[]).includes(field)) {
-        setError(
-          field as (typeof FIELDS)[number],
-          { message },
-          {
-            shouldFocus: !shownOnField,
-          },
-        );
-        shownOnField = true;
-      }
-    }
-    if (!shownOnField) setError("root.server", { message: result.message });
+    if (result.ok) onOpenChange(false);
+    else applyServerErrors(result, FIELDS, setError);
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-border bg-card text-foreground sm:max-w-md *:data-[slot=dialog-close]:text-foreground-2">
+      <DialogContent className={`${dialogContentClassName} sm:max-w-md`}>
         <form
           noValidate
           onSubmit={handleSubmit(onSubmit)}
@@ -119,55 +92,39 @@ export default function LinkTracker({
               {t("title")}
             </DialogTitle>
             <DialogDescription className="text-foreground-2">
-              {tracker.model} ·{" "}
-              <span dir="ltr" className="font-mono tabular-nums">
-                {tracker.imei}
-              </span>
+              <TrackerLabel tracker={tracker} />
             </DialogDescription>
           </DialogHeader>
 
           {errors.root?.server && (
-            <p
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm text-danger"
-            >
-              {errors.root.server.message}
-            </p>
+            <ErrorNotice message={errors.root.server.message} />
           )}
 
           {aircraft.length === 0 ? (
-            <p className="rounded-lg border border-border bg-card-2/40 px-3 py-2.5 text-sm text-foreground-2">
+            <Panel className="py-2.5 text-sm text-foreground-2">
               {t("noAircraft")}
-            </p>
+            </Panel>
           ) : (
             <>
-              <SelectField
+              <FormSelect
                 control={control}
                 name="aircraftId"
+                id="link-aircraftId"
                 label={t("aircraft")}
                 items={aircraftItems}
               />
-              <SelectField
+              <FormSelect
                 control={control}
                 name="installedBy"
+                id="link-installedBy"
                 label={t("installedBy")}
-                items={engineerItems}
+                items={toItems(ENGINEERS)}
               />
             </>
           )}
 
-          <DialogFooter className="border-border bg-card-2/40">
-            <DialogClose
-              render={
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-border bg-card text-foreground hover:bg-card-2"
-                />
-              }
-            >
-              {t("cancel")}
-            </DialogClose>
+          <DialogFooter className={dialogFooterClassName}>
+            <CancelButton />
             <Button
               type="submit"
               disabled={isSubmitting || aircraft.length === 0}
@@ -179,53 +136,5 @@ export default function LinkTracker({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SelectField({
-  control,
-  name,
-  label,
-  items,
-}: {
-  control: Control<TrackerLinkValues>;
-  name: keyof TrackerLinkValues;
-  label: string;
-  items: { value: string; label: string }[];
-}) {
-  return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState: { error } }) => (
-        <LabeledField id={`link-${name}`} label={label} error={error} required>
-          <Select
-            items={items}
-            value={field.value}
-            onValueChange={(value) => field.onChange(value ?? "")}
-          >
-            <SelectTrigger
-              {...fieldA11yProps(`link-${name}`, error)}
-              ref={field.ref}
-              onBlur={field.onBlur}
-              className={controlClassName}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className={selectContentClassName}>
-              {items.map((item) => (
-                <SelectItem
-                  key={item.value}
-                  value={item.value}
-                  className={selectItemClassName}
-                >
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </LabeledField>
-      )}
-    />
   );
 }

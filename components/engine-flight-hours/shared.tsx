@@ -4,6 +4,13 @@ import { cn } from "cn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type {
   Compliance,
   NextService,
@@ -11,18 +18,115 @@ import type {
 } from "@/types/engine-flight-hours";
 import type { TrackedAircraft } from "@/types/tracking";
 
-/** Formats hours as "12.3h" (localized). */
-export function useHours() {
+/** Shown for a missing value. */
+export const EMPTY = "—";
+
+/**
+ * Formats hours as "12.3h" (localized). `minimumFractionDigits: 0` drops a
+ * trailing ".0" ("12h") where the value doesn't need to line up in a column.
+ */
+export function useHours({ minimumFractionDigits = 1 } = {}) {
   const t = useTranslations("EngineHours");
   const format = useFormatter();
 
   return (value: number) =>
     t("hoursValue", {
       value: format.number(value, {
-        minimumFractionDigits: 1,
+        minimumFractionDigits,
         maximumFractionDigits: 1,
       }),
     });
+}
+
+const surfaceClassName = "rounded-xl bg-card ring-1 ring-foreground/10";
+
+/** "No … yet" card shown instead of an empty list. */
+export function EmptyState({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      className={cn(
+        "p-8 text-center text-sm text-foreground-2",
+        surfaceClassName,
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+/** A bordered box inside the details sheet. */
+export function Panel({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border border-border bg-card-2/40 p-3",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export type Column = { key: string; label: string; numeric?: boolean };
+
+/** The card + header row shared by the pilots, daily log and maintenance tabs. */
+export function HoursTable({
+  columns,
+  children,
+}: {
+  columns: Column[];
+  /** The `<TableRow>`s. */
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("overflow-hidden", surfaceClassName)}>
+      <Table>
+        <TableHeader>
+          <TableRow className="border-border hover:bg-transparent">
+            {columns.map((column) => (
+              <TableHead
+                key={column.key}
+                className={cn(
+                  "text-foreground first:ps-4 last:pe-4",
+                  column.numeric && "text-end",
+                )}
+              >
+                {column.label}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>{children}</TableBody>
+      </Table>
+    </div>
+  );
+}
+
+export const rowClassName = "border-border hover:bg-card-2/50";
+
+/** Registration with the aircraft's name below; the raw id when unknown. */
+export function AircraftName({
+  id,
+  profile,
+}: {
+  id: string;
+  profile: TrackedAircraft | undefined;
+}) {
+  return (
+    <>
+      <p className="font-medium text-foreground">
+        {profile?.registration ?? id}
+      </p>
+      {profile?.name && (
+        <p className="text-xs text-foreground-2">{profile.name}</p>
+      )}
+    </>
+  );
+}
+
+/** Lookup by `id`, so table rows don't scan the whole list. */
+export function indexById<T extends { id: string }>(items: T[]) {
+  return new Map(items.map((item) => [item.id, item]));
 }
 
 const STATUS_STYLES: Record<ServiceStatus, { badge: string; bar: string }> = {

@@ -25,6 +25,8 @@ export async function logMaintenance(
     api.post<unknown>("/v1/tracking/maintenance", payload),
   );
   // Hours, service status and KPIs all change; refresh the whole section.
-  if (result.ok) revalidatePath("/[locale]/(main)/engine-hours", "layout");
+  if (result.ok) {
+    revalidatePath("/[locale]/(main)/engine-hours/(hours)", "layout");
+  }
   return result;
 }

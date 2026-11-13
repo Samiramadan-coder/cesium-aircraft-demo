@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { cn } from "cn";
+import { useLoad } from "@/hooks/use-load";
 import { getAircraftHours } from "@/lib/actions/engine-hours";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,19 +33,15 @@ import type { TrackedPilot } from "@/types/tracking";
 import {
   AircraftAvatar,
   ComplianceBadge,
+  Panel,
   ServiceProgress,
   StatusBadge,
   useFlightType,
   useHours,
   useServiceType,
-} from "./shared";
+} from "../shared";
 import UtilizationChart from "./utilization-chart";
-import LogMaintainance from "../maintainance/log-maintainance";
-
-type DetailsState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; data: AircraftHoursDetails };
+import LogMaintenance from "../maintenance/log-maintenance";
 
 const TABS = ["overview", "maintenance", "flightLog"] as const;
 
@@ -66,23 +62,11 @@ export default function AircraftSheet({
   const [shown, setShown] = useState(aircraft);
   if (aircraft && aircraft !== shown) setShown(aircraft);
 
-  const [details, setDetails] = useState<DetailsState>({ status: "loading" });
-  const aircraftId = aircraft?.aircraftId;
-
-  const load = useCallback(async (id: string) => {
-    setDetails({ status: "loading" });
-    const result = await getAircraftHours(id);
-    setDetails(
-      result.ok
-        ? { status: "ready", data: result.data }
-        : { status: "error", message: result.message },
-    );
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open
-    if (aircraftId) load(aircraftId);
-  }, [aircraftId, load]);
+  // Ignores a late response for a previously opened aircraft.
+  const { state: details, retry } = useLoad(
+    aircraft?.aircraftId ?? null,
+    getAircraftHours,
+  );
 
   return (
     <Sheet open={!!aircraft} onOpenChange={(open) => !open && onClose()}>
@@ -119,13 +103,17 @@ export default function AircraftSheet({
               {details.status === "loading" && <DetailsSkeleton />}
 
               {details.status === "error" && (
-                <div className="space-y-3 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+                <div
+                  role="alert"
+                  className="space-y-3 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger"
+                >
                   <p>{details.message}</p>
                   <Button
+                    type="button"
                     size="sm"
                     variant="outline"
                     className="border-border bg-card text-foreground hover:bg-card-2"
-                    onClick={() => shown && load(shown.aircraftId)}
+                    onClick={retry}
                   >
                     {t("retry")}
                   </Button>
@@ -138,7 +126,7 @@ export default function AircraftSheet({
                     <Overview
                       details={details.data}
                       maintenanceAircraft={maintenanceAircraft}
-                      onLogged={() => load(details.data.aircraftId)}
+                      onLogged={retry}
                     />
                   </TabsContent>
                   <TabsContent value="maintenance">
@@ -154,15 +142,6 @@ export default function AircraftSheet({
         )}
       </SheetContent>
     </Sheet>
-  );
-}
-
-function Panel({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      className={cn("rounded-lg border border-border bg-card-2/40 p-3", className)}
-      {...props}
-    />
   );
 }
 
@@ -218,7 +197,7 @@ function Overview({
         <UtilizationChart data={utilization} />
       </div>
 
-      <LogMaintainance
+      <LogMaintenance
         aircraft={maintenanceAircraft}
         defaultAircraftId={details.aircraftId}
         onLogged={onLogged}

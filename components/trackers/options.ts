@@ -7,6 +7,6 @@ export const SIM_CARRIERS = [
   { value: "du", apn: "du.internet" },
 ] as const;
 
-// Match the keys in `Trackers.addDialog.powerSources` / `engineInputs`.
+// Match the keys in `Trackers.options.powerSources` / `engineInputs`.
 export const POWER_SOURCES = ["internal", "aircraft"] as const;
 export const ENGINE_INPUTS = ["motion", "ignition"] as const;

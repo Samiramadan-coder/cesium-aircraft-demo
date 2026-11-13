@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
+import { cn } from "cn";
+import { getTracker } from "@/lib/actions/trackers";
 import {
   Sheet,
   SheetContent,
@@ -7,32 +11,27 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Tracker, TrackerDetails } from "@/types/trackers";
+import type { TrackedAircraft } from "@/types/tracking";
+import { ErrorNotice, Panel } from "./feedback";
 import {
   BatteryLevel,
+  DATE_TIME_FORMAT,
+  EMPTY,
   SignalStrength,
   TrackerStatusBadge,
+  aircraftLabel,
   toDate,
+  useOptionLabel,
 } from "./shared";
-
-import { cn } from "cn";
 import TrackerHealthTab from "./tracker-health";
-import { Button } from "@/components/ui/button";
-import { getTracker } from "@/lib/actions/trackers";
-import { Skeleton } from "@/components/ui/skeleton";
-import type { TrackedAircraft } from "@/types/tracking";
-import { useCallback, useEffect, useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
-import type { Tracker, TrackerDetails } from "@/types/trackers";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-type DetailsState =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "ready"; data: TrackerDetails };
+import { useLoad } from "@/hooks/use-load";
 
 const TABS = ["overview", "liveStatus", "configuration", "health"] as const;
 
+/** Side sheet with a tracker's details, opened by the row menu's "View". */
 export default function TrackerSheet({
   tracker,
   aircraft,
@@ -48,23 +47,7 @@ export default function TrackerSheet({
   const [shown, setShown] = useState(tracker);
   if (tracker && tracker !== shown) setShown(tracker);
 
-  const [details, setDetails] = useState<DetailsState>({ status: "loading" });
-  const trackerId = tracker?.id;
-
-  const load = useCallback(async (id: string) => {
-    setDetails({ status: "loading" });
-    const result = await getTracker(id);
-    setDetails(
-      result.ok
-        ? { status: "ready", data: result.data }
-        : { status: "error", message: result.message },
-    );
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on open
-    if (trackerId) load(trackerId);
-  }, [trackerId, load]);
+  const { state, retry } = useLoad(tracker?.id ?? null, getTracker);
 
   return (
     <Sheet open={!!tracker} onOpenChange={(open) => !open && onClose()}>
@@ -74,9 +57,7 @@ export default function TrackerSheet({
             <SheetHeader className="items-start gap-1.5 p-4 pe-12">
               <TrackerStatusBadge
                 status={
-                  details.status === "ready"
-                    ? details.data.status
-                    : shown.status
+                  state.status === "ready" ? state.data.status : shown.status
                 }
               />
               <SheetTitle className="text-lg font-semibold">
@@ -102,37 +83,27 @@ export default function TrackerSheet({
                 </TabsList>
               </div>
 
-              {details.status === "loading" && <DetailsSkeleton />}
+              {state.status === "loading" && <DetailsSkeleton />}
 
-              {details.status === "error" && (
-                <div className="space-y-3 rounded-lg border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
-                  <p>{details.message}</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-border bg-card text-foreground hover:bg-card-2"
-                    onClick={() => load(shown.id)}
-                  >
-                    {t("retry")}
-                  </Button>
-                </div>
+              {state.status === "error" && (
+                <ErrorNotice message={state.message} onRetry={retry} />
               )}
 
-              {details.status === "ready" && (
+              {state.status === "ready" && (
                 <>
                   <TabsContent value="overview">
-                    <Overview details={details.data} aircraft={aircraft} />
+                    <Overview details={state.data} aircraft={aircraft} />
                   </TabsContent>
                   <TabsContent value="liveStatus">
-                    <LiveStatus details={details.data} />
+                    <LiveStatus details={state.data} />
                   </TabsContent>
                   <TabsContent value="configuration">
-                    <Configuration details={details.data} />
+                    <Configuration details={state.data} />
                   </TabsContent>
                   <TabsContent value="health">
                     <TrackerHealthTab
-                      trackerId={details.data.id}
-                      events={details.data.connectionEvents ?? []}
+                      trackerId={state.data.id}
+                      events={state.data.connectionEvents ?? []}
                     />
                   </TabsContent>
                 </>
@@ -145,18 +116,7 @@ export default function TrackerSheet({
   );
 }
 
-function Panel({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      className={cn(
-        "rounded-lg border border-border bg-card-2/40 p-3",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
-
+/** A label/value row; `null`, `false` and `""` values show as "—". */
 function Row({
   label,
   value,
@@ -168,6 +128,8 @@ function Row({
   note?: React.ReactNode;
   mono?: boolean;
 }) {
+  const missing = value == null || value === false || value === "";
+
   return (
     <Panel className="flex items-center justify-between gap-4">
       <span className="text-sm text-foreground-2">{label}</span>
@@ -179,7 +141,7 @@ function Row({
             mono && "font-mono tabular-nums",
           )}
         >
-          {value}
+          {missing ? EMPTY : value}
         </span>
         {note && (
           <span className="block text-xs text-foreground-2">{note}</span>
@@ -191,8 +153,7 @@ function Row({
 
 /** "•••• 3894" — only the last four digits are shown. */
 function maskNumber(value: string) {
-  const digits = value.replace(/\D/g, "");
-  return `•••• ${digits.slice(-4)}`;
+  return `•••• ${value.replace(/\D/g, "").slice(-4)}`;
 }
 
 function Overview({
@@ -204,17 +165,16 @@ function Overview({
 }) {
   const t = useTranslations("Trackers.details.overview");
   const format = useFormatter();
-  const empty = "—";
   const installedAt = toDate(details.installedAt);
 
   return (
     <div className="space-y-2">
       <Row label={t("model")} value={details.model} />
       <Row label={t("imei")} value={details.imei} mono />
-      <Row label={t("serial")} value={details.serial ?? empty} mono />
+      <Row label={t("serial")} value={details.serial} mono />
       <Row
         label={t("firmware")}
-        value={details.firmware ?? empty}
+        value={details.firmware}
         mono
         note={
           details.firmwareLatest &&
@@ -223,56 +183,36 @@ function Overview({
       />
       <Row
         label={t("linkedAircraft")}
-        value={
-          aircraft
-            ? `${aircraft.registration} — ${aircraft.name}`
-            : t("noAircraft")
-        }
+        value={aircraft ? aircraftLabel(aircraft) : t("noAircraft")}
       />
       <Row
         label={t("installed")}
-        value={
-          installedAt
-            ? format.dateTime(installedAt, {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : empty
-        }
+        value={installedAt && format.dateTime(installedAt, DATE_TIME_FORMAT)}
         note={
           details.installedBy && t("installedBy", { name: details.installedBy })
         }
       />
-      <Row label={t("sim")} value={details.sim ?? empty} />
+      <Row label={t("sim")} value={details.sim} />
       <Row
         label={t("simNumber")}
-        value={details.simNumber ? maskNumber(details.simNumber) : empty}
+        value={details.simNumber && maskNumber(details.simNumber)}
         mono
       />
-      <Row label={t("apn")} value={details.apn ?? empty} mono />
+      <Row label={t("apn")} value={details.apn} mono />
     </div>
   );
 }
 
 function LiveStatus({ details }: { details: TrackerDetails }) {
   const t = useTranslations("Trackers.details.liveStatus");
-  const tPower = useTranslations("Trackers.addDialog.powerSources");
+  const powerLabel = useOptionLabel("powerSources");
   const format = useFormatter();
-  const empty = "—";
 
-  const decimal = (value: number, digits: number) =>
+  const oneDecimal = (value: number) =>
     format.number(value, {
-      minimumFractionDigits: digits,
-      maximumFractionDigits: digits,
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
     });
-
-  const powerSource = details.powerSource
-    ? tPower.has(details.powerSource as "internal")
-      ? tPower(details.powerSource as "internal")
-      : details.powerSource
-    : undefined;
 
   return (
     <div className="space-y-2">
@@ -290,45 +230,37 @@ function LiveStatus({ details }: { details: TrackerDetails }) {
       <Row
         label={t("powerVoltage")}
         value={
-          details.powerVoltage != null
-            ? t("volts", { value: decimal(details.powerVoltage, 1) })
-            : empty
+          details.powerVoltage != null &&
+          t("volts", { value: oneDecimal(details.powerVoltage) })
         }
-        note={powerSource}
+        note={details.powerSource && powerLabel(details.powerSource)}
       />
       <Row
         label={t("engineState")}
         value={
-          details.engineOn == null
-            ? empty
-            : details.engineOn
-              ? t("running")
-              : t("off")
+          details.engineOn != null &&
+          (details.engineOn ? t("running") : t("off"))
         }
       />
       <Row
         label={t("lastPosition")}
         value={
-          details.lastPosition
-            ? `${details.lastPosition.lat.toFixed(4)}, ${details.lastPosition.lon.toFixed(4)}`
-            : empty
+          details.lastPosition &&
+          `${details.lastPosition.lat.toFixed(4)}, ${details.lastPosition.lon.toFixed(4)}`
         }
         mono
       />
       <Row
         label={t("gpsSatellites")}
         value={
-          details.gpsSatellites != null
-            ? format.number(details.gpsSatellites)
-            : empty
+          details.gpsSatellites != null && format.number(details.gpsSatellites)
         }
       />
       <Row
         label={t("gpsAccuracy")}
         value={
-          details.gpsAccuracyM != null
-            ? t("meters", { value: decimal(details.gpsAccuracyM, 1) })
-            : empty
+          details.gpsAccuracyM != null &&
+          t("meters", { value: oneDecimal(details.gpsAccuracyM) })
         }
       />
     </div>
@@ -337,48 +269,40 @@ function LiveStatus({ details }: { details: TrackerDetails }) {
 
 function Configuration({ details }: { details: TrackerDetails }) {
   const t = useTranslations("Trackers.details.configuration");
-  const tEngine = useTranslations("Trackers.addDialog.engineInputs");
+  const engineLabel = useOptionLabel("engineInputs");
   const format = useFormatter();
-  const empty = "—";
 
-  const num = (value: number | null, key: "seconds" | "degrees" | "meters") =>
-    value != null ? t(key, { value: format.number(value) }) : empty;
-
-  const engineInput = details.engineInput
-    ? tEngine.has(details.engineInput as "motion")
-      ? tEngine(details.engineInput as "motion")
-      : details.engineInput
-    : empty;
+  const unit = (value: number | null, key: "seconds" | "degrees" | "meters") =>
+    value != null && t(key, { value: format.number(value) });
 
   return (
     <div className="space-y-2">
-      <Row
-        label={t("serverHost")}
-        value={details.serverAddress ?? empty}
-        mono
-      />
+      <Row label={t("serverHost")} value={details.serverAddress} mono />
       <Row
         label={t("serverPort")}
-        value={details.serverPort != null ? String(details.serverPort) : empty}
+        value={details.serverPort != null && String(details.serverPort)}
         mono
       />
       <Row
         label={t("intervalInFlight")}
-        value={num(details.reportingIntervalFlightSec, "seconds")}
+        value={unit(details.reportingIntervalFlightSec, "seconds")}
       />
       <Row
         label={t("intervalOnGround")}
-        value={num(details.reportingIntervalGroundSec, "seconds")}
+        value={unit(details.reportingIntervalGroundSec, "seconds")}
       />
       <Row
         label={t("angleTrigger")}
-        value={num(details.angleTriggerDeg, "degrees")}
+        value={unit(details.angleTriggerDeg, "degrees")}
       />
       <Row
         label={t("distanceTrigger")}
-        value={num(details.distanceTriggerM, "meters")}
+        value={unit(details.distanceTriggerM, "meters")}
       />
-      <Row label={t("engineInput")} value={engineInput} />
+      <Row
+        label={t("engineInput")}
+        value={details.engineInput && engineLabel(details.engineInput)}
+      />
     </div>
   );
 }

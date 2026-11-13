@@ -1,15 +1,16 @@
 import { useFormatter, useTranslations } from "next-intl";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableRow } from "@/components/ui/table";
 import type { DailyLogEntry } from "@/types/engine-flight-hours";
 import type { TrackedAircraft, TrackedPilot } from "@/types/tracking";
-import { ComplianceBadge, useFlightType } from "../fleet/shared";
+import {
+  AircraftName,
+  ComplianceBadge,
+  EmptyState,
+  HoursTable,
+  indexById,
+  rowClassName,
+  useFlightType,
+} from "../shared";
 
 const COLUMNS = [
   { key: "date" },
@@ -22,6 +23,8 @@ const COLUMNS = [
   { key: "engineTime", numeric: true },
   { key: "compliance" },
 ] as const;
+
+const numericCell = "text-end tabular-nums text-foreground";
 
 export default function DataPreview({
   logs,
@@ -36,13 +39,10 @@ export default function DataPreview({
   const format = useFormatter();
   const flightType = useFlightType();
 
-  if (logs.length === 0) {
-    return (
-      <p className="rounded-xl bg-card p-8 text-center text-sm text-foreground-2 ring-1 ring-foreground/10">
-        {t("empty")}
-      </p>
-    );
-  }
+  if (logs.length === 0) return <EmptyState>{t("empty")}</EmptyState>;
+
+  const aircraftById = indexById(aircraft);
+  const pilotsById = indexById(pilots);
 
   const hobbs = (value: number) =>
     format.number(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -52,76 +52,48 @@ export default function DataPreview({
   const rows = [...logs].sort((a, b) => b.takeoffTime - a.takeoffTime);
 
   return (
-    <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-border hover:bg-transparent">
-            {COLUMNS.map((column) => (
-              <TableHead
-                key={column.key}
-                className={
-                  "numeric" in column
-                    ? "text-end text-foreground"
-                    : "text-foreground first:ps-4 last:pe-4"
-                }
-              >
-                {t(`columns.${column.key}`)}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((log) => {
-            const plane = aircraft.find((item) => item.id === log.aircraftId);
-            const pilot = pilots.find((item) => item.id === log.pilotId);
-
-            return (
-              <TableRow
-                key={log.flightId}
-                className="border-border hover:bg-card-2/50"
-              >
-                <TableCell className="ps-4 text-foreground">
-                  {format.dateTime(log.takeoffTime, {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </TableCell>
-                <TableCell>
-                  <p className="font-medium text-foreground">
-                    {plane?.registration ?? log.aircraftId}
-                  </p>
-                  {plane?.name && (
-                    <p className="text-xs text-foreground-2">{plane.name}</p>
-                  )}
-                </TableCell>
-                <TableCell className="text-foreground">
-                  {pilot?.name ?? t("unknownPilot")}
-                </TableCell>
-                <TableCell className="text-muted">
-                  {flightType(log.flightType)}
-                </TableCell>
-                <TableCell className="text-end tabular-nums text-foreground">
-                  {hobbs(log.hobbsStart)}
-                </TableCell>
-                <TableCell className="text-end tabular-nums text-foreground">
-                  {hobbs(log.hobbsEnd)}
-                </TableCell>
-                <TableCell className="text-end tabular-nums text-foreground">
-                  {minutes(log.flightTimeMin)}
-                </TableCell>
-                <TableCell className="text-end tabular-nums text-foreground">
-                  {minutes(log.engineTimeMin)}
-                </TableCell>
-                <TableCell className="pe-4">
-                  <ComplianceBadge compliance={log.compliance} />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+    <HoursTable
+      columns={COLUMNS.map((column) => ({
+        ...column,
+        label: t(`columns.${column.key}`),
+      }))}
+    >
+      {rows.map((log) => (
+        <TableRow key={log.flightId} className={rowClassName}>
+          <TableCell className="ps-4 text-foreground">
+            {format.dateTime(log.takeoffTime, {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </TableCell>
+          <TableCell>
+            <AircraftName
+              id={log.aircraftId}
+              profile={aircraftById.get(log.aircraftId)}
+            />
+          </TableCell>
+          <TableCell className="text-foreground">
+            {(log.pilotId && pilotsById.get(log.pilotId)?.name) ||
+              t("unknownPilot")}
+          </TableCell>
+          <TableCell className="text-muted">
+            {flightType(log.flightType)}
+          </TableCell>
+          <TableCell className={numericCell}>{hobbs(log.hobbsStart)}</TableCell>
+          <TableCell className={numericCell}>{hobbs(log.hobbsEnd)}</TableCell>
+          <TableCell className={numericCell}>
+            {minutes(log.flightTimeMin)}
+          </TableCell>
+          <TableCell className={numericCell}>
+            {minutes(log.engineTimeMin)}
+          </TableCell>
+          <TableCell className="pe-4">
+            <ComplianceBadge compliance={log.compliance} />
+          </TableCell>
+        </TableRow>
+      ))}
+    </HoursTable>
   );
 }

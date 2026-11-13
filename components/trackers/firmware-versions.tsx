@@ -14,7 +14,6 @@ import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -24,12 +23,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { FirmwareVersion } from "@/types/trackers";
-
-const controlClassName =
-  "w-full border-border bg-card-2/60 text-foreground placeholder:text-muted/70 hover:bg-card-2 aria-invalid:border-danger";
+import {
+  CancelButton,
+  ErrorNotice,
+  Panel,
+  dialogContentClassName,
+  dialogFooterClassName,
+} from "./feedback";
+import { applyServerErrors, controlClassName } from "@/components/form/form-controls";
 
 const FIELDS = ["model", "latestVersion"] as const;
-const EMPTY: FirmwareVersionValues = { model: "", latestVersion: "" };
+const EMPTY_VALUES: FirmwareVersionValues = { model: "", latestVersion: "" };
 
 /**
  * Lists the latest firmware per model and saves a new release
@@ -44,6 +48,7 @@ export default function FirmwareVersions({
   trigger: React.ReactElement;
 }) {
   const t = useTranslations("Trackers.firmwareVersions");
+  const tCommon = useTranslations("Trackers.common");
   const [open, setOpen] = useState(false);
 
   const {
@@ -57,12 +62,12 @@ export default function FirmwareVersions({
     resolver: zodResolver(
       createFirmwareVersionSchema((key) => t(`errors.${key}`)),
     ),
-    defaultValues: EMPTY,
+    defaultValues: EMPTY_VALUES,
   });
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
-    if (next) reset(EMPTY);
+    if (next) reset(EMPTY_VALUES);
   }
 
   function edit(version: FirmwareVersion) {
@@ -72,32 +77,18 @@ export default function FirmwareVersions({
 
   async function onSubmit(values: FirmwareVersionValues) {
     const result = await saveFirmwareVersion(values);
-
-    if (result.ok) {
-      // Stay open so several models can be updated in a row.
-      reset(EMPTY);
-      return;
-    }
-
-    let shownOnField = false;
-    for (const [field, message] of Object.entries(result.fieldErrors ?? {})) {
-      if ((FIELDS as readonly string[]).includes(field)) {
-        setError(
-          field as (typeof FIELDS)[number],
-          { message },
-          { shouldFocus: !shownOnField },
-        );
-        shownOnField = true;
-      }
-    }
-    if (!shownOnField) setError("root.server", { message: result.message });
+    // Stay open so several models can be updated in a row.
+    if (result.ok) reset(EMPTY_VALUES);
+    else applyServerErrors(result, FIELDS, setError);
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger render={trigger} />
 
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border-border bg-card text-foreground sm:max-w-lg *:data-[slot=dialog-close]:text-foreground-2">
+      <DialogContent
+        className={`${dialogContentClassName} max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg`}
+      >
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
             {t("title")}
@@ -110,37 +101,34 @@ export default function FirmwareVersions({
         <section className="space-y-2">
           <h4 className="text-sm text-foreground-2">{t("current")}</h4>
           {versions.length === 0 ? (
-            <p className="rounded-lg border border-border bg-card-2/40 p-3 text-sm text-muted">
-              {t("empty")}
-            </p>
+            <Panel className="text-sm text-muted">{t("empty")}</Panel>
           ) : (
             <ul className="space-y-2">
               {versions.map((version) => (
-                <li
-                  key={version.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card-2/40 py-2 ps-3 pe-2"
-                >
-                  <span className="min-w-0 truncate text-sm">
-                    {version.model}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    <span
-                      dir="ltr"
-                      className="font-mono font-semibold tabular-nums"
-                    >
-                      {version.latestVersion}
+                <li key={version.id}>
+                  <Panel className="flex items-center justify-between gap-3 py-2 pe-2">
+                    <span className="min-w-0 truncate text-sm">
+                      {version.model}
                     </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-label={t("editLabel", { model: version.model })}
-                      className="text-foreground-2 hover:bg-card-2 hover:text-foreground"
-                      onClick={() => edit(version)}
-                    >
-                      <Pencil />
-                    </Button>
-                  </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span
+                        dir="ltr"
+                        className="font-mono font-semibold tabular-nums"
+                      >
+                        {version.latestVersion}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label={t("editLabel", { model: version.model })}
+                        className="text-foreground-2 hover:bg-card-2 hover:text-foreground"
+                        onClick={() => edit(version)}
+                      >
+                        <Pencil />
+                      </Button>
+                    </span>
+                  </Panel>
                 </li>
               ))}
             </ul>
@@ -155,12 +143,7 @@ export default function FirmwareVersions({
           <h4 className="text-sm text-foreground-2">{t("formTitle")}</h4>
 
           {errors.root?.server && (
-            <p
-              role="alert"
-              className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm text-danger"
-            >
-              {errors.root.server.message}
-            </p>
+            <ErrorNotice message={errors.root.server.message} />
           )}
 
           <div className="grid gap-4 sm:grid-cols-[1fr_10rem]">
@@ -202,18 +185,8 @@ export default function FirmwareVersions({
             </LabeledField>
           </div>
 
-          <DialogFooter className="border-border bg-card-2/40">
-            <DialogClose
-              render={
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-border bg-card text-foreground hover:bg-card-2"
-                />
-              }
-            >
-              {t("close")}
-            </DialogClose>
+          <DialogFooter className={dialogFooterClassName}>
+            <CancelButton>{tCommon("close")}</CancelButton>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <LoaderCircle className="animate-spin" />}
               {t("save")}

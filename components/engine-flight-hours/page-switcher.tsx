@@ -18,7 +18,7 @@ const PAGES = [
   { key: "fleet", href: BASE },
   { key: "pilots", href: `${BASE}/pilots` },
   { key: "dailyLog", href: `${BASE}/daily-log` },
-  { key: "maintenance", href: `${BASE}/maintainance` },
+  { key: "maintenance", href: `${BASE}/maintenance` },
 ] as const;
 
 const PERIODS = [

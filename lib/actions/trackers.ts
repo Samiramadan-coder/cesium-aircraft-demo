@@ -6,132 +6,102 @@ import { runAction, type ActionResult } from "@/lib/api/errors";
 import type {
   FirmwareCheck,
   FirmwareVersionPayload,
-  TrackerDetails,
   HealthPoint,
+  TrackerDetails,
   TrackerLinkPayload,
   TrackerPayload,
 } from "@/types/trackers";
 
-export async function addTracker(
-  payload: TrackerPayload,
-): Promise<ActionResult<unknown>> {
-  const result = await runAction(() =>
-    api.post<unknown>("/v1/tracking/trackers", payload),
-  );
-  // The table and the KPIs both change.
+/** `/v1/tracking/trackers/{id}` plus an optional sub-path. */
+function trackerPath(trackerId: string, suffix = "") {
+  return `/v1/tracking/trackers/${encodeURIComponent(trackerId)}${suffix}`;
+}
+
+/**
+ * Runs a change and, when it succeeds, refreshes the trackers page — the
+ * table, the KPIs and the firmware lists all come from the server.
+ */
+async function mutate<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
+  const result = await runAction(fn);
   if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
   return result;
 }
 
+// Reads (used by the sheet and the edit form)
+
 export async function getTracker(
   trackerId: string,
 ): Promise<ActionResult<TrackerDetails>> {
-  return runAction(() =>
-    api.get<TrackerDetails>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}`,
-    ),
-  );
+  return runAction(() => api.get<TrackerDetails>(trackerPath(trackerId)));
 }
 
 export async function getTrackerHealth(
   trackerId: string,
 ): Promise<ActionResult<HealthPoint[]>> {
   return runAction(() =>
-    api.get<HealthPoint[]>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/health`,
-    ),
+    api.get<HealthPoint[]>(trackerPath(trackerId, "/health")),
   );
 }
 
-export async function deleteTracker(
-  trackerId: string,
+// Tracker CRUD
+
+export async function addTracker(
+  payload: TrackerPayload,
 ): Promise<ActionResult<unknown>> {
-  const result = await runAction(() =>
-    api.delete<unknown>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}`,
-    ),
-  );
-  // The table and the KPIs both change.
-  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
-  return result;
+  return mutate(() => api.post<unknown>("/v1/tracking/trackers", payload));
 }
 
 export async function updateTracker(
   trackerId: string,
   payload: Partial<TrackerPayload>,
 ): Promise<ActionResult<unknown>> {
-  const result = await runAction(() =>
-    api.patch<unknown>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}`,
-      payload,
-    ),
-  );
-  // The table and the KPIs both change.
-  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
-  return result;
+  return mutate(() => api.patch<unknown>(trackerPath(trackerId), payload));
 }
 
+export async function deleteTracker(
+  trackerId: string,
+): Promise<ActionResult<unknown>> {
+  return mutate(() => api.delete<unknown>(trackerPath(trackerId)));
+}
+
+// Row actions
+
+export async function linkTracker(
+  trackerId: string,
+  payload: TrackerLinkPayload,
+): Promise<ActionResult<unknown>> {
+  return mutate(() =>
+    api.post<unknown>(trackerPath(trackerId, "/link"), payload),
+  );
+}
+
+export async function unlinkTracker(
+  trackerId: string,
+): Promise<ActionResult<unknown>> {
+  return mutate(() => api.post<unknown>(trackerPath(trackerId, "/unlink"), {}));
+}
+
+/** Doesn't change any stored data, so the page isn't refreshed. */
 export async function sendTestPing(
   trackerId: string,
 ): Promise<ActionResult<unknown>> {
   return runAction(() =>
-    api.post<unknown>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/test-ping`,
-      {},
-    ),
+    api.post<unknown>(trackerPath(trackerId, "/test-ping"), {}),
   );
 }
 
 export async function checkFirmware(
   trackerId: string,
 ): Promise<ActionResult<FirmwareCheck>> {
-  const result = await runAction(() =>
-    api.post<FirmwareCheck>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/firmware/check`,
-      {},
-    ),
+  return mutate(() =>
+    api.post<FirmwareCheck>(trackerPath(trackerId, "/firmware/check"), {}),
   );
-  // The table's firmware column and the "outdated" KPI may change.
-  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
-  return result;
 }
 
-export async function linkTracker(
-  trackerId: string,
-  payload: TrackerLinkPayload,
-): Promise<ActionResult<unknown>> {
-  const result = await runAction(() =>
-    api.post<unknown>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/link`,
-      payload,
-    ),
-  );
-  // The aircraft column, status and KPIs all change.
-  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
-  return result;
-}
-
-export async function unlinkTracker(
-  trackerId: string,
-): Promise<ActionResult<unknown>> {
-  const result = await runAction(() =>
-    api.post<unknown>(
-      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/unlink`,
-      {},
-    ),
-  );
-  // The aircraft column, status and KPIs all change.
-  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
-  return result;
-}
+// Firmware versions
 
 export async function saveFirmwareVersion(
   payload: FirmwareVersionPayload,
 ): Promise<ActionResult<unknown>> {
-  const result = await runAction(() =>
-    api.post<unknown>("/v1/firmware-versions", payload),
-  );
-  // The firmware column, the "outdated" KPI and the model lists all change.
-  if (result.ok) revalidatePath("/[locale]/(main)/trackers", "page");
-  return result;
+  return mutate(() => api.post<unknown>("/v1/firmware-versions", payload));
 }

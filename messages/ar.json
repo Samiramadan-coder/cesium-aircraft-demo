@@ -154,6 +154,11 @@
     "logMaintenance": "تسجيل صيانة",
     "hoursValue": "{value} س",
     "overdue": "{count} متأخرة",
+    "errorPage": {
+      "title": "تعذّر تحميل ساعات المحرك والطيران",
+      "description": "حدث خطأ أثناء تحميل بيانات الساعات. تحقق من اتصالك وحاول مرة أخرى.",
+      "reference": "المرجع: {digest}"
+    },
     "kpis": {
       "flightHours": "ساعات الطيران",
       "engineHours": "ساعات المحرك",
@@ -339,16 +344,7 @@
       "installedBy": "تم التركيب بواسطة",
       "registerInTraccar": "التسجيل في Traccar",
       "registerInTraccarHint": "إنشاء الجهاز أيضًا على خادم Traccar ليبدأ في إرسال المواقع.",
-      "cancel": "إلغاء",
       "save": "إضافة الجهاز",
-      "powerSources": {
-        "internal": "بطارية داخلية",
-        "aircraft": "طاقة الطائرة"
-      },
-      "engineInputs": {
-        "motion": "حساس الحركة",
-        "ignition": "سلك الإشعال"
-      },
       "errors": {
         "imeiRequired": "أدخل رقم IMEI",
         "imeiInvalid": "رقم IMEI يجب أن يكون 15 رقمًا",
@@ -364,8 +360,7 @@
       },
       "editTitle": "تعديل الجهاز",
       "editDescription": "حدّث بيانات جهاز التتبع.",
-      "saveChanges": "حفظ التعديلات",
-      "retry": "حاول مرة أخرى"
+      "saveChanges": "حفظ التعديلات"
     },
     "menu": {
       "column": "الإجراءات",
@@ -379,7 +374,6 @@
       "link": "ربط بطائرة"
     },
     "details": {
-      "retry": "حاول مرة أخرى",
       "tabs": {
         "overview": "نظرة عامة",
         "liveStatus": "الحالة المباشرة",
@@ -442,15 +436,12 @@
     "deleteDialog": {
       "title": "حذف الجهاز؟",
       "description": "سيتم حذف <strong>{device}</strong> (<mono>{imei}</mono>) ولن يظهر في التتبع بعد ذلك. لا يمكن التراجع عن هذا الإجراء.",
-      "cancel": "إلغاء",
       "confirm": "حذف"
     },
     "pingDialog": {
       "title": "اختبار الاتصال",
       "sending": "جارٍ إرسال اختبار اتصال إلى الجهاز…",
-      "sent": "تم إرسال الاختبار. من المفترض أن يرد الجهاز خلال لحظات.",
-      "close": "إغلاق",
-      "retry": "حاول مرة أخرى"
+      "sent": "تم إرسال الاختبار. من المفترض أن يرد الجهاز خلال لحظات."
     },
     "firmwareDialog": {
       "title": "فحص البرنامج الثابت",
@@ -458,16 +449,13 @@
       "latest": "أحدث إصدار",
       "checking": "جارٍ البحث عن تحديثات…",
       "upToDate": "البرنامج الثابت محدّث.",
-      "updateAvailable": "يتوفر تحديث: {version}",
-      "close": "إغلاق",
-      "retry": "حاول مرة أخرى"
+      "updateAvailable": "يتوفر تحديث: {version}"
     },
     "linkDialog": {
       "title": "ربط بطائرة",
       "aircraft": "الطائرة",
       "installedBy": "تم التركيب بواسطة",
       "noAircraft": "كل الطائرات مرتبطة بأجهزة تتبع بالفعل. افصل أحدها أولًا.",
-      "cancel": "إلغاء",
       "save": "ربط",
       "errors": {
         "aircraftRequired": "اختر طائرة",
@@ -477,7 +465,6 @@
     "unlinkDialog": {
       "title": "فك الربط من الطائرة؟",
       "description": "سيتم فك ربط <strong>{device}</strong> (<mono>{imei}</mono>) من <strong>{aircraft}</strong>. لن يتم تتبع الطائرة حتى يتم ربط جهاز بها مرة أخرى.",
-      "cancel": "إلغاء",
       "confirm": "فك الربط"
     },
     "firmwareOutdated": "يتوفر تحديث: {version}",
@@ -491,12 +478,31 @@
       "model": "الطراز",
       "version": "أحدث إصدار",
       "editLabel": "تحديث {model}",
-      "close": "إغلاق",
       "save": "حفظ",
       "errors": {
         "modelRequired": "أدخل الطراز",
         "versionRequired": "أدخل الإصدار",
         "versionInvalid": "استخدم صيغة مثل 03.29.09"
+      }
+    },
+    "common": {
+      "retry": "حاول مرة أخرى",
+      "cancel": "إلغاء",
+      "close": "إغلاق"
+    },
+    "errorPage": {
+      "title": "تعذر تحميل أجهزة التتبع",
+      "description": "حدث خطأ أثناء تحميل أجهزة التتبع. تحقق من الاتصال وحاول مرة أخرى.",
+      "reference": "المرجع: {digest}"
+    },
+    "options": {
+      "powerSources": {
+        "internal": "بطارية داخلية",
+        "aircraft": "طاقة الطائرة"
+      },
+      "engineInputs": {
+        "motion": "حساس الحركة",
+        "ignition": "سلك الإشعال"
       }
     }
   }
