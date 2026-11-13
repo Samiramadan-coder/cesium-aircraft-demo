@@ -29,7 +29,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ENGINEERS } from "@/constants/engineers";
+import { useEngineers } from "@/components/common/engineers-provider";
 import type { MaintenanceAircraftOption } from "@/types/engine-flight-hours";
 import { SERVICE_TYPES } from "./service-types";
 
@@ -59,11 +59,12 @@ export default function LogMaintenance({
   const t = useTranslations("EngineHours.logMaintenanceDialog");
   const tServiceTypes = useTranslations("EngineHours.details.serviceTypes");
   const [open, setOpen] = useState(false);
+  const engineers = useEngineers();
 
   const defaultValues: MaintenanceValues = {
     aircraftId: defaultAircraftId ?? aircraft[0]?.id ?? "",
     type: SERVICE_TYPES[0],
-    engineer: ENGINEERS[0],
+    engineer: engineers[0] ?? "",
     notes: "",
   };
 
@@ -160,7 +161,7 @@ export default function LogMaintenance({
             control={control}
             name="engineer"
             label={t("engineer")}
-            items={toItems(ENGINEERS)}
+            items={toItems(engineers)}
           />
 
           <LabeledField id="notes" label={t("notes")} error={errors.notes}>

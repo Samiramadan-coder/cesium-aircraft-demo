@@ -5,7 +5,6 @@ import { LoaderCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ENGINEERS } from "@/constants/engineers";
 import { linkTracker } from "@/lib/actions/trackers";
 import {
   createTrackerLinkSchema,
@@ -32,6 +31,7 @@ import {
 } from "./feedback";
 import { FormSelect, applyServerErrors, toItems } from "@/components/form/form-controls";
 import { aircraftLabel } from "./shared";
+import { useEngineers } from "@/components/common/engineers-provider";
 
 const FIELDS = ["aircraftId", "installedBy"] as const;
 
@@ -49,6 +49,8 @@ export default function LinkTracker({
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations("Trackers.linkDialog");
+  const engineers = useEngineers();
+  const firstEngineer = engineers[0] ?? "";
 
   const {
     control,
@@ -58,15 +60,15 @@ export default function LinkTracker({
     formState: { errors, isSubmitting },
   } = useForm<TrackerLinkValues>({
     resolver: zodResolver(createTrackerLinkSchema((key) => t(`errors.${key}`))),
-    defaultValues: { aircraftId: "", installedBy: ENGINEERS[0] },
+    defaultValues: { aircraftId: "", installedBy: firstEngineer },
   });
 
   const firstAircraftId = aircraft[0]?.id ?? "";
 
   // Start fresh on every open.
   useEffect(() => {
-    if (open) reset({ aircraftId: firstAircraftId, installedBy: ENGINEERS[0] });
-  }, [open, firstAircraftId, reset]);
+    if (open) reset({ aircraftId: firstAircraftId, installedBy: firstEngineer });
+  }, [open, firstAircraftId, firstEngineer, reset]);
 
   const aircraftItems = aircraft.map((item) => ({
     value: item.id,
@@ -118,7 +120,7 @@ export default function LinkTracker({
                 name="installedBy"
                 id="link-installedBy"
                 label={t("installedBy")}
-                items={toItems(ENGINEERS)}
+                items={toItems(engineers)}
               />
             </>
           )}

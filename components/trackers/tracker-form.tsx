@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "cn";
-import { ENGINEERS } from "@/constants/engineers";
 import { addTracker, getTracker, updateTracker } from "@/lib/actions/trackers";
 import {
   createTrackerSchema,
@@ -46,6 +45,7 @@ import {
 } from "./options";
 import { useOptionLabel } from "./shared";
 import { useLoad } from "@/hooks/use-load";
+import { useEngineers } from "@/components/common/engineers-provider";
 
 const FIELDS = [
   "imei",
@@ -69,7 +69,7 @@ const DEFAULT_VALUES: TrackerValues = {
   apn: SIM_CARRIERS[0].apn,
   powerSource: POWER_SOURCES[0],
   engineInput: ENGINE_INPUTS[0],
-  installedBy: ENGINEERS[0],
+  installedBy: "",
   registerInTraccar: true,
 };
 
@@ -127,6 +127,7 @@ export default function TrackerForm({
   const [openState, setOpenState] = useState(false);
   const open = openProp ?? openState;
   const models = modelsProp?.length ? modelsProp : TRACKER_MODELS;
+  const engineers = useEngineers();
 
   const {
     control,
@@ -139,7 +140,7 @@ export default function TrackerForm({
     formState: { errors, isSubmitting },
   } = useForm<TrackerValues>({
     resolver: zodResolver(createTrackerSchema((key) => t(`errors.${key}`))),
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: { ...DEFAULT_VALUES, installedBy: engineers[0] ?? "" },
   });
 
   // Editing: load the saved tracker each time the dialog opens.
@@ -157,7 +158,7 @@ export default function TrackerForm({
     name: ["model", "installedBy"],
   });
   const modelItems = withCurrent(models, currentModel);
-  const engineerItems = withCurrent(ENGINEERS, currentInstaller);
+  const engineerItems = withCurrent(engineers, currentInstaller);
   const simItems = toItems(SIM_CARRIERS.map((item) => item.value));
   const powerItems = POWER_SOURCES.map((value) => ({
     value,
@@ -170,7 +171,11 @@ export default function TrackerForm({
 
   function setOpen(next: boolean) {
     // Adding starts from the defaults every time.
-    if (next && !isEdit) reset({ ...DEFAULT_VALUES, model: models[0] });
+    if (next && !isEdit) reset({
+        ...DEFAULT_VALUES,
+        model: models[0],
+        installedBy: engineers[0] ?? "",
+      });
     setOpenState(next);
     onOpenChange?.(next);
   }

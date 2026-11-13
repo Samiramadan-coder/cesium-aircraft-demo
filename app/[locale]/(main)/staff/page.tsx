@@ -7,7 +7,7 @@ import type { StaffMember } from "@/types/user";
 export const generateMetadata = navPageMetadata("staff");
 
 export default async function Page() {
-  const staff = await api.get<StaffMember[]>("/v1/users");
+  const staff = await api.get<StaffMember[]>("/v1/users?role=engineer");
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
