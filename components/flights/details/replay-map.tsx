@@ -23,6 +23,15 @@ const MODEL_URL = "/models/aircraft.glb";
 /** How often the current time is reported to React while playing. */
 const TICK_INTERVAL_MS = 100;
 
+// Follow camera: starting distance and downward tilt behind the aircraft,
+// and the zoom range the user can scroll within.
+const CHASE_RANGE_M = 100;
+const CHASE_PITCH_DEG = -22;
+const CHASE_MIN_RANGE_M = 40;
+const CHASE_MAX_RANGE_M = 5000;
+/** Share of the remaining heading change applied per frame (0–1). */
+const CHASE_SMOOTHING = 0.06;
+
 const COLORS = {
   trail: "#e3a55a",
   route: "#ffffff",
@@ -116,7 +125,7 @@ function createReplayScene(
 
   // The flown part, drawn up to the current replay time.
   const durationS = Cesium.JulianDate.secondsDifference(stop, start);
-  const aircraft = viewer.entities.add({
+  viewer.entities.add({
     availability: new Cesium.TimeIntervalCollection([
       new Cesium.TimeInterval({ start, stop }),
     ]),
@@ -180,15 +189,80 @@ function createReplayScene(
 
   let cameraMode: ReplayCamera = "overview";
 
+  // Chase camera: behind the aircraft, turning with it. Zoom and tilt are the
+  // user's (mouse wheel / drag) and carry over between frames; the heading
+  // always follows the aircraft.
+  const chase = {
+    range: CHASE_RANGE_M,
+    pitch: Cesium.Math.toRadians(CHASE_PITCH_DEG),
+    heading: undefined as number | undefined,
+    /** True once the camera is locked onto the aircraft. */
+    locked: false,
+  };
+  const scratchEnu = new Cesium.Matrix4();
+  const scratchLocal = new Cesium.Cartesian3();
+
+  /** Direction of travel at `time`, radians clockwise from north. */
+  function headingAt(time: CesiumModule.JulianDate) {
+    const before = position.getValue(Cesium.JulianDate.addSeconds(time, -2, new Cesium.JulianDate()));
+    const after = position.getValue(Cesium.JulianDate.addSeconds(time, 2, new Cesium.JulianDate()));
+    if (!before || !after || Cesium.Cartesian3.distance(before, after) < 1) {
+      return undefined; // Standing still: keep the last heading.
+    }
+    Cesium.Transforms.eastNorthUpToFixedFrame(before, undefined, scratchEnu);
+    Cesium.Matrix4.inverseTransformation(scratchEnu, scratchEnu);
+    const local = Cesium.Matrix4.multiplyByPoint(scratchEnu, after, scratchLocal);
+    return Math.atan2(local.x, local.y);
+  }
+
+  // Before the first movement (engine start, taxi), face the first leg.
+  chase.heading =
+    positions.length > 1
+      ? headingAt(Cesium.JulianDate.fromDate(new Date(points[Math.min(2, points.length - 1)].time)))
+      : undefined;
+
+  const removeChaseListener = scene.preUpdate.addEventListener(() => {
+    if (cameraMode !== "follow") return;
+    const target = position.getValue(clock.currentTime);
+    if (!target) return;
+
+    if (chase.locked) {
+      // Pick up what the user did with the mouse since the last frame.
+      chase.range = Cesium.Math.clamp(
+        Cesium.Cartesian3.magnitude(camera.position),
+        CHASE_MIN_RANGE_M,
+        CHASE_MAX_RANGE_M,
+      );
+      chase.pitch = Cesium.Math.clamp(
+        camera.pitch,
+        Cesium.Math.toRadians(-85),
+        Cesium.Math.toRadians(-3),
+      );
+    }
+
+    const heading = headingAt(clock.currentTime);
+    if (heading !== undefined) {
+      if (chase.heading === undefined) chase.heading = heading;
+      // Ease toward the new heading: the track has about one point a
+      // minute, so the raw heading jumps at every point.
+      const diff = Cesium.Math.negativePiToPi(heading - chase.heading);
+      chase.heading += diff * CHASE_SMOOTHING;
+    }
+
+    camera.lookAt(
+      target,
+      new Cesium.HeadingPitchRange(chase.heading ?? 0, chase.pitch, chase.range),
+    );
+    chase.locked = true;
+  });
+
   function setCamera(mode: ReplayCamera, duration = 1.2) {
     cameraMode = mode;
-    if (mode === "follow") {
-      // Behind, beside and above the aircraft (east/north/up offset).
-      aircraft.viewFrom = new Cesium.Cartesian3(-300, -300, 150);
-      viewer.trackedEntity = aircraft;
-      return;
-    }
-    viewer.trackedEntity = undefined;
+    if (mode === "follow") return; // The preUpdate listener takes over.
+
+    // Release the chase lock, so the camera moves freely again.
+    chase.locked = false;
+    camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
     const pitch = mode === "topDown" ? -90 : -45;
     camera.flyToBoundingSphere(routeSphere, {
       duration,
@@ -221,6 +295,7 @@ function createReplayScene(
     },
     destroy() {
       removeTickListener();
+      removeChaseListener();
       removeLightListener();
       viewer.destroy();
     },

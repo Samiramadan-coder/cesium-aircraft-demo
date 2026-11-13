@@ -93,7 +93,7 @@ export default function ReplayPlayer({
   const [mapFailed, setMapFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<number>(5);
-  const [camera, setCamera] = useState<ReplayCamera>("overview");
+  const [camera, setCamera] = useState<ReplayCamera>("follow");
   const [time, setTime] = useState(start);
 
   const onEnded = useCallback(() => setPlaying(false), []);
