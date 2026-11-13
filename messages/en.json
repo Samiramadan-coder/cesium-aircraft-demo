@@ -298,5 +298,102 @@
         "notes": "Notes"
       }
     }
+  },
+  "Trackers": {
+    "empty": "No trackers registered yet.",
+    "device": "Device",
+    "aircraft": "Aircraft",
+    "sim": "SIM",
+    "status": "Status",
+    "signal": "Signal",
+    "battery": "Battery",
+    "firmware": "Firmware",
+    "noAircraft": "No aircraft linked",
+    "justNow": "Just now",
+    "statuses": {
+      "online": "Online",
+      "offline": "Offline",
+      "notInstalled": "Not installed"
+    },
+    "addDevice": "Add device",
+    "kpis": {
+      "total": "Total devices",
+      "online": "Online",
+      "offline": "Offline",
+      "notInstalled": "Not installed",
+      "avgSignal": "Avg. signal",
+      "avgBattery": "Avg. battery",
+      "firmwareOutdated": "Firmware outdated"
+    },
+    "addDialog": {
+      "title": "Add device",
+      "description": "Register a new GPS tracker. You can link it to an aircraft after it is installed.",
+      "imei": "IMEI",
+      "model": "Model",
+      "serial": "Serial number",
+      "sim": "SIM operator",
+      "simNumber": "SIM number",
+      "apn": "APN",
+      "powerSource": "Power source",
+      "engineInput": "Engine detection",
+      "installedBy": "Installed by",
+      "registerInTraccar": "Register in Traccar",
+      "registerInTraccarHint": "Also create the device on the Traccar server so it starts reporting positions.",
+      "cancel": "Cancel",
+      "save": "Add device",
+      "powerSources": {
+        "internal": "Internal battery",
+        "aircraft": "Aircraft power"
+      },
+      "engineInputs": {
+        "motion": "Motion sensor",
+        "ignition": "Ignition input"
+      },
+      "errors": {
+        "imeiRequired": "Enter the IMEI",
+        "imeiInvalid": "IMEI must be 15 digits",
+        "modelRequired": "Choose a model",
+        "serialRequired": "Enter the serial number",
+        "simRequired": "Choose a SIM operator",
+        "simNumberRequired": "Enter the SIM number",
+        "simNumberInvalid": "Enter a valid phone number",
+        "apnRequired": "Enter the APN",
+        "powerSourceRequired": "Choose a power source",
+        "engineInputRequired": "Choose how the engine is detected",
+        "installedByRequired": "Choose who installed it"
+      }
+    },
+    "menu": {
+      "column": "Actions",
+      "label": "Actions for {device}",
+      "view": "View",
+      "ping": "Send test ping",
+      "unlink": "Unlink"
+    },
+    "details": {
+      "retry": "Try again",
+      "comingSoon": "Coming soon",
+      "tabs": {
+        "overview": "Overview",
+        "liveStatus": "Live status",
+        "configuration": "Configuration",
+        "health": "Health",
+        "actions": "Actions"
+      },
+      "overview": {
+        "model": "Model",
+        "imei": "IMEI",
+        "serial": "Serial number",
+        "firmware": "Firmware",
+        "latestAvailable": "Latest available: {version}",
+        "linkedAircraft": "Linked aircraft",
+        "noAircraft": "None",
+        "installed": "Installed",
+        "installedBy": "Installed by: {name}",
+        "sim": "SIM operator",
+        "simNumber": "SIM number",
+        "apn": "APN"
+      }
+    }
   }
 }

@@ -298,5 +298,102 @@
         "notes": "ملاحظات"
       }
     }
+  },
+  "Trackers": {
+    "empty": "لا توجد أجهزة تتبع مسجلة بعد.",
+    "device": "الجهاز",
+    "aircraft": "الطائرة",
+    "sim": "الشريحة",
+    "status": "الحالة",
+    "signal": "الإشارة",
+    "battery": "البطارية",
+    "firmware": "البرنامج الثابت",
+    "noAircraft": "لا توجد طائرة مرتبطة",
+    "justNow": "الآن",
+    "statuses": {
+      "online": "متصل",
+      "offline": "غير متصل",
+      "notInstalled": "غير مركّب"
+    },
+    "addDevice": "إضافة جهاز",
+    "kpis": {
+      "total": "إجمالي الأجهزة",
+      "online": "متصل",
+      "offline": "غير متصل",
+      "notInstalled": "غير مركّب",
+      "avgSignal": "متوسط الإشارة",
+      "avgBattery": "متوسط البطارية",
+      "firmwareOutdated": "برنامج ثابت قديم"
+    },
+    "addDialog": {
+      "title": "إضافة جهاز",
+      "description": "سجّل جهاز تتبع GPS جديد. يمكنك ربطه بطائرة بعد تركيبه.",
+      "imei": "رقم IMEI",
+      "model": "الطراز",
+      "serial": "الرقم التسلسلي",
+      "sim": "مشغّل الشريحة",
+      "simNumber": "رقم الشريحة",
+      "apn": "APN",
+      "powerSource": "مصدر الطاقة",
+      "engineInput": "اكتشاف تشغيل المحرك",
+      "installedBy": "تم التركيب بواسطة",
+      "registerInTraccar": "التسجيل في Traccar",
+      "registerInTraccarHint": "إنشاء الجهاز أيضًا على خادم Traccar ليبدأ في إرسال المواقع.",
+      "cancel": "إلغاء",
+      "save": "إضافة الجهاز",
+      "powerSources": {
+        "internal": "بطارية داخلية",
+        "aircraft": "طاقة الطائرة"
+      },
+      "engineInputs": {
+        "motion": "حساس الحركة",
+        "ignition": "مدخل الإشعال"
+      },
+      "errors": {
+        "imeiRequired": "أدخل رقم IMEI",
+        "imeiInvalid": "رقم IMEI يجب أن يكون 15 رقمًا",
+        "modelRequired": "اختر الطراز",
+        "serialRequired": "أدخل الرقم التسلسلي",
+        "simRequired": "اختر مشغّل الشريحة",
+        "simNumberRequired": "أدخل رقم الشريحة",
+        "simNumberInvalid": "أدخل رقم هاتف صحيح",
+        "apnRequired": "أدخل الـ APN",
+        "powerSourceRequired": "اختر مصدر الطاقة",
+        "engineInputRequired": "اختر طريقة اكتشاف تشغيل المحرك",
+        "installedByRequired": "اختر من قام بالتركيب"
+      }
+    },
+    "menu": {
+      "column": "الإجراءات",
+      "label": "إجراءات الجهاز {device}",
+      "view": "عرض",
+      "ping": "إرسال اختبار اتصال",
+      "unlink": "فك الربط"
+    },
+    "details": {
+      "retry": "حاول مرة أخرى",
+      "comingSoon": "قريبًا",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "liveStatus": "الحالة المباشرة",
+        "configuration": "الإعدادات",
+        "health": "السلامة",
+        "actions": "الإجراءات"
+      },
+      "overview": {
+        "model": "الطراز",
+        "imei": "رقم IMEI",
+        "serial": "الرقم التسلسلي",
+        "firmware": "البرنامج الثابت",
+        "latestAvailable": "أحدث إصدار متاح: {version}",
+        "linkedAircraft": "الطائرة المرتبطة",
+        "noAircraft": "لا يوجد",
+        "installed": "تاريخ التركيب",
+        "installedBy": "تم التركيب بواسطة: {name}",
+        "sim": "مشغّل الشريحة",
+        "simNumber": "رقم الشريحة",
+        "apn": "APN"
+      }
+    }
   }
 }

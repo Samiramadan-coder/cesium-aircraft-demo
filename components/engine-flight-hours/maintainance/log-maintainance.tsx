@@ -31,7 +31,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { MaintenanceAircraftOption } from "@/types/engine-flight-hours";
-import { ENGINEERS, SERVICE_TYPES } from "./options";
+import { SERVICE_TYPES } from "./options";
+import { ENGINEERS } from "@/constants/engineers";
 
 // The theme's popover/muted colors are light; match the dark cards instead.
 const controlClassName =
