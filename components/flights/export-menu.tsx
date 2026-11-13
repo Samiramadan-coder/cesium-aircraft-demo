@@ -13,7 +13,17 @@ import {
 const itemClassName =
   "gap-2.5 px-2 py-1.5 focus:bg-card-2 focus:text-foreground";
 
-/** Export dropdown — UI only for now; the items aren't wired to an export yet. */
+/**
+ * A full browser request, not a client-side navigation: the route answers
+ * with `Content-Disposition: attachment`, so the file downloads and the page
+ * stays put.
+ */
+function download(format: "csv" | "pdf") {
+  // It's an API route, not a page, so the router can't handle it.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+  window.location.assign(`/api/flights/export/${format}`);
+}
+
 export default function ExportMenu() {
   const t = useTranslations("Flights.export");
 
@@ -36,8 +46,18 @@ export default function ExportMenu() {
         align="end"
         className="w-40 bg-card text-foreground ring-border"
       >
-        <DropdownMenuItem className={itemClassName}>{t("csv")}</DropdownMenuItem>
-        <DropdownMenuItem className={itemClassName}>{t("pdf")}</DropdownMenuItem>
+        <DropdownMenuItem
+          className={itemClassName}
+          onClick={() => download("csv")}
+        >
+          {t("csv")}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className={itemClassName}
+          onClick={() => download("pdf")}
+        >
+          {t("pdf")}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
