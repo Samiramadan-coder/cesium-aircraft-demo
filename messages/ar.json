@@ -523,6 +523,36 @@
       "complianceRate": "نسبة الالتزام",
       "flightsWithViolations": "رحلات بها مخالفات",
       "avgFlightDuration": "متوسط مدة الرحلة"
+    },
+    "table": {
+      "columns": {
+        "flight": "رقم الرحلة",
+        "dateTime": "التاريخ والوقت",
+        "aircraft": "الطائرة",
+        "pilot": "الطيار",
+        "flightType": "نوع الرحلة",
+        "flightTime": "زمن الطيران",
+        "maxAltitude": "أقصى ارتفاع",
+        "distance": "المسافة",
+        "compliance": "الالتزام",
+        "actions": "الإجراءات"
+      },
+      "booking": "حجز · {ref}",
+      "minutesShort": "{value} د",
+      "feet": "{value} قدم",
+      "nauticalMiles": "{value} ميل بحري",
+      "events": "{count, plural, one {حدث واحد} two {حدثان} few {# أحداث} many {# حدثًا} other {# حدث}}",
+      "replay": "إعادة عرض ثلاثية الأبعاد",
+      "routeLabel": "مسار الرحلة {id}",
+      "empty": "لا توجد رحلات مكتملة خلال آخر 30 يومًا."
+    },
+    "charts": {
+      "hoursByAircraft": "ساعات الطيران لكل طائرة",
+      "violationsTrend": "المخالفات — آخر 30 يومًا",
+      "topPilots": "أكثر الطيارين ساعات",
+      "flightHours": "ساعات الطيران",
+      "violations": "المخالفات",
+      "noData": "لا توجد بيانات بعد."
     }
   }
 }

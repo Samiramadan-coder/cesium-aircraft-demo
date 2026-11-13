@@ -523,6 +523,36 @@
       "complianceRate": "Compliance Rate",
       "flightsWithViolations": "Flights with Violations",
       "avgFlightDuration": "Avg. Flight Duration"
+    },
+    "table": {
+      "columns": {
+        "flight": "Flight ID",
+        "dateTime": "Date & Time",
+        "aircraft": "Aircraft",
+        "pilot": "Pilot",
+        "flightType": "Flight Type",
+        "flightTime": "Flight Time",
+        "maxAltitude": "Max Altitude",
+        "distance": "Distance",
+        "compliance": "Compliance",
+        "actions": "Actions"
+      },
+      "booking": "Booking · {ref}",
+      "minutesShort": "{value}m",
+      "feet": "{value} ft",
+      "nauticalMiles": "{value} nm",
+      "events": "{count, plural, one {# event} other {# events}}",
+      "replay": "3D replay",
+      "routeLabel": "Route of flight {id}",
+      "empty": "No completed flights in the last 30 days."
+    },
+    "charts": {
+      "hoursByAircraft": "Flight Hours by Aircraft",
+      "violationsTrend": "Violations — Last 30 Days",
+      "topPilots": "Top Pilots by Hours",
+      "flightHours": "Flight hours",
+      "violations": "Violations",
+      "noData": "No data yet."
     }
   }
 }
