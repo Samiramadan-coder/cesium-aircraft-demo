@@ -4,7 +4,11 @@ import { cn } from "cn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import type { NextService, ServiceStatus } from "@/types/engine-flight-hours";
+import type {
+  Compliance,
+  NextService,
+  ServiceStatus,
+} from "@/types/engine-flight-hours";
 import type { TrackedAircraft } from "@/types/tracking";
 
 /** Formats hours as "12.3h" (localized). */
@@ -24,15 +28,15 @@ export function useHours() {
 const STATUS_STYLES: Record<ServiceStatus, { badge: string; bar: string }> = {
   onTrack: {
     badge: "border-success/30 bg-success/10 text-success",
-    bar: "[&_[data-slot=progress-indicator]]:bg-success",
+    bar: "**:data-[slot=progress-indicator]:bg-success",
   },
   dueSoon: {
     badge: "border-primary/40 bg-primary/10 text-primary",
-    bar: "[&_[data-slot=progress-indicator]]:bg-primary",
+    bar: "**:data-[slot=progress-indicator]:bg-primary",
   },
   overdue: {
     badge: "border-danger/40 bg-danger/10 text-danger",
-    bar: "[&_[data-slot=progress-indicator]]:bg-danger",
+    bar: "**:data-[slot=progress-indicator]:bg-danger",
   },
 };
 
@@ -49,6 +53,36 @@ export function StatusBadge({ status }: { status: ServiceStatus }) {
       {t.has(status) ? t(status) : status}
     </Badge>
   );
+}
+
+const COMPLIANCE_STYLES: Record<Compliance, string> = {
+  compliant: "border-success/30 bg-success/10 text-success",
+  warnings: "border-primary/40 bg-primary/10 text-primary",
+  violation: "border-danger/40 bg-danger/10 text-danger",
+};
+
+export function ComplianceBadge({ compliance }: { compliance: Compliance }) {
+  const t = useTranslations("EngineHours.compliance");
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "gap-1.5",
+        COMPLIANCE_STYLES[compliance] ?? COMPLIANCE_STYLES.compliant,
+      )}
+    >
+      <span className="size-1.5 rounded-full bg-current" />
+      {t.has(compliance) ? t(compliance) : compliance}
+    </Badge>
+  );
+}
+
+/** Translated flight type, falling back to the raw API value. */
+export function useFlightType() {
+  const t = useTranslations("EngineHours.details.flightTypes");
+  return (type: string) =>
+    t.has(type as "training") ? t(type as "training") : type;
 }
 
 export function AircraftAvatar({
@@ -116,7 +150,7 @@ export function ServiceProgress({
         value={used}
         aria-label={label}
         className={cn(
-          "[&_[data-slot=progress-track]]:h-1.5 [&_[data-slot=progress-track]]:bg-card-2",
+          "**:data-[slot=progress-track]:h-1.5 **:data-[slot=progress-track]:bg-card-2",
           statusStyle(service.status).bar,
         )}
       />

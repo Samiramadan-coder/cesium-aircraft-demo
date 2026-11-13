@@ -52,6 +52,9 @@ export type UtilizationDay = {
   flightHours: number;
 };
 
+// TODO: "warnings" comes from the design; only the other two seen from the API so far.
+export type Compliance = "compliant" | "warnings" | "violation";
+
 export type FlightLogEntry = {
   flightId: string;
   aircraftId: string;
@@ -62,7 +65,7 @@ export type FlightLogEntry = {
   hobbsEnd: number;
   flightTimeMin: number;
   engineTimeMin: number;
-  compliance: "compliant" | "violation";
+  compliance: Compliance;
 };
 
 export type AircraftHoursDetails = {
@@ -88,7 +91,10 @@ export type PilotHours = {
   flights: number;
   flightHours: number;
   engineHours: number;
-  /** Unix epoch, milliseconds; null if the pilot hasn't flown yet */
   lastFlightAt: number | null;
   aircraftIds: string[];
 };
+
+// Daily Logs
+// GET /v1/tracking/hours/daily-log — same shape as an aircraft's flight log
+export type DailyLogEntry = FlightLogEntry;

@@ -226,14 +226,16 @@
       "minutes": "{value} min",
       "flightTypes": {
         "training": "Training",
-        "groundRun": "Ground run"
+        "groundRun": "Ground run",
+        "checkride": "Checkride",
+        "rental": "Rental",
+        "trialFlight": "Trial Flight"
       },
       "log": {
         "date": "Date",
         "pilot": "Pilot",
         "flight": "Flight",
-        "engine": "Engine",
-        "violation": "Violation"
+        "engine": "Engine"
       }
     },
     "pilots": {
@@ -245,6 +247,27 @@
       "lastFlight": "Last flight",
       "never": "Never",
       "empty": "No pilot activity in this period."
+    },
+    "compliance": {
+      "compliant": "Compliant",
+      "warnings": "Warnings",
+      "violation": "Violation"
+    },
+    "dailyLog": {
+      "empty": "No flights logged in this period.",
+      "unknownPilot": "—",
+      "minutes": "{value}m",
+      "columns": {
+        "date": "Date",
+        "aircraft": "Aircraft",
+        "pilot": "Pilot",
+        "type": "Type",
+        "hobbsStart": "Hobbs start",
+        "hobbsEnd": "Hobbs end",
+        "flightTime": "Flight time",
+        "engineTime": "Engine time",
+        "compliance": "Compliance"
+      }
     }
   }
 }

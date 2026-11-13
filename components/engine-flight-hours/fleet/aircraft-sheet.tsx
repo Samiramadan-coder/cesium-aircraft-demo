@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { getAircraftHours } from "@/lib/actions/engine-hours";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -30,7 +29,14 @@ import type {
   NextService,
 } from "@/types/engine-flight-hours";
 import type { TrackedPilot } from "@/types/tracking";
-import { AircraftAvatar, ServiceProgress, StatusBadge, useHours } from "./shared";
+import {
+  AircraftAvatar,
+  ComplianceBadge,
+  ServiceProgress,
+  StatusBadge,
+  useFlightType,
+  useHours,
+} from "./shared";
 import UtilizationChart from "./utilization-chart";
 
 type DetailsState =
@@ -276,6 +282,7 @@ function FlightLog({
 }) {
   const t = useTranslations("EngineHours.details");
   const format = useFormatter();
+  const flightType = useFlightType();
 
   if (flights.length === 0) {
     return <Panel className="text-sm text-muted">{t("noFlights")}</Panel>;
@@ -283,10 +290,6 @@ function FlightLog({
 
   const pilotName = (id: string | null) =>
     pilots.find((pilot) => pilot.id === id)?.name ?? t("unknownPilot");
-  const flightType = (type: string) => {
-    const key = `flightTypes.${type}` as "flightTypes.training";
-    return t.has(key) ? t(key) : type;
-  };
   const minutes = (value: number) =>
     t("minutes", { value: format.number(value, { maximumFractionDigits: 1 }) });
 
@@ -326,13 +329,10 @@ function FlightLog({
               </TableCell>
               <TableCell className="max-w-28 truncate">
                 <p className="truncate">{pilotName(flight.pilotId)}</p>
-                {flight.compliance === "violation" && (
-                  <Badge
-                    variant="outline"
-                    className="mt-0.5 border-danger/40 bg-danger/10 text-danger"
-                  >
-                    {t("log.violation")}
-                  </Badge>
+                {flight.compliance !== "compliant" && (
+                  <div className="mt-0.5">
+                    <ComplianceBadge compliance={flight.compliance} />
+                  </div>
                 )}
               </TableCell>
               <TableCell className="text-end tabular-nums">

@@ -226,14 +226,16 @@
       "minutes": "{value} د",
       "flightTypes": {
         "training": "تدريب",
-        "groundRun": "تشغيل أرضي"
+        "groundRun": "تشغيل أرضي",
+        "checkride": "رحلة اختبار",
+        "rental": "تأجير",
+        "trialFlight": "رحلة تجريبية"
       },
       "log": {
         "date": "التاريخ",
         "pilot": "الطيار",
         "flight": "الطيران",
-        "engine": "المحرك",
-        "violation": "مخالفة"
+        "engine": "المحرك"
       }
     },
     "pilots": {
@@ -245,6 +247,27 @@
       "lastFlight": "آخر رحلة",
       "never": "لا يوجد",
       "empty": "لا يوجد نشاط للطيارين في هذه الفترة."
+    },
+    "compliance": {
+      "compliant": "ملتزمة",
+      "warnings": "تحذيرات",
+      "violation": "مخالفة"
+    },
+    "dailyLog": {
+      "empty": "لا توجد رحلات مسجلة في هذه الفترة.",
+      "unknownPilot": "—",
+      "minutes": "{value} د",
+      "columns": {
+        "date": "التاريخ",
+        "aircraft": "الطائرة",
+        "pilot": "الطيار",
+        "type": "النوع",
+        "hobbsStart": "عداد البداية",
+        "hobbsEnd": "عداد النهاية",
+        "flightTime": "زمن الطيران",
+        "engineTime": "زمن المحرك",
+        "compliance": "الالتزام"
+      }
     }
   }
 }
