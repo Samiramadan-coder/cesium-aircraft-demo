@@ -1,8 +1,18 @@
+import Header from "@/components/flights/header";
+import { api } from "@/lib/api/client";
 import { navPageMetadata } from "@/lib/page-metadata";
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { KPIS } from "@/types/flights";
 
 export const generateMetadata = navPageMetadata("flights");
 
 export default async function Page() {
-  return <PagePlaceholder page="flights" />;
+  const [kpis] = await Promise.all([
+    api.get<KPIS>("/v1/tracking/flights/kpis"),
+  ]);
+
+  return (
+    <div className="p-4 sm:p-6">
+      <Header kpis={kpis} />
+    </div>
+  );
 }

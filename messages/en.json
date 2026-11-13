@@ -505,5 +505,24 @@
         "ignition": "Ignition wire"
       }
     }
+  },
+  "Flights": {
+    "title": "Flight History",
+    "subtitle": "Browse completed flights for the last 30 days, including routes, durations and zone events.",
+    "export": {
+      "button": "Export",
+      "csv": "Export CSV",
+      "pdf": "Export PDF"
+    },
+    "hoursValue": "{value}h",
+    "minutesValue": "{value} min",
+    "kpis": {
+      "totalFlights": "Total Flights",
+      "totalFlightHours": "Total Flight Hours",
+      "totalEngineHours": "Total Engine Hours",
+      "complianceRate": "Compliance Rate",
+      "flightsWithViolations": "Flights with Violations",
+      "avgFlightDuration": "Avg. Flight Duration"
+    }
   }
 }

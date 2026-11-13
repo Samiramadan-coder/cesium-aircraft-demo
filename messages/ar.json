@@ -505,5 +505,24 @@
         "ignition": "سلك الإشعال"
       }
     }
+  },
+  "Flights": {
+    "title": "سجل الرحلات",
+    "subtitle": "تصفح الرحلات المكتملة خلال آخر 30 يومًا، بما في ذلك المسارات والمدد وأحداث المناطق.",
+    "export": {
+      "button": "تصدير",
+      "csv": "تصدير CSV",
+      "pdf": "تصدير PDF"
+    },
+    "hoursValue": "{value} س",
+    "minutesValue": "{value} د",
+    "kpis": {
+      "totalFlights": "إجمالي الرحلات",
+      "totalFlightHours": "إجمالي ساعات الطيران",
+      "totalEngineHours": "إجمالي ساعات المحرك",
+      "complianceRate": "نسبة الالتزام",
+      "flightsWithViolations": "رحلات بها مخالفات",
+      "avgFlightDuration": "متوسط مدة الرحلة"
+    }
   }
 }
