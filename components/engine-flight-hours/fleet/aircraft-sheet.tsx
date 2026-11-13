@@ -26,6 +26,7 @@ import type {
   AircraftHoursDetails,
   FleetAircraft,
   FlightLogEntry,
+  MaintenanceAircraftOption,
   NextService,
 } from "@/types/engine-flight-hours";
 import type { TrackedPilot } from "@/types/tracking";
@@ -36,8 +37,10 @@ import {
   StatusBadge,
   useFlightType,
   useHours,
+  useServiceType,
 } from "./shared";
 import UtilizationChart from "./utilization-chart";
+import LogMaintainance from "../maintainance/log-maintainance";
 
 type DetailsState =
   | { status: "loading" }
@@ -49,10 +52,12 @@ const TABS = ["overview", "maintenance", "flightLog"] as const;
 export default function AircraftSheet({
   aircraft,
   pilots,
+  maintenanceAircraft,
   onClose,
 }: {
   aircraft: FleetAircraft | null;
   pilots: TrackedPilot[];
+  maintenanceAircraft: MaintenanceAircraftOption[];
   onClose: () => void;
 }) {
   const t = useTranslations("EngineHours.details");
@@ -130,7 +135,11 @@ export default function AircraftSheet({
               {details.status === "ready" && (
                 <>
                   <TabsContent value="overview">
-                    <Overview details={details.data} />
+                    <Overview
+                      details={details.data}
+                      maintenanceAircraft={maintenanceAircraft}
+                      onLogged={() => load(details.data.aircraftId)}
+                    />
                   </TabsContent>
                   <TabsContent value="maintenance">
                     <Maintenance details={details.data} />
@@ -157,7 +166,15 @@ function Panel({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function Overview({ details }: { details: AircraftHoursDetails }) {
+function Overview({
+  details,
+  maintenanceAircraft,
+  onLogged,
+}: {
+  details: AircraftHoursDetails;
+  maintenanceAircraft: MaintenanceAircraftOption[];
+  onLogged: () => void;
+}) {
   const t = useTranslations("EngineHours");
   const format = useFormatter();
   const hours = useHours();
@@ -201,22 +218,23 @@ function Overview({ details }: { details: AircraftHoursDetails }) {
         <UtilizationChart data={utilization} />
       </div>
 
-      {/* Placeholder — action to be wired up later. */}
-      <Button
-        variant="outline"
-        size="lg"
-        className="w-full border-border bg-card-2/40 text-foreground hover:bg-card-2"
-      >
-        {t("logMaintenance")}
-      </Button>
+      <LogMaintainance
+        aircraft={maintenanceAircraft}
+        defaultAircraftId={details.aircraftId}
+        onLogged={onLogged}
+        trigger={
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full border-border bg-card-2/40 text-foreground hover:bg-card-2"
+          >
+            {t("logMaintenance")}
+          </Button>
+        }
+      />
     </div>
   );
-}
-
-function useServiceType() {
-  const t = useTranslations("EngineHours.details.serviceTypes");
-  return (type: string) =>
-    t.has(type as "oilChange") ? t(type as "oilChange") : type;
 }
 
 function Maintenance({ details }: { details: AircraftHoursDetails }) {

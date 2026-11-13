@@ -13,7 +13,7 @@ export default async function Page() {
     api.get<TrackedPilot[]>("/v1/pilots"),
   ]);
 
-  console.log(pilots);
+  // console.log(pilots);
 
   const aircraft: FleetAircraft[] = fleet.aircraft.map((item) => ({
     ...item,

@@ -2,7 +2,11 @@
 
 import { api } from "@/lib/api/client";
 import { runAction, type ActionResult } from "@/lib/api/errors";
-import type { AircraftHoursDetails } from "@/types/engine-flight-hours";
+import { revalidatePath } from "next/cache";
+import type {
+  AircraftHoursDetails,
+  MaintenanceRecordPayload,
+} from "@/types/engine-flight-hours";
 
 export async function getAircraftHours(
   aircraftId: string,
@@ -12,4 +16,15 @@ export async function getAircraftHours(
       `/v1/tracking/hours/aircraft/${encodeURIComponent(aircraftId)}`,
     ),
   );
+}
+
+export async function logMaintenance(
+  payload: MaintenanceRecordPayload,
+): Promise<ActionResult<unknown>> {
+  const result = await runAction(() =>
+    api.post<unknown>("/v1/tracking/maintenance", payload),
+  );
+  // Hours, service status and KPIs all change; refresh the whole section.
+  if (result.ok) revalidatePath("/[locale]/(main)/engine-hours", "layout");
+  return result;
 }

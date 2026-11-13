@@ -4,6 +4,7 @@ import { useState } from "react";
 import AircraftCard from "./aircraft-card";
 import { useTranslations } from "next-intl";
 import AircraftSheet from "./aircraft-sheet";
+import { toMaintenanceAircraft } from "../maintainance/options";
 import type { TrackedPilot } from "@/types/tracking";
 import type { FleetAircraft } from "@/types/engine-flight-hours";
 
@@ -41,6 +42,10 @@ export default function DataPreview({
       <AircraftSheet
         aircraft={selected ?? null}
         pilots={pilots}
+        maintenanceAircraft={toMaintenanceAircraft(
+          aircraft,
+          aircraft.flatMap((item) => (item.profile ? [item.profile] : [])),
+        )}
         onClose={() => setSelectedId(null)}
       />
     </>

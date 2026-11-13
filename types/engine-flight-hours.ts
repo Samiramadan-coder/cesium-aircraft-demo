@@ -98,3 +98,29 @@ export type PilotHours = {
 // Daily Logs
 // GET /v1/tracking/hours/daily-log — same shape as an aircraft's flight log
 export type DailyLogEntry = FlightLogEntry;
+
+// Maintenance
+// POST /v1/tracking/maintenance
+export type MaintenanceRecordPayload = {
+  aircraftId: string;
+  type: string;
+  hoursAtService: number;
+  /** YYYY-MM-DD */
+  completedDate: string;
+  engineer: string;
+  notes: string | null;
+};
+
+/** An aircraft as offered in the "Log maintenance" dialog. */
+export type MaintenanceAircraftOption = {
+  id: string;
+  registration: string;
+  name: string | null;
+  /** Hobbs reading the service is logged at */
+  lifetimeHours: number;
+};
+
+// GET /v1/tracking/maintenance
+export type MaintenanceRecord = MaintenanceRecordPayload & {
+  id: string;
+};

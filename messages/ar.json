@@ -268,6 +268,35 @@
         "engineTime": "زمن المحرك",
         "compliance": "الالتزام"
       }
+    },
+    "logMaintenanceDialog": {
+      "title": "تسجيل صيانة",
+      "description": "سجّل صيانة مكتملة للطائرة {aircraft}.",
+      "descriptionGeneric": "سجّل صيانة مكتملة.",
+      "aircraft": "الطائرة",
+      "serviceType": "نوع الصيانة",
+      "engineer": "المهندس",
+      "notes": "ملاحظات",
+      "notesPlaceholder": "ملاحظات اختيارية عن الصيانة التي تمت…",
+      "back": "رجوع",
+      "save": "حفظ السجل",
+      "errors": {
+        "aircraftRequired": "اختر طائرة.",
+        "typeRequired": "اختر نوع الصيانة.",
+        "engineerRequired": "اختر المهندس.",
+        "notesTooLong": "يجب ألا تتجاوز الملاحظات 1000 حرف."
+      }
+    },
+    "maintenance": {
+      "empty": "لم تُسجَّل أي صيانة بعد.",
+      "columns": {
+        "date": "التاريخ",
+        "aircraft": "الطائرة",
+        "type": "النوع",
+        "hoursAtService": "الساعات عند الصيانة",
+        "engineer": "المهندس",
+        "notes": "ملاحظات"
+      }
     }
   }
 }

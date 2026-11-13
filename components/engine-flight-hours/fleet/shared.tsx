@@ -85,6 +85,13 @@ export function useFlightType() {
     t.has(type as "training") ? t(type as "training") : type;
 }
 
+/** Translated service type ("50h" → "50-hour inspection"), falling back to the raw value. */
+export function useServiceType() {
+  const t = useTranslations("EngineHours.details.serviceTypes");
+  return (type: string) =>
+    t.has(type as "oilChange") ? t(type as "oilChange") : type;
+}
+
 export function AircraftAvatar({
   profile,
   className,

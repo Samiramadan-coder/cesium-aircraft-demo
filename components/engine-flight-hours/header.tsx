@@ -1,9 +1,19 @@
 import { Plus } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { KPIS } from "@/types/engine-flight-hours";
+import type {
+  KPIS,
+  MaintenanceAircraftOption,
+} from "@/types/engine-flight-hours";
+import LogMaintainance from "./maintainance/log-maintainance";
 
-export default function Header({ kpis }: { kpis: KPIS }) {
+export default function Header({
+  kpis,
+  maintenanceAircraft,
+}: {
+  kpis: KPIS;
+  maintenanceAircraft: MaintenanceAircraftOption[];
+}) {
   const t = useTranslations("EngineHours");
   const format = useFormatter();
 
@@ -39,11 +49,15 @@ export default function Header({ kpis }: { kpis: KPIS }) {
           <p className="text-sm text-foreground-2">{t("subtitle")}</p>
         </div>
 
-        {/* Placeholder — action to be wired up later. */}
-        <Button type="button" size="lg">
-          <Plus />
-          {t("logMaintenance")}
-        </Button>
+        <LogMaintainance
+          aircraft={maintenanceAircraft}
+          trigger={
+            <Button type="button" size="lg">
+              <Plus />
+              {t("logMaintenance")}
+            </Button>
+          }
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -52,9 +66,7 @@ export default function Header({ kpis }: { kpis: KPIS }) {
             key={card.key}
             className="rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10"
           >
-            <p className="text-xs text-foreground-2">
-              {t(`kpis.${card.key}`)}
-            </p>
+            <p className="text-xs text-foreground-2">{t(`kpis.${card.key}`)}</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">
               {card.value}
             </p>

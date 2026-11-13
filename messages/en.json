@@ -268,6 +268,35 @@
         "engineTime": "Engine time",
         "compliance": "Compliance"
       }
+    },
+    "logMaintenanceDialog": {
+      "title": "Log maintenance",
+      "description": "Record a completed maintenance service for {aircraft}.",
+      "descriptionGeneric": "Record a completed maintenance service.",
+      "aircraft": "Aircraft",
+      "serviceType": "Service type",
+      "engineer": "Engineer",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional notes about the service performed…",
+      "back": "Back",
+      "save": "Save record",
+      "errors": {
+        "aircraftRequired": "Choose an aircraft.",
+        "typeRequired": "Choose a service type.",
+        "engineerRequired": "Choose an engineer.",
+        "notesTooLong": "Notes must be 1000 characters or fewer."
+      }
+    },
+    "maintenance": {
+      "empty": "No maintenance recorded yet.",
+      "columns": {
+        "date": "Date",
+        "aircraft": "Aircraft",
+        "type": "Type",
+        "hoursAtService": "Hours at service",
+        "engineer": "Engineer",
+        "notes": "Notes"
+      }
     }
   }
 }
