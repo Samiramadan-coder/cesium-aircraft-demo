@@ -1,5 +1,5 @@
-// TODO: align the roles with the backend once its user payload is known.
-export type UserRole = "super_admin" | "admin" | "operator";
+/** Roles as returned by `/v1/users` and `/v1/auth/me`. */
+export type UserRole = "super_admin" | "operations" | "engineer" | "viewer";
 
 /** The signed-in user, as shown in the header. */
 export type CurrentUser = {
@@ -16,3 +16,12 @@ export type CurrentUser = {
     manageUsers: boolean;
   };
 };
+
+/** A row of `/v1/users`. */
+export type StaffMember = Omit<CurrentUser, "id"> & { id: string };
+
+/** Body of `POST /v1/users`. */
+export type StaffPayload = Pick<
+  StaffMember,
+  "name" | "email" | "role" | "locale"
+> & { password: string };

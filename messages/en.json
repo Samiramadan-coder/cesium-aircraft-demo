@@ -124,8 +124,9 @@
     "signOut": "Sign out",
     "roles": {
       "super_admin": "Super Admin",
-      "admin": "Admin",
-      "operator": "Operator"
+      "operations": "Operations",
+      "engineer": "Engineer",
+      "viewer": "Viewer"
     }
   },
   "Pages": {
@@ -147,6 +148,9 @@
     },
     "profile": {
       "description": "Your account details and preferences will appear here."
+    },
+    "staff": {
+      "description": "Club staff, their roles and permissions will appear here."
     }
   },
   "Common": {
@@ -631,6 +635,40 @@
     "errorPage": {
       "title": "Couldn't load flight history",
       "description": "Something went wrong while loading the flights. Check your connection and try again."
+    }
+  },
+  "Staff": {
+    "empty": "No staff members yet.",
+    "member": "Member",
+    "role": "Role",
+    "language": "Language",
+    "permissions": "Permissions",
+    "noPermissions": "View only",
+    "languages": {
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "permissionLabels": {
+      "manageFleet": "Fleet",
+      "manageOperations": "Operations",
+      "manageMaintenance": "Maintenance",
+      "manageUsers": "Users"
+    },
+    "addMember": "Add member",
+    "addDialog": {
+      "title": "Add staff member",
+      "description": "Create an account for a club staff member. They sign in with this email and password.",
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "save": "Add member",
+      "errors": {
+        "nameRequired": "Enter the name",
+        "emailRequired": "Enter the email",
+        "emailInvalid": "Enter a valid email",
+        "passwordRequired": "Enter a password",
+        "passwordTooShort": "Password must be at least 8 characters"
+      }
     }
   }
 }

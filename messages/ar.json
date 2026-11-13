@@ -124,8 +124,9 @@
     "signOut": "تسجيل الخروج",
     "roles": {
       "super_admin": "مدير عام",
-      "admin": "مدير",
-      "operator": "مشغّل"
+      "operations": "العمليات",
+      "engineer": "مهندس",
+      "viewer": "مشاهد"
     }
   },
   "Pages": {
@@ -147,6 +148,9 @@
     },
     "profile": {
       "description": "ستظهر هنا بيانات حسابك وتفضيلاتك."
+    },
+    "staff": {
+      "description": "سيظهر هنا موظفو النادي وأدوارهم وصلاحياتهم."
     }
   },
   "Common": {
@@ -631,6 +635,40 @@
     "errorPage": {
       "title": "تعذر تحميل سجل الرحلات",
       "description": "حدث خطأ أثناء تحميل الرحلات. تحقق من الاتصال وحاول مرة أخرى."
+    }
+  },
+  "Staff": {
+    "empty": "لا يوجد موظفون بعد.",
+    "member": "الموظف",
+    "role": "الدور",
+    "language": "اللغة",
+    "permissions": "الصلاحيات",
+    "noPermissions": "عرض فقط",
+    "languages": {
+      "en": "الإنجليزية",
+      "ar": "العربية"
+    },
+    "permissionLabels": {
+      "manageFleet": "الأسطول",
+      "manageOperations": "العمليات",
+      "manageMaintenance": "الصيانة",
+      "manageUsers": "المستخدمون"
+    },
+    "addMember": "إضافة موظف",
+    "addDialog": {
+      "title": "إضافة موظف",
+      "description": "أنشئ حساباً لأحد موظفي النادي. سيسجّل الدخول بهذا البريد وكلمة المرور.",
+      "name": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "save": "إضافة موظف",
+      "errors": {
+        "nameRequired": "أدخل الاسم",
+        "emailRequired": "أدخل البريد الإلكتروني",
+        "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً",
+        "passwordRequired": "أدخل كلمة المرور",
+        "passwordTooShort": "يجب ألا تقل كلمة المرور عن 8 أحرف"
+      }
     }
   }
 }

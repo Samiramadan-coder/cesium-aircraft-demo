@@ -5,15 +5,8 @@ import { ChevronDown, LogOut, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { PROFILE_PATH } from "@/constants/navigation";
+import { initials } from "@/lib/utils";
 import type { CurrentUser } from "@/types/user";
-
-/** "Khalid Al Mansoori" -> "KM". */
-function initials(name: string) {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  const first = words[0]?.[0] ?? "";
-  const last = words.length > 1 ? words[words.length - 1][0] : "";
-  return (first + last).toUpperCase();
-}
 
 const itemClass =
   "flex cursor-default items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none select-none data-disabled:opacity-50 data-highlighted:bg-card-2 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-foreground-2";
