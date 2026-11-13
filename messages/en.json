@@ -173,6 +173,68 @@
       "thisMonth": "This month",
       "allTime": "All time",
       "custom": "Custom range"
+    },
+    "noSchedule": "No schedule",
+    "remaining": "{value} remaining",
+    "overdueBy": "Overdue by {value}",
+    "emptyFleet": "No aircraft to show yet.",
+    "status": {
+      "onTrack": "On track",
+      "dueSoon": "Upcoming",
+      "overdue": "Overdue"
+    },
+    "card": {
+      "lifetime": "Lifetime",
+      "flightHrs": "Flight hrs",
+      "flights": "Flights",
+      "nextService": "Next service",
+      "viewDetails": "View details"
+    },
+    "details": {
+      "tabs": {
+        "overview": "Overview",
+        "maintenance": "Maintenance",
+        "flightLog": "Flight log"
+      },
+      "retry": "Try again",
+      "stats": {
+        "lifetimeHours": "Lifetime hours",
+        "periodFlightHours": "Flight hours (period)",
+        "periodEngineHours": "Engine hours (period)",
+        "periodFlights": "Flights (period)"
+      },
+      "serviceSchedule": "Service schedule",
+      "nextServiceDue": "Next service due",
+      "utilizationTitle": "Engine hours — last {days} days",
+      "engineHours": "Engine hours",
+      "hoursShort": "{value}h",
+      "schedule": "Service schedule",
+      "noScheduleItems": "No services scheduled.",
+      "history": "Maintenance history",
+      "noHistory": "No maintenance recorded yet.",
+      "historyCount": "{count, plural, one {# entry} other {# entries}}",
+      "lastService": "Last service: {date}",
+      "never": "never",
+      "serviceTypes": {
+        "50h": "50-hour inspection",
+        "100h": "100-hour inspection",
+        "oilChange": "Oil change",
+        "annual": "Annual inspection"
+      },
+      "noFlights": "No flights in this period.",
+      "unknownPilot": "Unknown pilot",
+      "minutes": "{value} min",
+      "flightTypes": {
+        "training": "Training",
+        "groundRun": "Ground run"
+      },
+      "log": {
+        "date": "Date",
+        "pilot": "Pilot",
+        "flight": "Flight",
+        "engine": "Engine",
+        "violation": "Violation"
+      }
     }
   }
 }

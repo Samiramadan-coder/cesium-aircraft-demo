@@ -173,6 +173,68 @@
       "thisMonth": "هذا الشهر",
       "allTime": "كل الأوقات",
       "custom": "نطاق مخصص"
+    },
+    "noSchedule": "لا يوجد جدول",
+    "remaining": "متبقٍ {value}",
+    "overdueBy": "متأخرة بـ {value}",
+    "emptyFleet": "لا توجد طائرات لعرضها بعد.",
+    "status": {
+      "onTrack": "في الموعد",
+      "dueSoon": "قريبة",
+      "overdue": "متأخرة"
+    },
+    "card": {
+      "lifetime": "الإجمالي",
+      "flightHrs": "ساعات الطيران",
+      "flights": "الرحلات",
+      "nextService": "الصيانة القادمة",
+      "viewDetails": "عرض التفاصيل"
+    },
+    "details": {
+      "tabs": {
+        "overview": "نظرة عامة",
+        "maintenance": "الصيانة",
+        "flightLog": "سجل الرحلات"
+      },
+      "retry": "إعادة المحاولة",
+      "stats": {
+        "lifetimeHours": "إجمالي الساعات",
+        "periodFlightHours": "ساعات الطيران (الفترة)",
+        "periodEngineHours": "ساعات المحرك (الفترة)",
+        "periodFlights": "الرحلات (الفترة)"
+      },
+      "serviceSchedule": "جدول الصيانة",
+      "nextServiceDue": "موعد الصيانة القادمة",
+      "utilizationTitle": "ساعات المحرك — آخر {days} يومًا",
+      "engineHours": "ساعات المحرك",
+      "hoursShort": "{value} س",
+      "schedule": "جدول الصيانة",
+      "noScheduleItems": "لا توجد صيانة مجدولة.",
+      "history": "سجل الصيانة",
+      "noHistory": "لم تُسجَّل أي صيانة بعد.",
+      "historyCount": "{count, plural, one {سجل واحد} other {# سجلات}}",
+      "lastService": "آخر صيانة: {date}",
+      "never": "لا يوجد",
+      "serviceTypes": {
+        "50h": "فحص 50 ساعة",
+        "100h": "فحص 100 ساعة",
+        "oilChange": "تغيير الزيت",
+        "annual": "الفحص السنوي"
+      },
+      "noFlights": "لا توجد رحلات في هذه الفترة.",
+      "unknownPilot": "طيار غير معروف",
+      "minutes": "{value} د",
+      "flightTypes": {
+        "training": "تدريب",
+        "groundRun": "تشغيل أرضي"
+      },
+      "log": {
+        "date": "التاريخ",
+        "pilot": "الطيار",
+        "flight": "الطيران",
+        "engine": "المحرك",
+        "violation": "مخالفة"
+      }
     }
   }
 }
