@@ -347,7 +347,7 @@
       },
       "engineInputs": {
         "motion": "Motion sensor",
-        "ignition": "Ignition input"
+        "ignition": "Ignition wire"
       },
       "errors": {
         "imeiRequired": "Enter the IMEI",
@@ -372,13 +372,11 @@
     },
     "details": {
       "retry": "Try again",
-      "comingSoon": "Coming soon",
       "tabs": {
         "overview": "Overview",
         "liveStatus": "Live status",
         "configuration": "Configuration",
-        "health": "Health",
-        "actions": "Actions"
+        "health": "Health"
       },
       "overview": {
         "model": "Model",
@@ -393,6 +391,44 @@
         "sim": "SIM operator",
         "simNumber": "SIM number",
         "apn": "APN"
+      },
+      "liveStatus": {
+        "signal": "Signal strength",
+        "battery": "Battery level",
+        "powerVoltage": "Power voltage",
+        "volts": "{value} V",
+        "engineState": "Engine state",
+        "running": "Running",
+        "off": "Off",
+        "lastPosition": "Last position",
+        "gpsSatellites": "GPS satellites",
+        "gpsAccuracy": "GPS accuracy",
+        "meters": "{value} m"
+      },
+      "configuration": {
+        "serverHost": "Server address",
+        "serverPort": "Server port",
+        "intervalInFlight": "Reporting interval (in flight)",
+        "intervalOnGround": "Reporting interval (on ground)",
+        "angleTrigger": "Angle trigger",
+        "distanceTrigger": "Distance trigger",
+        "engineInput": "Engine detection method",
+        "seconds": "{value}s",
+        "degrees": "{value}°",
+        "meters": "{value} m"
+      },
+      "health": {
+        "signalTitle": "Signal strength — last 24h",
+        "batteryTitle": "Battery level — last 24h",
+        "signal": "Signal",
+        "battery": "Battery",
+        "noData": "No readings in the last 24 hours.",
+        "eventsTitle": "Connection events",
+        "noEvents": "No connection events yet.",
+        "events": {
+          "connected": "Connected",
+          "disconnected": "Disconnected"
+        }
       }
     }
   }

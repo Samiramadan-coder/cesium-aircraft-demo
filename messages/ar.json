@@ -347,7 +347,7 @@
       },
       "engineInputs": {
         "motion": "حساس الحركة",
-        "ignition": "مدخل الإشعال"
+        "ignition": "سلك الإشعال"
       },
       "errors": {
         "imeiRequired": "أدخل رقم IMEI",
@@ -372,13 +372,11 @@
     },
     "details": {
       "retry": "حاول مرة أخرى",
-      "comingSoon": "قريبًا",
       "tabs": {
         "overview": "نظرة عامة",
         "liveStatus": "الحالة المباشرة",
         "configuration": "الإعدادات",
-        "health": "السلامة",
-        "actions": "الإجراءات"
+        "health": "السلامة"
       },
       "overview": {
         "model": "الطراز",
@@ -393,6 +391,44 @@
         "sim": "مشغّل الشريحة",
         "simNumber": "رقم الشريحة",
         "apn": "APN"
+      },
+      "liveStatus": {
+        "signal": "قوة الإشارة",
+        "battery": "مستوى البطارية",
+        "powerVoltage": "جهد الطاقة",
+        "volts": "{value} فولت",
+        "engineState": "حالة المحرك",
+        "running": "يعمل",
+        "off": "متوقف",
+        "lastPosition": "آخر موقع",
+        "gpsSatellites": "أقمار GPS",
+        "gpsAccuracy": "دقة GPS",
+        "meters": "{value} م"
+      },
+      "configuration": {
+        "serverHost": "عنوان الخادم",
+        "serverPort": "منفذ الخادم",
+        "intervalInFlight": "فترة الإرسال (أثناء الطيران)",
+        "intervalOnGround": "فترة الإرسال (على الأرض)",
+        "angleTrigger": "محفّز الزاوية",
+        "distanceTrigger": "محفّز المسافة",
+        "engineInput": "طريقة اكتشاف تشغيل المحرك",
+        "seconds": "{value} ث",
+        "degrees": "{value}°",
+        "meters": "{value} م"
+      },
+      "health": {
+        "signalTitle": "قوة الإشارة — آخر 24 ساعة",
+        "batteryTitle": "مستوى البطارية — آخر 24 ساعة",
+        "signal": "الإشارة",
+        "battery": "البطارية",
+        "noData": "لا توجد قراءات خلال آخر 24 ساعة.",
+        "eventsTitle": "أحداث الاتصال",
+        "noEvents": "لا توجد أحداث اتصال بعد.",
+        "events": {
+          "connected": "متصل",
+          "disconnected": "انقطع الاتصال"
+        }
       }
     }
   }

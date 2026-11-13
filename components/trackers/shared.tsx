@@ -129,3 +129,16 @@ export function compareVersions(a: string, b: string) {
   }
   return 0;
 }
+
+/**
+ * Accepts epoch ms, epoch seconds or a date string; null when unparsable,
+ * so the formatter never gets an invalid date.
+ */
+export function toDate(value: number | string | null) {
+  if (value == null || value === "") return null;
+  const date =
+    typeof value === "number"
+      ? new Date(value < 1e12 ? value * 1000 : value)
+      : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}

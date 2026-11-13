@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api/client";
 import { runAction, type ActionResult } from "@/lib/api/errors";
-import type { TrackerDetails, TrackerPayload } from "@/types/trackers";
+import type {
+  TrackerDetails,
+  TrackerHealth,
+  TrackerPayload,
+} from "@/types/trackers";
 
 export async function addTracker(
   payload: TrackerPayload,
@@ -22,6 +26,16 @@ export async function getTracker(
   return runAction(() =>
     api.get<TrackerDetails>(
       `/v1/tracking/trackers/${encodeURIComponent(trackerId)}`,
+    ),
+  );
+}
+
+export async function getTrackerHealth(
+  trackerId: string,
+): Promise<ActionResult<TrackerHealth>> {
+  return runAction(() =>
+    api.get<TrackerHealth>(
+      `/v1/tracking/trackers/${encodeURIComponent(trackerId)}/health`,
     ),
   );
 }

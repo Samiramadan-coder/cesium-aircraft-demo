@@ -65,4 +65,56 @@ export type TrackerDetails = {
   sim: string | null;
   simNumber: string | null;
   apn: string | null;
+
+  // Live status — TODO: confirm names against the API.
+  /** 0–100 */
+  signalStrength: number | null;
+  /** 0–100 */
+  batteryPercent: number | null;
+  /** Volts */
+  powerVoltage: number | null;
+  /** "aircraft" | "internal" */
+  powerSource: string | null;
+  engineOn: boolean | null;
+  lastPosition: { lat: number; lon: number } | null;
+  gpsSatellites: number | null;
+  /** Meters */
+  gpsAccuracyM: number | null;
+
+  // Configuration — TODO: confirm names against the API.
+  serverHost: string | null;
+  serverPort: number | null;
+  /** Seconds between reports while airborne */
+  intervalInFlightS: number | null;
+  /** Seconds between reports on the ground */
+  intervalOnGroundS: number | null;
+  /** Degrees of heading change that force a report */
+  angleTriggerDeg: number | null;
+  /** Meters travelled that force a report */
+  distanceTriggerM: number | null;
+  /** "ignition" | "motion" — same values as the add-tracker payload */
+  engineInput: string | null;
+};
+
+// GET /v1/tracking/trackers/{tracker}/health
+// TODO: field names are inferred from the design; confirm against the API.
+export type HealthPoint = {
+  /** Epoch ms or a date string */
+  time: number | string;
+  /** 0–100 */
+  value: number;
+};
+
+export type ConnectionEvent = {
+  type: "connected" | "disconnected";
+  /** Epoch ms or a date string */
+  time: number | string;
+};
+
+export type TrackerHealth = {
+  /** Last 24h */
+  signalHistory: HealthPoint[];
+  /** Last 24h */
+  batteryHistory: HealthPoint[];
+  connectionEvents: ConnectionEvent[];
 };

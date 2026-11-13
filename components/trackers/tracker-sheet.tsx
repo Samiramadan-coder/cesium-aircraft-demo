@@ -8,8 +8,15 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
+import {
+  BatteryLevel,
+  SignalStrength,
+  TrackerStatusBadge,
+  toDate,
+} from "./shared";
+
 import { cn } from "cn";
-import { TrackerStatusBadge } from "./shared";
+import TrackerHealthTab from "./tracker-health";
 import { Button } from "@/components/ui/button";
 import { getTracker } from "@/lib/actions/trackers";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,13 +31,7 @@ type DetailsState =
   | { status: "error"; message: string }
   | { status: "ready"; data: TrackerDetails };
 
-const TABS = [
-  "overview",
-  "liveStatus",
-  "configuration",
-  "health",
-  "actions",
-] as const;
+const TABS = ["overview", "liveStatus", "configuration", "health"] as const;
 
 export default function TrackerSheet({
   tracker,
@@ -122,14 +123,15 @@ export default function TrackerSheet({
                   <TabsContent value="overview">
                     <Overview details={details.data} aircraft={aircraft} />
                   </TabsContent>
-                  {/* TODO: the remaining tabs, one at a time. */}
-                  {TABS.filter((tab) => tab !== "overview").map((tab) => (
-                    <TabsContent key={tab} value={tab}>
-                      <Panel className="py-8 text-center text-sm text-muted">
-                        {t("comingSoon")}
-                      </Panel>
-                    </TabsContent>
-                  ))}
+                  <TabsContent value="liveStatus">
+                    <LiveStatus details={details.data} />
+                  </TabsContent>
+                  <TabsContent value="configuration">
+                    <Configuration details={details.data} />
+                  </TabsContent>
+                  <TabsContent value="health">
+                    <TrackerHealthTab trackerId={details.data.id} />
+                  </TabsContent>
                 </>
               )}
             </Tabs>
@@ -182,19 +184,6 @@ function Row({
       </span>
     </Panel>
   );
-}
-
-/**
- * Accepts epoch ms, epoch seconds or a date string; null when unparsable,
- * so the formatter never gets an invalid date.
- */
-function toDate(value: number | string | null) {
-  if (value == null || value === "") return null;
-  const date =
-    typeof value === "number"
-      ? new Date(value < 1e12 ? value * 1000 : value)
-      : new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 /** "•••• 3894" — only the last four digits are shown. */
@@ -260,6 +249,129 @@ function Overview({
         mono
       />
       <Row label={t("apn")} value={details.apn ?? empty} mono />
+    </div>
+  );
+}
+
+function LiveStatus({ details }: { details: TrackerDetails }) {
+  const t = useTranslations("Trackers.details.liveStatus");
+  const tPower = useTranslations("Trackers.addDialog.powerSources");
+  const format = useFormatter();
+  const empty = "—";
+
+  const decimal = (value: number, digits: number) =>
+    format.number(value, {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    });
+
+  const powerSource = details.powerSource
+    ? tPower.has(details.powerSource as "internal")
+      ? tPower(details.powerSource as "internal")
+      : details.powerSource
+    : undefined;
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <Panel className="space-y-1.5">
+          <p className="text-sm text-foreground-2">{t("signal")}</p>
+          <SignalStrength value={details.signalStrength} />
+        </Panel>
+        <Panel className="space-y-1.5">
+          <p className="text-sm text-foreground-2">{t("battery")}</p>
+          <BatteryLevel value={details.batteryPercent} />
+        </Panel>
+      </div>
+
+      <Row
+        label={t("powerVoltage")}
+        value={
+          details.powerVoltage != null
+            ? t("volts", { value: decimal(details.powerVoltage, 1) })
+            : empty
+        }
+        note={powerSource}
+      />
+      <Row
+        label={t("engineState")}
+        value={
+          details.engineOn == null
+            ? empty
+            : details.engineOn
+              ? t("running")
+              : t("off")
+        }
+      />
+      <Row
+        label={t("lastPosition")}
+        value={
+          details.lastPosition
+            ? `${details.lastPosition.lat.toFixed(4)}, ${details.lastPosition.lon.toFixed(4)}`
+            : empty
+        }
+        mono
+      />
+      <Row
+        label={t("gpsSatellites")}
+        value={
+          details.gpsSatellites != null
+            ? format.number(details.gpsSatellites)
+            : empty
+        }
+      />
+      <Row
+        label={t("gpsAccuracy")}
+        value={
+          details.gpsAccuracyM != null
+            ? t("meters", { value: decimal(details.gpsAccuracyM, 1) })
+            : empty
+        }
+      />
+    </div>
+  );
+}
+
+function Configuration({ details }: { details: TrackerDetails }) {
+  const t = useTranslations("Trackers.details.configuration");
+  const tEngine = useTranslations("Trackers.addDialog.engineInputs");
+  const format = useFormatter();
+  const empty = "—";
+
+  const num = (value: number | null, key: "seconds" | "degrees" | "meters") =>
+    value != null ? t(key, { value: format.number(value) }) : empty;
+
+  const engineInput = details.engineInput
+    ? tEngine.has(details.engineInput as "motion")
+      ? tEngine(details.engineInput as "motion")
+      : details.engineInput
+    : empty;
+
+  return (
+    <div className="space-y-2">
+      <Row label={t("serverHost")} value={details.serverHost ?? empty} mono />
+      <Row
+        label={t("serverPort")}
+        value={details.serverPort != null ? String(details.serverPort) : empty}
+        mono
+      />
+      <Row
+        label={t("intervalInFlight")}
+        value={num(details.intervalInFlightS, "seconds")}
+      />
+      <Row
+        label={t("intervalOnGround")}
+        value={num(details.intervalOnGroundS, "seconds")}
+      />
+      <Row
+        label={t("angleTrigger")}
+        value={num(details.angleTriggerDeg, "degrees")}
+      />
+      <Row
+        label={t("distanceTrigger")}
+        value={num(details.distanceTriggerM, "meters")}
+      />
+      <Row label={t("engineInput")} value={engineInput} />
     </div>
   );
 }
