@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname } from "@/i18n/navigation";
 import { NAV_SECTIONS, isActiveHref } from "@/constants/navigation";
-import { cn } from "@/lib/utils";
 
 type AppSidebarProps = {
   open: boolean;

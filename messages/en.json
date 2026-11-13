@@ -112,7 +112,7 @@
       "alerts": "Alerts",
       "trackers": "Trackers",
       "engineHours": "Engine & Flight Hours",
-      "staff": "Staff"
+      "adminstration": "Adminstration"
     }
   },
   "Header": {
@@ -149,7 +149,7 @@
     "profile": {
       "description": "Your account details and preferences will appear here."
     },
-    "staff": {
+    "adminstration": {
       "description": "Club staff, their roles and permissions will appear here."
     }
   },
@@ -668,6 +668,36 @@
         "emailInvalid": "Enter a valid email",
         "passwordRequired": "Enter a password",
         "passwordTooShort": "Password must be at least 8 characters"
+      }
+    }
+  },
+  "Adminstration": {
+    "pages": {
+      "staff": "Staff",
+      "alertRecipients": "Alert recipients"
+    }
+  },
+  "AlertRecipients": {
+    "empty": "No alert recipients yet.",
+    "name": "Name",
+    "channel": "Channel",
+    "destination": "Destination",
+    "addRecipient": "Add recipient",
+    "channels": {
+      "sms": "SMS",
+      "email": "Email"
+    },
+    "addDialog": {
+      "title": "Add alert recipient",
+      "description": "Flight alerts such as zone violations and lost signals are sent to this recipient.",
+      "namePlaceholder": "Duty operations officer",
+      "phone": "Phone number",
+      "email": "Email",
+      "save": "Add recipient",
+      "errors": {
+        "destinationRequired": "Enter where to send alerts",
+        "phoneInvalid": "Enter a valid phone number",
+        "emailInvalid": "Enter a valid email"
       }
     }
   }

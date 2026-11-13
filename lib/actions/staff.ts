@@ -9,6 +9,6 @@ export async function addStaffMember(
   payload: StaffPayload,
 ): Promise<ActionResult<unknown>> {
   const result = await runAction(() => api.post<unknown>("/v1/users", payload));
-  if (result.ok) revalidatePath("/[locale]/(main)/staff", "page");
+  if (result.ok) revalidatePath("/[locale]/(main)/adminstration", "page");
   return result;
 }

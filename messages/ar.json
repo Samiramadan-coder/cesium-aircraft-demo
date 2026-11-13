@@ -112,7 +112,7 @@
       "alerts": "التنبيهات",
       "trackers": "أجهزة التتبع",
       "engineHours": "ساعات المحرك والطيران",
-      "staff": "الموظفين"
+      "adminstration": "الإدارة"
     }
   },
   "Header": {
@@ -149,7 +149,7 @@
     "profile": {
       "description": "ستظهر هنا بيانات حسابك وتفضيلاتك."
     },
-    "staff": {
+    "adminstration": {
       "description": "سيظهر هنا موظفو النادي وأدوارهم وصلاحياتهم."
     }
   },
@@ -668,6 +668,36 @@
         "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً",
         "passwordRequired": "أدخل كلمة المرور",
         "passwordTooShort": "يجب ألا تقل كلمة المرور عن 8 أحرف"
+      }
+    }
+  },
+  "Adminstration": {
+    "pages": {
+      "staff": "الموظفين",
+      "alertRecipients": "مستلمو التنبيهات"
+    }
+  },
+  "AlertRecipients": {
+    "empty": "لا يوجد مستلمو تنبيهات بعد.",
+    "name": "الاسم",
+    "channel": "القناة",
+    "destination": "الوجهة",
+    "addRecipient": "إضافة مستلم",
+    "channels": {
+      "sms": "رسالة نصية",
+      "email": "بريد إلكتروني"
+    },
+    "addDialog": {
+      "title": "إضافة مستلم تنبيهات",
+      "description": "تُرسل تنبيهات الرحلات مثل تجاوز المناطق وفقدان الإشارة إلى هذا المستلم.",
+      "namePlaceholder": "ضابط العمليات المناوب",
+      "phone": "رقم الهاتف",
+      "email": "البريد الإلكتروني",
+      "save": "إضافة مستلم",
+      "errors": {
+        "destinationRequired": "أدخل وجهة إرسال التنبيهات",
+        "phoneInvalid": "أدخل رقم هاتف صحيحاً",
+        "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً"
       }
     }
   }
