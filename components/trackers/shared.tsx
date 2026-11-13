@@ -82,7 +82,7 @@ export function SignalStrength({ value }: { value: number | null }) {
           <span
             key={height}
             className={cn(
-              "w-[3px] rounded-[1px]",
+              "w-0.75 rounded-[1px]",
               index < filled ? "bg-success" : "bg-foreground/20",
             )}
             style={{ height: `${height * 100}%` }}
