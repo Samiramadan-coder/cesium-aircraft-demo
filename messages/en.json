@@ -148,6 +148,10 @@
       "description": "Your account details and preferences will appear here."
     }
   },
+  "Common": {
+    "retry": "Try again",
+    "errorReference": "Reference: {digest}"
+  },
   "EngineHours": {
     "title": "Engine & Flight Hours",
     "subtitle": "Accumulated engine and flight hours per aircraft, used for maintenance scheduling.",
@@ -156,8 +160,7 @@
     "overdue": "{count} overdue",
     "errorPage": {
       "title": "Couldn't load engine & flight hours",
-      "description": "Something went wrong while loading the hours data. Check your connection and try again.",
-      "reference": "Reference: {digest}"
+      "description": "Something went wrong while loading the hours data. Check your connection and try again."
     },
     "kpis": {
       "flightHours": "Flight hours",
@@ -492,8 +495,7 @@
     },
     "errorPage": {
       "title": "Couldn't load trackers",
-      "description": "Something went wrong while loading the tracking devices. Check your connection and try again.",
-      "reference": "Reference: {digest}"
+      "description": "Something went wrong while loading the tracking devices. Check your connection and try again."
     },
     "options": {
       "powerSources": {
@@ -615,7 +617,19 @@
         "title": "Zone Events",
         "empty": "No zone events recorded.",
         "duration": "{value} min"
+      },
+      "error": {
+        "title": "Couldn't load this flight",
+        "description": "Something went wrong while loading the flight replay. Check your connection and try again."
+      },
+      "notFound": {
+        "title": "Flight not found",
+        "description": "This flight doesn't exist or is no longer available."
       }
+    },
+    "errorPage": {
+      "title": "Couldn't load flight history",
+      "description": "Something went wrong while loading the flights. Check your connection and try again."
     }
   }
 }

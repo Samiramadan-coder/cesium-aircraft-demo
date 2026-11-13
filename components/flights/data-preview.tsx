@@ -1,8 +1,9 @@
 import { PlaneTakeoff } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Link } from "@/i18n/navigation";
 import type { Flight } from "@/types/flights";
 import type { TrackedAircraft, TrackedPilot } from "@/types/tracking";
 import {
@@ -164,16 +165,18 @@ export default function DataPreview({
 
               <TableCell className="pe-4">
                 <div className="flex items-center justify-end gap-1">
-                  {/* UI only for now — replay isn't wired up yet. */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="border-border bg-card text-foreground hover:bg-card-2"
+                  <Link
+                    href={`/flights/${encodeURIComponent(flight.id)}`}
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                      className:
+                        "border-border bg-card text-foreground hover:bg-card-2",
+                    })}
                   >
                     <PlaneTakeoff />
                     {t("replay")}
-                  </Button>
+                  </Link>
                   <FlightMenu flightId={flight.id} />
                 </div>
               </TableCell>
