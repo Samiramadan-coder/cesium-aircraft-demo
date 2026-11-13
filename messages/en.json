@@ -544,7 +544,13 @@
       "events": "{count, plural, one {# event} other {# events}}",
       "replay": "3D replay",
       "routeLabel": "Route of flight {id}",
-      "empty": "No completed flights in the last 30 days."
+      "empty": "No completed flights in the last 30 days.",
+      "menu": {
+        "label": "Actions for flight {id}",
+        "view": "View",
+        "replay": "3D replay",
+        "exportKml": "Export KML"
+      }
     },
     "charts": {
       "hoursByAircraft": "Flight Hours by Aircraft",

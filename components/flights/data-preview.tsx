@@ -15,6 +15,7 @@ import {
   rowClassName,
   useFlightType,
 } from "../engine-flight-hours/shared";
+import FlightMenu from "./flight-menu";
 import RouteThumbnail from "./route-thumbnail";
 
 const COLUMNS = [
@@ -162,16 +163,19 @@ export default function DataPreview({
               </TableCell>
 
               <TableCell className="pe-4">
-                {/* UI only for now — replay isn't wired up yet. */}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="border-border bg-card text-foreground hover:bg-card-2"
-                >
-                  <PlaneTakeoff />
-                  {t("replay")}
-                </Button>
+                <div className="flex items-center justify-end gap-1">
+                  {/* UI only for now — replay isn't wired up yet. */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-border bg-card text-foreground hover:bg-card-2"
+                  >
+                    <PlaneTakeoff />
+                    {t("replay")}
+                  </Button>
+                  <FlightMenu flightId={flight.id} />
+                </div>
               </TableCell>
             </TableRow>
           );
