@@ -374,7 +374,9 @@
       "ping": "إرسال اختبار اتصال",
       "unlink": "فك الربط",
       "delete": "حذف",
-      "edit": "تعديل"
+      "edit": "تعديل",
+      "checkFirmware": "فحص البرنامج الثابت",
+      "link": "ربط بطائرة"
     },
     "details": {
       "retry": "حاول مرة أخرى",
@@ -442,6 +444,41 @@
       "description": "سيتم حذف <strong>{device}</strong> (<mono>{imei}</mono>) ولن يظهر في التتبع بعد ذلك. لا يمكن التراجع عن هذا الإجراء.",
       "cancel": "إلغاء",
       "confirm": "حذف"
+    },
+    "pingDialog": {
+      "title": "اختبار الاتصال",
+      "sending": "جارٍ إرسال اختبار اتصال إلى الجهاز…",
+      "sent": "تم إرسال الاختبار. من المفترض أن يرد الجهاز خلال لحظات.",
+      "close": "إغلاق",
+      "retry": "حاول مرة أخرى"
+    },
+    "firmwareDialog": {
+      "title": "فحص البرنامج الثابت",
+      "current": "الإصدار المثبّت",
+      "latest": "أحدث إصدار",
+      "checking": "جارٍ البحث عن تحديثات…",
+      "upToDate": "البرنامج الثابت محدّث.",
+      "updateAvailable": "يتوفر تحديث: {version}",
+      "close": "إغلاق",
+      "retry": "حاول مرة أخرى"
+    },
+    "linkDialog": {
+      "title": "ربط بطائرة",
+      "aircraft": "الطائرة",
+      "installedBy": "تم التركيب بواسطة",
+      "noAircraft": "كل الطائرات مرتبطة بأجهزة تتبع بالفعل. افصل أحدها أولًا.",
+      "cancel": "إلغاء",
+      "save": "ربط",
+      "errors": {
+        "aircraftRequired": "اختر طائرة",
+        "installedByRequired": "اختر من قام بالتركيب"
+      }
+    },
+    "unlinkDialog": {
+      "title": "فك الربط من الطائرة؟",
+      "description": "سيتم فك ربط <strong>{device}</strong> (<mono>{imei}</mono>) من <strong>{aircraft}</strong>. لن يتم تتبع الطائرة حتى يتم ربط جهاز بها مرة أخرى.",
+      "cancel": "إلغاء",
+      "confirm": "فك الربط"
     }
   }
 }

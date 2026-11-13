@@ -12,13 +12,19 @@ import { useState } from "react";
 import TrackerSheet from "./tracker-sheet";
 import DeleteTracker from "./delete-tracker";
 import TrackerForm from "./tracker-form";
+import PingTracker from "./ping-tracker";
+import CheckFirmware from "./check-firmware";
+import LinkTracker from "./link-tracker";
+import UnlinkTracker from "./unlink-tracker";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import type { Tracker } from "@/types/trackers";
 import type { TrackedAircraft } from "@/types/tracking";
 import {
   Cable,
+  CircuitBoard,
   Ellipsis,
+  Link2,
   Pencil,
   Radio,
   Trash2,
@@ -31,12 +37,20 @@ const itemClassName =
 export default function TrackerMenu({
   tracker,
   aircraft,
+  availableAircraft,
 }: {
   tracker: Tracker;
+  /** The aircraft this tracker is installed on. */
   aircraft: TrackedAircraft | null;
+  /** Aircraft without a tracker, offered by "Link to aircraft". */
+  availableAircraft: TrackedAircraft[];
 }) {
   const t = useTranslations("Trackers.menu");
   const [viewing, setViewing] = useState(false);
+  const [pinging, setPinging] = useState(false);
+  const [linking, setLinking] = useState(false);
+  const [unlinking, setUnlinking] = useState(false);
+  const [checkingFirmware, setCheckingFirmware] = useState(false);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -69,21 +83,41 @@ export default function TrackerMenu({
             {t("view")}
           </DropdownMenuItem>
 
-          {/* TODO: wire up */}
-          <DropdownMenuItem className={itemClassName}>
+          <DropdownMenuItem
+            className={itemClassName}
+            disabled={tracker.status === "notInstalled"}
+            onClick={() => setPinging(true)}
+          >
             <Radio />
             {t("ping")}
           </DropdownMenuItem>
 
-          {/* TODO: wire up */}
           <DropdownMenuItem
-            variant="destructive"
-            disabled={!aircraft}
             className={itemClassName}
+            onClick={() => setCheckingFirmware(true)}
           >
-            <Unlink />
-            {t("unlink")}
+            <CircuitBoard />
+            {t("checkFirmware")}
           </DropdownMenuItem>
+
+          {aircraft ? (
+            <DropdownMenuItem
+              variant="destructive"
+              className={itemClassName}
+              onClick={() => setUnlinking(true)}
+            >
+              <Unlink />
+              {t("unlink")}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              className={itemClassName}
+              onClick={() => setLinking(true)}
+            >
+              <Link2 />
+              {t("link")}
+            </DropdownMenuItem>
+          )}
 
           <DropdownMenuSeparator />
 
@@ -105,6 +139,34 @@ export default function TrackerMenu({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {aircraft && (
+        <UnlinkTracker
+          tracker={tracker}
+          aircraft={aircraft}
+          open={unlinking}
+          onOpenChange={setUnlinking}
+        />
+      )}
+
+      <LinkTracker
+        tracker={tracker}
+        aircraft={availableAircraft}
+        open={linking}
+        onOpenChange={setLinking}
+      />
+
+      <CheckFirmware
+        tracker={tracker}
+        open={checkingFirmware}
+        onOpenChange={setCheckingFirmware}
+      />
+
+      <PingTracker
+        tracker={tracker}
+        open={pinging}
+        onOpenChange={setPinging}
+      />
 
       <TrackerForm
         trackerId={tracker.id}

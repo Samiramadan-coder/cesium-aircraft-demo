@@ -374,7 +374,9 @@
       "ping": "Send test ping",
       "unlink": "Unlink",
       "delete": "Delete",
-      "edit": "Edit"
+      "edit": "Edit",
+      "checkFirmware": "Check firmware",
+      "link": "Link to aircraft"
     },
     "details": {
       "retry": "Try again",
@@ -442,6 +444,41 @@
       "description": "<strong>{device}</strong> (<mono>{imei}</mono>) will be removed and stop appearing in tracking. This can't be undone.",
       "cancel": "Cancel",
       "confirm": "Delete"
+    },
+    "pingDialog": {
+      "title": "Test ping",
+      "sending": "Sending a test ping to the device…",
+      "sent": "Ping sent. The device should report back shortly.",
+      "close": "Close",
+      "retry": "Try again"
+    },
+    "firmwareDialog": {
+      "title": "Firmware check",
+      "current": "Installed version",
+      "latest": "Latest version",
+      "checking": "Checking for updates…",
+      "upToDate": "Firmware is up to date.",
+      "updateAvailable": "Update available: {version}",
+      "close": "Close",
+      "retry": "Try again"
+    },
+    "linkDialog": {
+      "title": "Link to aircraft",
+      "aircraft": "Aircraft",
+      "installedBy": "Installed by",
+      "noAircraft": "Every aircraft already has a tracker. Unlink one first.",
+      "cancel": "Cancel",
+      "save": "Link",
+      "errors": {
+        "aircraftRequired": "Choose an aircraft",
+        "installedByRequired": "Choose who installed it"
+      }
+    },
+    "unlinkDialog": {
+      "title": "Unlink from aircraft?",
+      "description": "<strong>{device}</strong> (<mono>{imei}</mono>) will be unlinked from <strong>{aircraft}</strong>. The aircraft will stop being tracked until a device is linked again.",
+      "cancel": "Cancel",
+      "confirm": "Unlink"
     }
   }
 }

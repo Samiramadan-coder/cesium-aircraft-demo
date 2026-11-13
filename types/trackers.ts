@@ -118,3 +118,17 @@ export type TrackerHealth = {
   batteryHistory: HealthPoint[];
   connectionEvents: ConnectionEvent[];
 };
+
+// POST /v1/tracking/trackers/{tracker}/firmware/check
+// TODO: field names are guessed; confirm against the API.
+export type FirmwareCheck = {
+  currentVersion: string | null;
+  latestVersion: string | null;
+  updateAvailable: boolean;
+};
+
+// POST /v1/tracking/trackers/{tracker}/link
+export type TrackerLinkPayload = {
+  aircraftId: string;
+  installedBy: string;
+};

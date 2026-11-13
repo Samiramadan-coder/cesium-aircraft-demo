@@ -52,6 +52,11 @@ export default function DataPreview({
       ) ?? null,
   }));
 
+  // Aircraft no tracker is installed on — the choices for "Link to aircraft".
+  const availableAircraft = aircraft.filter(
+    (item) => !trackers.some((tracker) => tracker.aircraft?.id === item.id),
+  );
+
   // TODO: the design highlights some firmware versions; assumed here to mark
   // the newest one. Swap for an API flag if the backend provides one.
   const latestFirmware = trackers
@@ -147,7 +152,11 @@ export default function DataPreview({
                   {tracker.firmware ?? "—"}
                 </TableCell>
                 <TableCell className="pe-4 text-end">
-                  <TrackerMenu tracker={tracker} aircraft={tracker.aircraft} />
+                  <TrackerMenu
+                    tracker={tracker}
+                    aircraft={tracker.aircraft}
+                    availableAircraft={availableAircraft}
+                  />
                 </TableCell>
               </TableRow>
             );
