@@ -41,12 +41,12 @@ const PERIOD_LABELS = {
 
 const triggerClassName =
   "border-border bg-card text-foreground hover:bg-card-2 data-[size=default]:h-9";
-const inputClassName =
+export const inputClassName =
   "h-9 border-border bg-card text-foreground placeholder:text-muted hover:bg-card-2";
 
 type Option = { value: string; label: string };
 
-function FilterSelect({
+export function FilterSelect({
   label,
   items,
   value,

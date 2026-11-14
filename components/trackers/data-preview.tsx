@@ -27,10 +27,16 @@ const JUST_NOW_MS = 60_000;
 
 export default function DataPreview({
   trackers: list,
+  allTrackers,
+  filtered,
   aircraft,
   firmwareVersions,
 }: {
   trackers: Tracker[];
+  /** Every tracker, unfiltered — decides which aircraft are free to link. */
+  allTrackers: Tracker[];
+  /** Whether any filter is applied, for the empty message. */
+  filtered: boolean;
   aircraft: TrackedAircraft[];
   /** Latest release per model, from `/v1/firmware-versions`. */
   firmwareVersions: FirmwareVersion[];
@@ -42,25 +48,29 @@ export default function DataPreview({
   if (list.length === 0) {
     return (
       <p className="rounded-xl bg-card p-8 text-center text-sm text-foreground-2 ring-1 ring-foreground/10">
-        {t("empty")}
+        {t(filtered ? "filters.noMatches" : "empty")}
       </p>
     );
   }
 
+  const aircraftOf = (tracker: Tracker) =>
+    aircraft.find(
+      (item) =>
+        (tracker.aircraftId && item.id === tracker.aircraftId) ||
+        item.trackerId === tracker.id,
+    ) ?? null;
+
   const trackers = list.map((tracker) => ({
     ...tracker,
-    aircraft:
-      aircraft.find(
-        (item) =>
-          (tracker.aircraftId && item.id === tracker.aircraftId) ||
-          item.trackerId === tracker.id,
-      ) ?? null,
+    aircraft: aircraftOf(tracker),
   }));
 
   // Aircraft no tracker is installed on — the choices for "Link to aircraft".
-  const availableAircraft = aircraft.filter(
-    (item) => !trackers.some((tracker) => tracker.aircraft?.id === item.id),
+  // Checked against every tracker, not only the filtered ones.
+  const linkedIds = new Set(
+    allTrackers.map((tracker) => aircraftOf(tracker)?.id),
   );
+  const availableAircraft = aircraft.filter((item) => !linkedIds.has(item.id));
 
   const models = firmwareVersions.map((item) => item.model);
 

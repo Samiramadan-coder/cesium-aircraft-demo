@@ -3,8 +3,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 const KPI_COUNT = 7;
 const ROW_COUNT = 6;
 const COLUMN_COUNT = 7;
+/** Status, model, operator and aircraft selects, after the search box. */
+const FILTER_COUNT = 4;
 
-/** Mirrors the page: KPI cards, the actions row, then the table. */
+/** Mirrors the page: KPI cards, the actions row, the filters, then the table. */
 export default function Loading() {
   return (
     <div className="p-4 sm:p-6 space-y-6" aria-busy="true">
@@ -26,6 +28,13 @@ export default function Loading() {
           <Skeleton className="h-9 w-32 rounded-lg bg-card" />
         </div>
       </section>
+
+      <div className="flex flex-wrap gap-2">
+        <Skeleton className="h-9 w-64 rounded-lg bg-card" />
+        {Array.from({ length: FILTER_COUNT }, (_, i) => (
+          <Skeleton key={i} className="h-9 w-40 rounded-lg bg-card" />
+        ))}
+      </div>
 
       <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
         <div className="flex gap-6 border-b border-border px-4 py-3">

@@ -521,6 +521,16 @@
         "motion": "Motion sensor",
         "ignition": "Ignition wire"
       }
+    },
+    "filters": {
+      "search": "Search IMEI, serial or aircraft",
+      "allStatuses": "All statuses",
+      "model": "Model",
+      "allModels": "All models",
+      "operator": "SIM operator",
+      "allOperators": "All operators",
+      "allAircraft": "All aircraft",
+      "noMatches": "No trackers match these filters."
     }
   },
   "Flights": {
