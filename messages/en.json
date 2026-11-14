@@ -910,5 +910,122 @@
         "atzAltitudeWarning": "Aircraft above {value} ft inside the ATZ"
       }
     }
+  },
+  "Zones": {
+    "empty": "No zones defined yet.",
+    "columns": {
+      "zone": "Zone",
+      "shape": "Shape",
+      "altitude": "Altitude",
+      "warnings": "Warnings",
+      "appliesTo": "Applies to",
+      "status": "Status",
+      "lastEdited": "Last edited",
+      "actions": "Actions"
+    },
+    "kinds": {
+      "trainingArea": "Training area",
+      "atz": "ATZ"
+    },
+    "appliesToValues": {
+      "all": "All aircraft"
+    },
+    "shapes": {
+      "polygon": "Polygon",
+      "circle": "Circle"
+    },
+    "points": "{count, plural, one {# point} other {# points}}",
+    "holes": "{count, plural, one {# exclusion} other {# exclusions}}",
+    "radius": "Radius {value} NM",
+    "altitudeRange": "{floor} – {ceiling} ft",
+    "lateralBuffer": "{value} NM lateral",
+    "altitudeMargin": "{value} ft altitude",
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "errorPage": {
+      "title": "Couldn't load zones",
+      "description": "The zones list didn't load. Check your connection and try again."
+    },
+    "addZone": "Add zone",
+    "form": {
+      "title": "Add zone",
+      "description": "Draw the boundary and set the altitude limits for the new zone.",
+      "editTitle": "Edit zone",
+      "editDescription": "Changes are saved as a new version of the zone.",
+      "name": "Name",
+      "nameAr": "Arabic name",
+      "kind": "Zone type",
+      "color": "Color",
+      "shape": "Boundary",
+      "type": "Shape",
+      "points": "Points",
+      "addPoint": "Add point",
+      "noPoints": "Add at least 3 points, in order around the boundary.",
+      "lat": "Latitude",
+      "lon": "Longitude",
+      "latOf": "Latitude of point {n}",
+      "lonOf": "Longitude of point {n}",
+      "removePoint": "Remove point {n}",
+      "holesKept": "{count, plural, one {The # exclusion area is kept as is.} other {The # exclusion areas are kept as they are.}}",
+      "centerLat": "Centre latitude",
+      "centerLon": "Centre longitude",
+      "radiusMeters": "Radius (m)",
+      "floorFt": "Floor (ft)",
+      "ceilingFt": "Ceiling (ft)",
+      "ceilingReference": "Altitude reference",
+      "lateralWarningBufferNm": "Lateral warning (NM)",
+      "altitudeWarningMarginFt": "Altitude warning (ft)",
+      "active": "Active",
+      "notes": "Notes",
+      "summary": "Change summary",
+      "summaryPlaceholder": "Initial published boundary",
+      "summaryEditPlaceholder": "What changed, e.g. Moved the northern edge",
+      "save": "Add zone",
+      "saveChanges": "Save changes",
+      "errors": {
+        "nameRequired": "Enter the zone name.",
+        "colorInvalid": "Use a hex color, e.g. #4A9EDB.",
+        "numberRequired": "Enter a number.",
+        "latInvalid": "Latitude must be between -90 and 90.",
+        "lonInvalid": "Longitude must be between -180 and 180.",
+        "pointsMin": "A polygon needs at least 3 points.",
+        "radiusInvalid": "The radius must be greater than 0.",
+        "ceilingBelowFloor": "The ceiling must be above the floor.",
+        "negative": "Can't be negative.",
+        "summaryRequired": "Describe the change for the version history."
+      }
+    },
+    "menu": {
+      "label": "Actions for {zone}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "openMap": "Open map"
+    },
+    "deleteDialog": {
+      "title": "Delete zone?",
+      "description": "<strong>{zone}</strong> will be removed from the map and stop triggering zone alerts. This can't be undone.",
+      "confirm": "Delete"
+    },
+    "details": {
+      "title": "{zone} · Zone",
+      "back": "Back to zones",
+      "mapUnavailable": "The map couldn't load. Check your connection and try again.",
+      "noBoundary": "This zone has no boundary to draw yet.",
+      "notFound": {
+        "title": "Zone not found",
+        "description": "This zone doesn't exist or was deleted."
+      }
+    },
+    "boundaryEditor": {
+      "open": "Edit boundary",
+      "title": "Edit boundary",
+      "description": "Change the points and watch the map update. Nothing is saved until you press Save.",
+      "fit": "Fit to zone",
+      "cancel": "Cancel",
+      "incomplete": "Add at least 3 valid points to draw the zone.",
+      "otherFieldsInvalid": "Some other details of this zone are invalid. Fix them from Edit in the zones table."
+    }
   }
 }

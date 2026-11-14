@@ -88,3 +88,29 @@ export type LiveTrackingSnapshot = {
   activeAlerts: unknown[];
   zones: TrackedZone[];
 };
+
+/**
+ * Body of `POST /v1/tracking/zones` and `PATCH /v1/tracking/zones/{id}`.
+ * A polygon sends `points` (and keeps its `holes`); a circle sends `center`
+ * and `radiusMeters`. `summary` describes the change in the version history.
+ */
+export type ZonePayload = {
+  name: string;
+  nameAr: string | null;
+  type: "polygon" | "circle";
+  kind: string;
+  color: string;
+  points?: LatLon[];
+  holes?: LatLon[][];
+  center?: LatLon;
+  radiusMeters?: number;
+  ceilingFt: number;
+  ceilingReference: string;
+  floorFt: number;
+  lateralWarningBufferNm: number;
+  altitudeWarningMarginFt: number;
+  active: boolean;
+  appliesTo: string;
+  notes: string | null;
+  summary: string;
+};

@@ -910,5 +910,122 @@
         "atzAltitudeWarning": "الطائرة فوق {value} قدم داخل منطقة المطار"
       }
     }
+  },
+  "Zones": {
+    "empty": "لا توجد مناطق محددة بعد.",
+    "columns": {
+      "zone": "المنطقة",
+      "shape": "الشكل",
+      "altitude": "الارتفاع",
+      "warnings": "التحذيرات",
+      "appliesTo": "تنطبق على",
+      "status": "الحالة",
+      "lastEdited": "آخر تعديل",
+      "actions": "الإجراءات"
+    },
+    "kinds": {
+      "trainingArea": "منطقة تدريب",
+      "atz": "منطقة حركة المطار"
+    },
+    "appliesToValues": {
+      "all": "جميع الطائرات"
+    },
+    "shapes": {
+      "polygon": "مضلع",
+      "circle": "دائرة"
+    },
+    "points": "{count, plural, zero {لا نقاط} one {نقطة واحدة} two {نقطتان} few {# نقاط} many {# نقطة} other {# نقطة}}",
+    "holes": "{count, plural, one {استثناء واحد} two {استثناءان} few {# استثناءات} other {# استثناء}}",
+    "radius": "نصف القطر {value} ميل بحري",
+    "altitudeRange": "{floor} – {ceiling} قدم",
+    "lateralBuffer": "{value} ميل بحري أفقيًا",
+    "altitudeMargin": "{value} قدم ارتفاعًا",
+    "statuses": {
+      "active": "نشطة",
+      "inactive": "غير نشطة"
+    },
+    "errorPage": {
+      "title": "تعذّر تحميل المناطق",
+      "description": "لم يتم تحميل قائمة المناطق. تحقّق من الاتصال وحاول مرة أخرى."
+    },
+    "addZone": "إضافة منطقة",
+    "form": {
+      "title": "إضافة منطقة",
+      "description": "حدّد حدود المنطقة الجديدة وحدود الارتفاع فيها.",
+      "editTitle": "تعديل المنطقة",
+      "editDescription": "تُحفظ التعديلات كإصدار جديد من المنطقة.",
+      "name": "الاسم",
+      "nameAr": "الاسم بالعربية",
+      "kind": "نوع المنطقة",
+      "color": "اللون",
+      "shape": "الحدود",
+      "type": "الشكل",
+      "points": "النقاط",
+      "addPoint": "إضافة نقطة",
+      "noPoints": "أضف 3 نقاط على الأقل بالترتيب حول الحدود.",
+      "lat": "خط العرض",
+      "lon": "خط الطول",
+      "latOf": "خط العرض للنقطة {n}",
+      "lonOf": "خط الطول للنقطة {n}",
+      "removePoint": "حذف النقطة {n}",
+      "holesKept": "{count, plural, one {تبقى منطقة الاستثناء كما هي.} two {تبقى منطقتا الاستثناء كما هما.} other {تبقى مناطق الاستثناء (#) كما هي.}}",
+      "centerLat": "خط عرض المركز",
+      "centerLon": "خط طول المركز",
+      "radiusMeters": "نصف القطر (م)",
+      "floorFt": "الحد الأدنى (قدم)",
+      "ceilingFt": "الحد الأعلى (قدم)",
+      "ceilingReference": "مرجع الارتفاع",
+      "lateralWarningBufferNm": "تحذير أفقي (ميل بحري)",
+      "altitudeWarningMarginFt": "تحذير الارتفاع (قدم)",
+      "active": "نشطة",
+      "notes": "ملاحظات",
+      "summary": "ملخص التغيير",
+      "summaryPlaceholder": "الحدود الأولى المنشورة",
+      "summaryEditPlaceholder": "ما الذي تغيّر، مثل: تحريك الحد الشمالي",
+      "save": "إضافة المنطقة",
+      "saveChanges": "حفظ التغييرات",
+      "errors": {
+        "nameRequired": "أدخل اسم المنطقة.",
+        "colorInvalid": "استخدم لونًا بصيغة hex، مثل ‎#4A9EDB.",
+        "numberRequired": "أدخل رقمًا.",
+        "latInvalid": "يجب أن يكون خط العرض بين ‎-90 و90.",
+        "lonInvalid": "يجب أن يكون خط الطول بين ‎-180 و180.",
+        "pointsMin": "يحتاج المضلع إلى 3 نقاط على الأقل.",
+        "radiusInvalid": "يجب أن يكون نصف القطر أكبر من 0.",
+        "ceilingBelowFloor": "يجب أن يكون الحد الأعلى فوق الحد الأدنى.",
+        "negative": "لا يمكن أن تكون القيمة سالبة.",
+        "summaryRequired": "اكتب وصفًا للتغيير لسجل الإصدارات."
+      }
+    },
+    "menu": {
+      "label": "إجراءات {zone}",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "openMap": "فتح الخريطة"
+    },
+    "deleteDialog": {
+      "title": "حذف المنطقة؟",
+      "description": "سيتم حذف <strong>{zone}</strong> من الخريطة ولن تُطلق تنبيهات المنطقة بعد الآن. لا يمكن التراجع عن ذلك.",
+      "confirm": "حذف"
+    },
+    "details": {
+      "title": "{zone} · منطقة",
+      "back": "العودة إلى المناطق",
+      "mapUnavailable": "تعذّر تحميل الخريطة. تحقّق من الاتصال وحاول مرة أخرى.",
+      "noBoundary": "لا توجد حدود مرسومة لهذه المنطقة بعد.",
+      "notFound": {
+        "title": "المنطقة غير موجودة",
+        "description": "هذه المنطقة غير موجودة أو تم حذفها."
+      }
+    },
+    "boundaryEditor": {
+      "open": "تعديل الحدود",
+      "title": "تعديل الحدود",
+      "description": "غيّر النقاط وشاهد التحديث على الخريطة مباشرة. لا يُحفظ شيء حتى تضغط حفظ.",
+      "fit": "عرض المنطقة كاملة",
+      "cancel": "إلغاء",
+      "incomplete": "أضف 3 نقاط صحيحة على الأقل لرسم المنطقة.",
+      "otherFieldsInvalid": "بعض بيانات المنطقة الأخرى غير صحيحة. صحّحها من «تعديل» في جدول المناطق."
+    }
   }
 }
