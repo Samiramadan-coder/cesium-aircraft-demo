@@ -789,7 +789,7 @@
     },
     "types": {
       "ceilingExceeded": "تجاوز السقف",
-      "atzAltitudeWarning": "قرب السقف",
+      "atzAltitudeWarning": "تحذير ارتفاع منطقة المطار",
       "nearBoundary": "قرب الحدود",
       "outsideZone": "خارج المنطقة",
       "signalLost": "فقدان الإشارة",
@@ -880,6 +880,35 @@
       "note": "ملاحظة",
       "notePlaceholder": "مثال: عادت الطائرة إلى منطقة التدريب",
       "submit": "حل"
+    },
+    "rules": {
+      "columns": {
+        "type": "نوع التنبيه",
+        "severity": "الخطورة",
+        "threshold": "الحد",
+        "sound": "الصوت",
+        "toast": "الإشعار المنبثق",
+        "channels": "القنوات",
+        "enabled": "مفعّل"
+      },
+      "channels": {
+        "operations": "لوحة العمليات",
+        "sms": "رسالة نصية",
+        "email": "البريد الإلكتروني"
+      },
+      "severityLabel": "خطورة {rule}",
+      "soundLabel": "صوت {rule}",
+      "toastLabel": "الإشعار المنبثق لـ {rule}",
+      "enabledLabel": "تفعيل {rule}",
+      "empty": "لا توجد قواعد تنبيه بعد.",
+      "thresholds": {
+        "nearBoundary": "الطائرة على بُعد {value} ميل بحري من حدود المنطقة",
+        "outsideZone": "الطائرة تخرج عن حدود المنطقة النشطة",
+        "nearCeiling": "الطائرة على بُعد {value} قدم من سقف المنطقة",
+        "ceilingExceeded": "الطائرة تصعد فوق سقف المنطقة",
+        "signalLost": "لا توجد إشارة من جهاز التتبع لأكثر من {value} ثانية",
+        "atzAltitudeWarning": "الطائرة فوق {value} قدم داخل منطقة المطار"
+      }
     }
   }
 }

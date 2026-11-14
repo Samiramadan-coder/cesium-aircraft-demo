@@ -75,3 +75,33 @@ export type ResolveAlertPayload = {
   resolution: AlertResolution;
   note?: string;
 };
+
+/** Where a rule's alerts are sent: the ops console, SMS or email. */
+export const ALERT_CHANNELS = ["operations", "sms", "email"] as const;
+export type AlertChannel = (typeof ALERT_CHANNELS)[number];
+
+// GET /v1/tracking/alert-rules
+export type AlertRule = {
+  /** e.g. "rule-near-boundary" */
+  id: string;
+  /** The alert type it raises, e.g. "nearBoundary" */
+  type: string;
+  enabled: boolean;
+  severity: AlertSeverity;
+  /** Depends on the type; `[]` when it has none. */
+  threshold: {
+    lateralBufferNm?: number;
+    altitudeMarginFt?: number;
+    ceilingFt?: number;
+    timeoutSec?: number;
+  } | [];
+  sound: boolean;
+  toast: boolean;
+  channels: AlertChannel[];
+};
+
+// PUT /v1/tracking/alert-rules/{id}
+export type AlertRulePayload = Pick<
+  AlertRule,
+  "enabled" | "severity" | "sound" | "toast" | "channels"
+>;

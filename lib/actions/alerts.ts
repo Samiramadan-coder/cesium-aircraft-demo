@@ -5,6 +5,7 @@ import { api } from "@/lib/api/client";
 import { runAction, type ActionResult } from "@/lib/api/errors";
 import type {
   AcknowledgeAlertPayload,
+  AlertRulePayload,
   AssignAlertPayload,
   ResolveAlertPayload,
 } from "@/types/alerts";
@@ -45,5 +46,17 @@ export async function resolveAlert(
 ): Promise<ActionResult<unknown>> {
   return mutate(() =>
     api.post<unknown>(alertPath(alertId, "resolve"), payload),
+  );
+}
+
+export async function updateAlertRule(
+  ruleId: string,
+  payload: AlertRulePayload,
+): Promise<ActionResult<unknown>> {
+  return mutate(() =>
+    api.put<unknown>(
+      `/v1/tracking/alert-rules/${encodeURIComponent(ruleId)}`,
+      payload,
+    ),
   );
 }

@@ -789,7 +789,7 @@
     },
     "types": {
       "ceilingExceeded": "Ceiling Exceeded",
-      "atzAltitudeWarning": "Near Ceiling",
+      "atzAltitudeWarning": "ATZ Altitude Warning",
       "nearBoundary": "Near Boundary",
       "outsideZone": "Outside Zone",
       "signalLost": "Signal Lost",
@@ -880,6 +880,35 @@
       "note": "Note",
       "notePlaceholder": "e.g. Back inside the training area",
       "submit": "Resolve"
+    },
+    "rules": {
+      "columns": {
+        "type": "Alert type",
+        "severity": "Severity",
+        "threshold": "Threshold",
+        "sound": "Sound",
+        "toast": "Toast",
+        "channels": "Channels",
+        "enabled": "Enabled"
+      },
+      "channels": {
+        "operations": "Operations console",
+        "sms": "SMS",
+        "email": "Email"
+      },
+      "severityLabel": "Severity of {rule}",
+      "soundLabel": "Sound for {rule}",
+      "toastLabel": "Toast for {rule}",
+      "enabledLabel": "Enable {rule}",
+      "empty": "No alert rules yet.",
+      "thresholds": {
+        "nearBoundary": "Aircraft within {value} NM of a zone boundary",
+        "outsideZone": "Aircraft crosses outside the active zone boundary",
+        "nearCeiling": "Aircraft within {value} ft of the zone ceiling",
+        "ceilingExceeded": "Aircraft climbs above the zone ceiling",
+        "signalLost": "No tracker signal for more than {value} seconds",
+        "atzAltitudeWarning": "Aircraft above {value} ft inside the ATZ"
+      }
     }
   }
 }
