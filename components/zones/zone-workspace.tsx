@@ -2,14 +2,21 @@
 
 import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { Maximize, PencilRuler } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Maximize, PencilRuler, X } from "lucide-react";
+import { useFormatter, useTranslations } from "next-intl";
 import { toFlightZone } from "@/lib/aircraft/live-tracking";
 import { Button } from "@/components/ui/button";
 import type { FlightZone } from "@/types/aircraft";
-import type { TrackedZone } from "@/types/tracking";
+import type {
+  TrackedZone,
+  ZoneComputed,
+  ZoneVersion,
+} from "@/types/tracking";
+import { DATE_TIME_FORMAT } from "@/components/trackers/shared";
 import BoundaryEditor, { type BoundaryPreview } from "./boundary-editor";
 import { ZoneSidebar } from "./zone-details";
+import ZoneGeometry from "./zone-geometry";
+import ZoneHistory, { sortVersions } from "./zone-history";
 
 // Cesium only runs in the browser.
 const ZoneMap = dynamic(() => import("./zone-map"), { ssr: false });
@@ -23,22 +30,43 @@ const overlayButtonClassName =
  */
 export default function ZoneWorkspace({
   zone,
+  versions: versionList,
+  computed,
   otherZones,
   googleMapsApiKey,
 }: {
   zone: TrackedZone;
+  /** From `/v1/tracking/zones/{zone}/versions`, any order. */
+  versions: ZoneVersion[];
+  /** Measurements of the saved zone; null if they couldn't load. */
+  computed: ZoneComputed | null;
   otherZones: FlightZone[];
   googleMapsApiKey?: string;
 }) {
   const t = useTranslations("Zones");
+  const format = useFormatter();
   const [editing, setEditing] = useState(false);
+  /** An older version shown on the map instead of the current boundary. */
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<BoundaryPreview | null>(null);
   const [frameKey, setFrameKey] = useState(0);
   const [mapFailed, setMapFailed] = useState(false);
 
   // The saved zone; a new object only when the server sends a new one.
   const saved = useMemo(() => toFlightZone(zone), [zone]);
-  const shown = editing && preview ? preview.zone : saved;
+  const versions = useMemo(() => sortVersions(versionList), [versionList]);
+  const viewing = versions.find((version) => version.id === viewingId);
+  const viewed = useMemo(
+    () => (viewing ? toFlightZone({ ...zone, ...viewing.snapshot }) : null),
+    [zone, viewing],
+  );
+  const shown = editing && preview ? preview.zone : (viewed ?? saved);
+
+  function viewVersion(versionId: string | null) {
+    setViewingId(versionId);
+    // Fly to it: an old boundary may be somewhere else.
+    setFrameKey((key) => key + 1);
+  }
 
   const stopEditing = useCallback(() => {
     setEditing(false);
@@ -76,6 +104,30 @@ export default function ZoneWorkspace({
               </Button>
             </div>
 
+            {viewing && !editing && (
+              <div className="absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-lg bg-card/90 px-3 py-2 text-xs text-foreground backdrop-blur">
+                <span>
+                  {t("history.viewingBanner", {
+                    summary: viewing.summary,
+                    date: format.dateTime(
+                      new Date(viewing.date),
+                      DATE_TIME_FORMAT,
+                    ),
+                  })}
+                </span>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  className={overlayButtonClassName}
+                  onClick={() => viewVersion(null)}
+                >
+                  <X />
+                  {t("history.backToCurrent")}
+                </Button>
+              </div>
+            )}
+
             {editing && !preview?.zone && (
               <p className="absolute inset-x-3 bottom-3 rounded-lg bg-card/90 px-3 py-2 text-center text-xs text-foreground-2 backdrop-blur">
                 {t("boundaryEditor.incomplete")}
@@ -97,12 +149,22 @@ export default function ZoneWorkspace({
             type="button"
             size="lg"
             className="w-full"
-            onClick={() => setEditing(true)}
+            onClick={() => {
+              setViewingId(null);
+              setEditing(true);
+            }}
           >
             <PencilRuler />
             {t("boundaryEditor.open")}
           </Button>
           <ZoneSidebar zone={zone} />
+          <ZoneGeometry computed={computed} />
+          <ZoneHistory
+            zoneId={zone.id}
+            versions={versions}
+            viewing={viewingId}
+            onView={viewVersion}
+          />
         </div>
       )}
     </div>

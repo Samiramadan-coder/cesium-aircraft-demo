@@ -7,6 +7,15 @@ const COLUMN_COUNT = 7;
 export default function Loading() {
   return (
     <div className="p-4 sm:p-6 space-y-6" aria-busy="true">
+      {/* Search, status filter and "Add zone" */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-9 w-64 rounded-lg bg-card" />
+          <Skeleton className="h-9 w-40 rounded-lg bg-card" />
+        </div>
+        <Skeleton className="h-9 w-32 rounded-lg bg-card" />
+      </div>
+
       <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
         <div className="flex gap-6 border-b border-border px-4 py-3">
           {Array.from({ length: COLUMN_COUNT }, (_, i) => (
@@ -29,6 +38,12 @@ export default function Loading() {
           </div>
         ))}
       </div>
+
+      {/* General settings */}
+      <Skeleton className="h-64 rounded-xl bg-card" />
+
+      {/* Aerodrome */}
+      <Skeleton className="h-56 rounded-xl bg-card" />
     </div>
   );
 }

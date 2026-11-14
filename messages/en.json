@@ -1026,6 +1026,98 @@
       "cancel": "Cancel",
       "incomplete": "Add at least 3 valid points to draw the zone.",
       "otherFieldsInvalid": "Some other details of this zone are invalid. Fix them from Edit in the zones table."
+    },
+    "history": {
+      "title": "History",
+      "empty": "No saved versions yet.",
+      "current": "Current",
+      "initial": "First version",
+      "noChanges": "No field changes",
+      "noSummary": "No summary",
+      "viewOnMap": "View on map",
+      "viewCurrent": "Back to current",
+      "viewingBanner": "Showing an older version: {summary} · {date}",
+      "backToCurrent": "Current version",
+      "changes": {
+        "boundary": "Boundary",
+        "altitude": "Altitude",
+        "warnings": "Warnings",
+        "name": "Name",
+        "kind": "Type",
+        "color": "Color",
+        "status": "Status",
+        "appliesTo": "Applies to",
+        "notes": "Notes"
+      },
+      "restore": "Restore",
+      "restoreDialog": {
+        "title": "Restore this version?",
+        "description": "The zone will go back to <strong>{summary}</strong> ({date}). This is saved as a new version, so the current boundary stays in the history.",
+        "confirm": "Restore"
+      }
+    },
+    "geometry": {
+      "title": "Measurements",
+      "unavailable": "Measurements couldn't load.",
+      "area": "Area",
+      "extent": "Max extent",
+      "vertices": "Points",
+      "areaValue": "{value} NM²",
+      "nmValue": "{value} NM",
+      "fromReference": "Bearing and distance from {reference}",
+      "point": "Point",
+      "bearing": "Bearing",
+      "distance": "Distance",
+      "center": "Centre"
+    },
+    "settings": {
+      "title": "General settings",
+      "description": "Apply to every aircraft and zone in the club.",
+      "signalLossTimeoutSec": "Signal loss timeout",
+      "flightDetectionSpeedKt": "Flight detection speed",
+      "alertRecipients": "Alert recipients",
+      "secondsUnit": "sec",
+      "knotsUnit": "kt",
+      "engineDetectionMethod": "Engine detection",
+      "dataRetentionMonths": "Data retention",
+      "monthsValue": "{count, plural, one {# month} other {# months}}",
+      "engineMethods": {
+        "ignition": "Ignition input"
+      },
+      "save": "Save settings",
+      "discard": "Discard",
+      "saved": "Settings saved.",
+      "errors": {
+        "numberRequired": "Enter a number.",
+        "wholeNumber": "Use a whole number.",
+        "positive": "Must be greater than 0.",
+        "recipientsRequired": "Pick at least one recipient."
+      }
+    },
+    "aerodrome": {
+      "title": "Aerodrome",
+      "description": "The home aerodrome. Zone bearings and distances are measured from its reference point.",
+      "name": "Name",
+      "icao": "ICAO code",
+      "elevation": "Elevation",
+      "runway": "Runway",
+      "referencePoint": "Reference point",
+      "threshold": "Runway {designator} threshold",
+      "circuit": "Circuit pattern",
+      "circuitPoints": "{count, plural, one {# point} other {# points}}",
+      "feetValue": "{value} ft",
+      "save": "Save name",
+      "discard": "Discard",
+      "saved": "Aerodrome name saved.",
+      "errors": {
+        "nameRequired": "Enter the aerodrome name.",
+        "nameTooLong": "Use {max} characters or fewer."
+      }
+    },
+    "filters": {
+      "search": "Search zones by name",
+      "allStatuses": "All statuses",
+      "noMatches": "No zones match your search or filter."
     }
   }
 }

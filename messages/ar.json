@@ -1026,6 +1026,98 @@
       "cancel": "إلغاء",
       "incomplete": "أضف 3 نقاط صحيحة على الأقل لرسم المنطقة.",
       "otherFieldsInvalid": "بعض بيانات المنطقة الأخرى غير صحيحة. صحّحها من «تعديل» في جدول المناطق."
+    },
+    "history": {
+      "title": "السجل",
+      "empty": "لا توجد إصدارات محفوظة بعد.",
+      "current": "الحالي",
+      "initial": "أول إصدار",
+      "noChanges": "لا تغييرات في الحقول",
+      "noSummary": "بدون ملخص",
+      "viewOnMap": "عرض على الخريطة",
+      "viewCurrent": "العودة للحالي",
+      "viewingBanner": "يُعرض إصدار أقدم: {summary} · {date}",
+      "backToCurrent": "الإصدار الحالي",
+      "changes": {
+        "boundary": "الحدود",
+        "altitude": "الارتفاع",
+        "warnings": "التحذيرات",
+        "name": "الاسم",
+        "kind": "النوع",
+        "color": "اللون",
+        "status": "الحالة",
+        "appliesTo": "تنطبق على",
+        "notes": "الملاحظات"
+      },
+      "restore": "استعادة",
+      "restoreDialog": {
+        "title": "استعادة هذا الإصدار؟",
+        "description": "ستعود المنطقة إلى <strong>{summary}</strong> ({date}). يُحفظ ذلك كإصدار جديد، فتبقى الحدود الحالية في السجل.",
+        "confirm": "استعادة"
+      }
+    },
+    "geometry": {
+      "title": "القياسات",
+      "unavailable": "تعذّر تحميل القياسات.",
+      "area": "المساحة",
+      "extent": "أقصى امتداد",
+      "vertices": "النقاط",
+      "areaValue": "{value} ميل بحري²",
+      "nmValue": "{value} ميل بحري",
+      "fromReference": "الاتجاه والمسافة من {reference}",
+      "point": "النقطة",
+      "bearing": "الاتجاه",
+      "distance": "المسافة",
+      "center": "المركز"
+    },
+    "settings": {
+      "title": "الإعدادات العامة",
+      "description": "تنطبق على كل الطائرات والمناطق في النادي.",
+      "signalLossTimeoutSec": "مهلة فقدان الإشارة",
+      "flightDetectionSpeedKt": "سرعة اكتشاف الطيران",
+      "alertRecipients": "مستلمو التنبيهات",
+      "secondsUnit": "ث",
+      "knotsUnit": "عقدة",
+      "engineDetectionMethod": "طريقة اكتشاف المحرك",
+      "dataRetentionMonths": "مدة الاحتفاظ بالبيانات",
+      "monthsValue": "{count, plural, zero {# شهر} one {شهر واحد} two {شهران} few {# أشهر} many {# شهرًا} other {# شهر}}",
+      "engineMethods": {
+        "ignition": "مدخل الإشعال"
+      },
+      "save": "حفظ الإعدادات",
+      "discard": "تجاهل التغييرات",
+      "saved": "تم حفظ الإعدادات.",
+      "errors": {
+        "numberRequired": "أدخل رقمًا.",
+        "wholeNumber": "استخدم رقمًا صحيحًا.",
+        "positive": "يجب أن يكون أكبر من 0.",
+        "recipientsRequired": "اختر مستلمًا واحدًا على الأقل."
+      }
+    },
+    "aerodrome": {
+      "title": "المطار",
+      "description": "المطار الرئيسي. اتجاهات ومسافات المناطق تُقاس من نقطته المرجعية.",
+      "name": "الاسم",
+      "icao": "رمز ICAO",
+      "elevation": "الارتفاع",
+      "runway": "المدرج",
+      "referencePoint": "النقطة المرجعية",
+      "threshold": "عتبة المدرج {designator}",
+      "circuit": "مسار الدوران",
+      "circuitPoints": "{count, plural, zero {لا نقاط} one {نقطة واحدة} two {نقطتان} few {# نقاط} many {# نقطة} other {# نقطة}}",
+      "feetValue": "{value} قدم",
+      "save": "حفظ الاسم",
+      "discard": "تجاهل التغييرات",
+      "saved": "تم حفظ اسم المطار.",
+      "errors": {
+        "nameRequired": "أدخل اسم المطار.",
+        "nameTooLong": "استخدم {max} حرفًا أو أقل."
+      }
+    },
+    "filters": {
+      "search": "ابحث عن منطقة بالاسم",
+      "allStatuses": "كل الحالات",
+      "noMatches": "لا توجد مناطق تطابق البحث أو الفلتر."
     }
   }
 }

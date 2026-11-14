@@ -23,14 +23,25 @@ const COLUMNS = [
 ] as const;
 
 /** The flight zones from `GET /v1/tracking/zones`. */
-export default function DataPreview({ zones }: { zones: TrackedZone[] }) {
+export default function DataPreview({
+  zones,
+  filtered = false,
+}: {
+  zones: TrackedZone[];
+  /** Whether a search or filter is applied, for the empty message. */
+  filtered?: boolean;
+}) {
   const t = useTranslations("Zones");
   const format = useFormatter();
   const zoneName = useZoneName();
   const kind = useLabel("kinds");
   const appliesTo = useLabel("appliesToValues");
 
-  if (zones.length === 0) return <EmptyState>{t("empty")}</EmptyState>;
+  if (zones.length === 0) {
+    return (
+      <EmptyState>{t(filtered ? "filters.noMatches" : "empty")}</EmptyState>
+    );
+  }
 
   const number = (value: number) =>
     format.number(value, { maximumFractionDigits: 2 });

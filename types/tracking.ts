@@ -1,3 +1,5 @@
+import type { AlertChannel } from "./alerts";
+
 export type LatLon = {
   lat: number;
   lon: number;
@@ -114,3 +116,71 @@ export type ZonePayload = {
   notes: string | null;
   summary: string;
 };
+
+/** The zone as it was saved in one version. */
+export type ZoneSnapshot = Omit<TrackedZone, "lastEditedBy" | "lastEditedAt">;
+
+/** One entry of `GET /v1/tracking/zones/{zone}/versions`. */
+export type ZoneVersion = {
+  id: string;
+  /** ISO date-time */
+  date: string;
+  user: string;
+  summary: string;
+  snapshot: ZoneSnapshot;
+};
+
+/** A point's position from the reference airport, e.g. P1 at 345° / 3.95 NM. */
+export type ZoneBearing = {
+  /** "P1", "P2", … for a polygon; "Center" for a circle. */
+  label: string;
+  distanceNm: number;
+  /** True bearing from the reference, 0–359. */
+  bearingDeg: number;
+};
+
+/** `GET /v1/tracking/zones/{zone}/computed`: measurements of the saved zone. */
+export type ZoneComputed = {
+  areaNm2: number;
+  /** Longest distance across the zone (a circle's diameter). */
+  maxExtentNm: number;
+  /** Polygon points; 0 for a circle. */
+  vertices: number;
+  /** ICAO code of the airport the bearings are measured from, e.g. "OMEF". */
+  reference: string;
+  bearings: ZoneBearing[];
+};
+
+/** `GET /v1/tracking/settings`: club-wide tracking settings. */
+export type TrackingSettings = {
+  aerodromeElevationFt: number;
+  /** No position for this long marks the aircraft's signal as lost. */
+  signalLossTimeoutSec: number;
+  /** Ground speed above which a flight is considered started. */
+  flightDetectionSpeedKt: number;
+  engineDetectionMethod: string;
+  dataRetentionMonths: number;
+  alertRecipients: AlertChannel[];
+};
+
+/** Body of `PUT /v1/tracking/settings`: the fields editable here. */
+export type TrackingSettingsPayload = Pick<
+  TrackingSettings,
+  "signalLossTimeoutSec" | "flightDetectionSpeedKt" | "alertRecipients"
+>;
+
+/** `GET /v1/aerodrome`: the club's home aerodrome. */
+export type Aerodrome = {
+  icao: string;
+  name: string;
+  /** Where bearings and distances are measured from. */
+  referencePoint: LatLon;
+  elevationFt: number;
+  runwayThresholds: { designator: string; threshold: LatLon }[];
+  /** The circuit (traffic pattern) flown around the runway. */
+  circuitPattern: LatLon[];
+  runwayHeadingDeg: number;
+};
+
+/** Body of `PUT /v1/aerodrome`. */
+export type AerodromePayload = Pick<Aerodrome, "name">;
