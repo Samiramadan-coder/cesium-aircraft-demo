@@ -1,5 +1,13 @@
-import { TableSkeleton } from "@/components/engine-flight-hours/skeletons";
+import {
+  KpisSkeleton,
+  TableSkeleton,
+} from "@/components/engine-flight-hours/skeletons";
 
 export default function Loading() {
-  return <TableSkeleton columns={6} />;
+  return (
+    <>
+      <KpisSkeleton />
+      <TableSkeleton columns={6} />
+    </>
+  );
 }

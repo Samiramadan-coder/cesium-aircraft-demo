@@ -187,6 +187,16 @@
       "allTime": "All time",
       "custom": "Custom range"
     },
+    "filters": {
+      "period": "Period",
+      "from": "From",
+      "to": "To",
+      "search": "Search pilot or aircraft",
+      "aircraft": "Aircraft",
+      "allAircraft": "All aircraft",
+      "type": "Service type",
+      "allTypes": "All service types"
+    },
     "noSchedule": "No schedule",
     "remaining": "{value} remaining",
     "overdueBy": "Overdue by {value}",

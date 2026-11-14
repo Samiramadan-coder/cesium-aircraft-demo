@@ -187,6 +187,16 @@
       "allTime": "كل الأوقات",
       "custom": "نطاق مخصص"
     },
+    "filters": {
+      "period": "الفترة",
+      "from": "من",
+      "to": "إلى",
+      "search": "ابحث عن طيار أو طائرة",
+      "aircraft": "الطائرة",
+      "allAircraft": "كل الطائرات",
+      "type": "نوع الصيانة",
+      "allTypes": "كل أنواع الصيانة"
+    },
     "noSchedule": "لا يوجد جدول",
     "remaining": "متبقٍ {value}",
     "overdueBy": "متأخرة بـ {value}",

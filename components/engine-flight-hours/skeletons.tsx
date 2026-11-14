@@ -11,24 +11,13 @@ const surface = "rounded-xl bg-card ring-1 ring-foreground/10";
 export function HeaderSkeleton() {
   return (
     <>
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-56 bg-card" />
-            <Skeleton className="h-4 w-80 max-w-full bg-card" />
-          </div>
-          <Skeleton className="h-9 w-40 rounded-lg bg-card" />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-56 bg-card" />
+          <Skeleton className="h-4 w-80 max-w-full bg-card" />
         </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: KPI_COUNT }, (_, i) => (
-            <div key={i} className={`space-y-2 px-4 py-3 ${surface}`}>
-              <Skeleton className="h-3 w-20 bg-card-2" />
-              <Skeleton className="h-7 w-16 bg-card-2" />
-            </div>
-          ))}
-        </div>
-      </section>
+        <Skeleton className="h-9 w-40 rounded-lg bg-card" />
+      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className={`flex gap-1 p-1 ${surface}`}>
@@ -39,6 +28,20 @@ export function HeaderSkeleton() {
         <Skeleton className="h-9 w-40 rounded-lg bg-card" />
       </div>
     </>
+  );
+}
+
+/** Mirrors `Kpis`. */
+export function KpisSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {Array.from({ length: KPI_COUNT }, (_, i) => (
+        <div key={i} className={`space-y-2 px-4 py-3 ${surface}`}>
+          <Skeleton className="h-3 w-20 bg-card-2" />
+          <Skeleton className="h-7 w-16 bg-card-2" />
+        </div>
+      ))}
+    </div>
   );
 }
 

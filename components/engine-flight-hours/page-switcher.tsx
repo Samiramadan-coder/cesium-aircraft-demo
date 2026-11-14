@@ -1,16 +1,11 @@
 "use client";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { MaintenanceAircraftOption } from "@/types/engine-flight-hours";
+import { DailyLogSearch, MaintenanceFilters, PeriodFilter } from "./filters";
 
 const BASE = "/engine-hours";
 
@@ -21,39 +16,37 @@ const PAGES = [
   { key: "maintenance", href: `${BASE}/maintenance` },
 ] as const;
 
-const PERIODS = [
-  "last30Days",
-  "thisWeek",
-  "thisMonth",
-  "allTime",
-  "custom",
-] as const;
+// Kept when switching tabs; each tab's own filters are not.
+const SHARED_PARAMS = ["period", "from", "to"];
 
-type Period = (typeof PERIODS)[number];
-
-export default function PageSwitcher() {
+export default function PageSwitcher({
+  maintenanceAircraft,
+}: {
+  maintenanceAircraft: MaintenanceAircraftOption[];
+}) {
   const t = useTranslations("EngineHours");
   const pathname = usePathname();
   const router = useRouter();
-
-  // TODO: move to the URL with nuqs.
-  const [period, setPeriod] = useState<Period>("last30Days");
+  const searchParams = useSearchParams();
 
   const active =
-    PAGES.find((page) => page.href !== BASE && pathname.startsWith(page.href))
-      ?.href ?? BASE;
+    PAGES.find(
+      (page) => page.href !== BASE && pathname.startsWith(page.href),
+    ) ?? PAGES[0];
 
-  const periodItems = PERIODS.map((value) => ({
-    value,
-    label: t(`periods.${value}`),
-  }));
+  function open(href: string) {
+    const shared = new URLSearchParams();
+    for (const key of SHARED_PARAMS) {
+      const value = searchParams.get(key);
+      if (value) shared.set(key, value);
+    }
+    const query = shared.toString();
+    router.push(query ? `${href}?${query}` : href);
+  }
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <Tabs
-        value={active}
-        onValueChange={(href) => router.push(href as string)}
-      >
+      <Tabs value={active.href} onValueChange={(href) => open(href as string)}>
         <TabsList className="bg-card ring-1 ring-border">
           {PAGES.map((page) => (
             <TabsTrigger
@@ -67,26 +60,13 @@ export default function PageSwitcher() {
         </TabsList>
       </Tabs>
 
-      <Select
-        items={periodItems}
-        value={period}
-        onValueChange={(value) => value && setPeriod(value as Period)}
-      >
-        <SelectTrigger className="w-40 border-border bg-card text-foreground hover:bg-card-2">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="bg-card text-foreground ring-border">
-          {periodItems.map((item) => (
-            <SelectItem
-              key={item.value}
-              value={item.value}
-              className="focus:bg-card-2 focus:text-foreground not-data-[variant=destructive]:focus:**:text-foreground"
-            >
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-wrap items-center gap-2">
+        {active.key === "dailyLog" && <DailyLogSearch />}
+        {active.key === "maintenance" && (
+          <MaintenanceFilters aircraft={maintenanceAircraft} />
+        )}
+        <PeriodFilter />
+      </div>
     </div>
   );
 }
