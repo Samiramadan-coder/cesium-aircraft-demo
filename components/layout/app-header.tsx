@@ -54,7 +54,7 @@ export function AppHeader({
         <Menu />
       </Button>
 
-      <h1 className="min-w-0 flex-1 truncate font-big-shoulders text-2xl leading-none font-bold tracking-wide uppercase rtl:text-xl rtl:tracking-normal">
+      <h1 className="min-w-0 flex-1 truncate font-big-shoulders text-2xl font-bold tracking-wide uppercase rtl:text-xl rtl:tracking-normal">
         {title}
       </h1>
 

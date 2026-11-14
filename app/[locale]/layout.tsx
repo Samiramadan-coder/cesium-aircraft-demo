@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDirection, routing } from "@/i18n/routing";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { getTranslations } from "next-intl/server";
 import {
   Big_Shoulders,
@@ -65,7 +66,9 @@ export default async function LocaleLayout({
       className={`${bigShoulders.variable} ${hankenGrotesk.variable} ${geistMono.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NuqsAdapter>
+          <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

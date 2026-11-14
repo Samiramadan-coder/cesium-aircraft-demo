@@ -639,6 +639,7 @@
   },
   "Staff": {
     "empty": "No staff members yet.",
+    "allRoles": "All roles",
     "member": "Member",
     "role": "Role",
     "language": "Language",
