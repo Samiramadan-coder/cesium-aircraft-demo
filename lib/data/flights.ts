@@ -12,14 +12,15 @@ import type {
   Paginated,
 } from "@/types/flights";
 import type { TrackedZone } from "@/types/tracking";
+import type { toFlightsQuery } from "@/lib/search-params/flights";
 
 const flightPath = (id: string) =>
   `/v1/tracking/flights/${encodeURIComponent(id)}`;
 
 export const getFlightKpis = () => api.get<KPIS>("/v1/tracking/flights/kpis");
 
-export const getFlights = () =>
-  api.get<Paginated<Flight>>("/v1/tracking/flights");
+export const getFlights = (query?: ReturnType<typeof toFlightsQuery>) =>
+  api.get<Paginated<Flight>>("/v1/tracking/flights", { query });
 
 export const getFlightsSummary = () =>
   api.get<FlightsSummary>("/v1/tracking/flights/summary");

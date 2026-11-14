@@ -38,16 +38,21 @@ export default function DataPreview({
   flights,
   aircraft,
   pilots,
+  filtered,
 }: {
   flights: Flight[];
   aircraft: TrackedAircraft[];
   pilots: TrackedPilot[];
+  /** Whether any filter is applied, for the empty message. */
+  filtered: boolean;
 }) {
   const t = useTranslations("Flights.table");
   const format = useFormatter();
   const flightType = useFlightType();
 
-  if (flights.length === 0) return <EmptyState>{t("empty")}</EmptyState>;
+  if (flights.length === 0) return (
+      <EmptyState>{t(filtered ? "noMatches" : "empty")}</EmptyState>
+    );;
 
   const aircraftById = indexById(aircraft);
   const pilotsById = indexById(pilots);

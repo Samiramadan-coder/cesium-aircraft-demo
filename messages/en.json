@@ -577,7 +577,8 @@
         "view": "View",
         "replay": "3D replay",
         "exportKml": "Export KML"
-      }
+      },
+      "noMatches": "No flights match these filters."
     },
     "charts": {
       "hoursByAircraft": "Flight Hours by Aircraft",
@@ -655,6 +656,42 @@
     "errorPage": {
       "title": "Couldn't load flight history",
       "description": "Something went wrong while loading the flights. Check your connection and try again."
+    },
+    "filters": {
+      "search": "Search aircraft, pilot, booking or flight ID",
+      "range": "Date range",
+      "ranges": {
+        "today": "Today",
+        "last7": "Last 7 days",
+        "last30": "Last 30 days",
+        "week": "This week",
+        "month": "This month",
+        "all": "All time",
+        "custom": "Custom"
+      },
+      "from": "From",
+      "to": "To",
+      "aircraft": "Aircraft",
+      "allAircraft": "All aircraft",
+      "aircraftType": "Aircraft type",
+      "allAircraftTypes": "All aircraft types",
+      "aircraftTypes": {
+        "Light Sport Aircraft": "Light Sport Aircraft",
+        "Gyrocopter": "Gyrocopter",
+        "Paramotor": "Paramotor"
+      },
+      "pilot": "Pilot",
+      "allPilots": "All pilots",
+      "flightType": "Flight type",
+      "allFlightTypes": "All flight types",
+      "compliance": "Compliance",
+      "allCompliance": "All compliance"
+    },
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total}",
+      "page": "Page {page} of {total}",
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "Staff": {
@@ -720,6 +757,129 @@
         "phoneInvalid": "Enter a valid phone number",
         "emailInvalid": "Enter a valid email"
       }
+    }
+  },
+  "Alerts": {
+    "pages": {
+      "feed": "Alert feed",
+      "rules": "Alert rules"
+    },
+    "kpis": {
+      "open": "Open alerts",
+      "criticalOpen": "Critical open",
+      "triggeredToday": "Triggered today",
+      "avgTimeToAcknowledge": "Avg. time to acknowledge",
+      "avgTimeToResolve": "Avg. time to resolve"
+    },
+    "durations": {
+      "seconds": "{value}s",
+      "minutes": "{value}m",
+      "hours": "{value}h"
+    },
+    "noValue": "—",
+    "severity": {
+      "warning": "Warning",
+      "critical": "Critical",
+      "info": "Info"
+    },
+    "status": {
+      "open": "Open",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved"
+    },
+    "types": {
+      "ceilingExceeded": "Ceiling Exceeded",
+      "atzAltitudeWarning": "Near Ceiling",
+      "nearBoundary": "Near Boundary",
+      "outsideZone": "Outside Zone",
+      "signalLost": "Signal Lost",
+      "nearCeiling": "Near Ceiling"
+    },
+    "table": {
+      "columns": {
+        "location": "Location",
+        "alert": "Alert",
+        "triggered": "Triggered",
+        "aircraft": "Aircraft",
+        "severity": "Severity",
+        "status": "Status",
+        "assignedTo": "Assigned to",
+        "actions": "Actions"
+      },
+      "captain": "Capt. {name}",
+      "active": "Active",
+      "locationLabel": "Location of alert {id}",
+      "empty": "No alerts yet.",
+      "noMatches": "No alerts match these filters."
+    },
+    "details": {
+      "viewFlight": "View flight",
+      "feet": "{value} ft",
+      "nauticalMiles": "{value} NM",
+      "stats": {
+        "marginToCeiling": "Margin to ceiling",
+        "altitude": "Altitude",
+        "distanceToBoundary": "Distance to boundary",
+        "duration": "Duration",
+        "location": "Location"
+      },
+      "timeline": {
+        "title": "Timeline",
+        "triggered": "Alert triggered",
+        "acknowledged": "Acknowledged",
+        "acknowledgedBy": "Acknowledged by {name}",
+        "resolved": "Resolved",
+        "resolvedBy": "Resolved by {name}"
+      }
+    },
+    "resolutions": {
+      "falseAlarm": "False alarm",
+      "pilotCorrected": "Pilot corrected"
+    },
+    "filters": {
+      "search": "Search aircraft, pilot or flight ID",
+      "severity": "Severity",
+      "allSeverities": "All severities",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "type": "Alert type",
+      "allTypes": "All alert types",
+      "aircraft": "Aircraft",
+      "allAircraft": "All aircraft",
+      "activity": "Activity",
+      "allAlerts": "All alerts",
+      "activeOnly": "Active only",
+      "from": "From",
+      "to": "To"
+    },
+    "menu": {
+      "label": "Actions for alert {id}",
+      "view": "View details",
+      "acknowledge": "Acknowledge",
+      "assign": "Assign",
+      "resolve": "Resolve"
+    },
+    "acknowledgeDialog": {
+      "title": "Acknowledge alert",
+      "note": "Note",
+      "notePlaceholder": "e.g. Pilot contacted on radio",
+      "submit": "Acknowledge"
+    },
+    "assignDialog": {
+      "title": "Assign alert",
+      "staff": "Staff member",
+      "noStaff": "No staff members to assign.",
+      "submit": "Assign",
+      "errors": {
+        "userRequired": "Choose a staff member"
+      }
+    },
+    "resolveDialog": {
+      "title": "Resolve alert",
+      "resolution": "Resolution",
+      "note": "Note",
+      "notePlaceholder": "e.g. Back inside the training area",
+      "submit": "Resolve"
     }
   }
 }

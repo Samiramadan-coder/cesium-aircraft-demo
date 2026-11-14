@@ -3,10 +3,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const KPI_COUNT = 6;
 const COLUMN_COUNT = 10;
+/** Range, aircraft, type, pilot, flight type and compliance, after the search box. */
+const FILTER_COUNT = 6;
 
 const surface = "rounded-xl bg-card ring-1 ring-foreground/10";
 
-/** Mirrors the page: title + export, KPI cards, then the table beside the charts. */
+/** Mirrors the page: title + export, KPI cards, filters, then the table beside the charts. */
 export default function Loading() {
   return (
     <div className="space-y-6 p-4 sm:p-6" aria-busy="true">
@@ -28,6 +30,13 @@ export default function Loading() {
           ))}
         </div>
       </section>
+
+      <div className="flex flex-wrap gap-2">
+        <Skeleton className="h-9 w-64 rounded-lg bg-card" />
+        {Array.from({ length: FILTER_COUNT }, (_, i) => (
+          <Skeleton key={i} className="h-9 w-40 rounded-lg bg-card" />
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div className="min-w-0 md:col-span-3">

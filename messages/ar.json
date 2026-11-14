@@ -577,7 +577,8 @@
         "view": "عرض",
         "replay": "إعادة عرض ثلاثية الأبعاد",
         "exportKml": "تصدير KML"
-      }
+      },
+      "noMatches": "لا توجد رحلات تطابق هذه الفلاتر."
     },
     "charts": {
       "hoursByAircraft": "ساعات الطيران لكل طائرة",
@@ -655,6 +656,42 @@
     "errorPage": {
       "title": "تعذر تحميل سجل الرحلات",
       "description": "حدث خطأ أثناء تحميل الرحلات. تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "filters": {
+      "search": "ابحث بالطائرة أو الطيار أو الحجز أو رقم الرحلة",
+      "range": "الفترة",
+      "ranges": {
+        "today": "اليوم",
+        "last7": "آخر 7 أيام",
+        "last30": "آخر 30 يومًا",
+        "week": "هذا الأسبوع",
+        "month": "هذا الشهر",
+        "all": "كل الأوقات",
+        "custom": "مخصص"
+      },
+      "from": "من",
+      "to": "إلى",
+      "aircraft": "الطائرة",
+      "allAircraft": "كل الطائرات",
+      "aircraftType": "نوع الطائرة",
+      "allAircraftTypes": "كل أنواع الطائرات",
+      "aircraftTypes": {
+        "Light Sport Aircraft": "طائرة رياضية خفيفة",
+        "Gyrocopter": "جايروكوبتر",
+        "Paramotor": "باراموتور"
+      },
+      "pilot": "الطيار",
+      "allPilots": "كل الطيارين",
+      "flightType": "نوع الرحلة",
+      "allFlightTypes": "كل أنواع الرحلات",
+      "compliance": "الالتزام",
+      "allCompliance": "كل الحالات"
+    },
+    "pagination": {
+      "showing": "عرض {from}–{to} من {total}",
+      "page": "صفحة {page} من {total}",
+      "previous": "السابق",
+      "next": "التالي"
     }
   },
   "Staff": {
@@ -720,6 +757,129 @@
         "phoneInvalid": "أدخل رقم هاتف صحيحاً",
         "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً"
       }
+    }
+  },
+  "Alerts": {
+    "pages": {
+      "feed": "سجل التنبيهات",
+      "rules": "قواعد التنبيهات"
+    },
+    "kpis": {
+      "open": "التنبيهات المفتوحة",
+      "criticalOpen": "الحرجة المفتوحة",
+      "triggeredToday": "تنبيهات اليوم",
+      "avgTimeToAcknowledge": "متوسط وقت الإقرار",
+      "avgTimeToResolve": "متوسط وقت الحل"
+    },
+    "durations": {
+      "seconds": "{value} ث",
+      "minutes": "{value} د",
+      "hours": "{value} س"
+    },
+    "noValue": "—",
+    "severity": {
+      "warning": "تحذير",
+      "critical": "حرج",
+      "info": "معلومة"
+    },
+    "status": {
+      "open": "مفتوح",
+      "acknowledged": "تم الإقرار",
+      "resolved": "تم الحل"
+    },
+    "types": {
+      "ceilingExceeded": "تجاوز السقف",
+      "atzAltitudeWarning": "قرب السقف",
+      "nearBoundary": "قرب الحدود",
+      "outsideZone": "خارج المنطقة",
+      "signalLost": "فقدان الإشارة",
+      "nearCeiling": "قرب السقف"
+    },
+    "table": {
+      "columns": {
+        "location": "الموقع",
+        "alert": "التنبيه",
+        "triggered": "وقت التنبيه",
+        "aircraft": "الطائرة",
+        "severity": "الخطورة",
+        "status": "الحالة",
+        "assignedTo": "المسؤول",
+        "actions": "الإجراءات"
+      },
+      "captain": "الكابتن {name}",
+      "active": "نشط",
+      "locationLabel": "موقع التنبيه {id}",
+      "empty": "لا توجد تنبيهات بعد.",
+      "noMatches": "لا توجد تنبيهات تطابق هذه الفلاتر."
+    },
+    "details": {
+      "viewFlight": "عرض الرحلة",
+      "feet": "{value} قدم",
+      "nauticalMiles": "{value} ميل بحري",
+      "stats": {
+        "marginToCeiling": "الهامش حتى السقف",
+        "altitude": "الارتفاع",
+        "distanceToBoundary": "المسافة إلى الحدود",
+        "duration": "المدة",
+        "location": "الموقع"
+      },
+      "timeline": {
+        "title": "التسلسل الزمني",
+        "triggered": "تم إطلاق التنبيه",
+        "acknowledged": "تم الإقرار",
+        "acknowledgedBy": "أقرّه {name}",
+        "resolved": "تم الحل",
+        "resolvedBy": "حلّه {name}"
+      }
+    },
+    "resolutions": {
+      "falseAlarm": "إنذار كاذب",
+      "pilotCorrected": "صحّح الطيار المسار"
+    },
+    "filters": {
+      "search": "ابحث بالطائرة أو الطيار أو رقم الرحلة",
+      "severity": "الخطورة",
+      "allSeverities": "كل درجات الخطورة",
+      "status": "الحالة",
+      "allStatuses": "كل الحالات",
+      "type": "نوع التنبيه",
+      "allTypes": "كل أنواع التنبيهات",
+      "aircraft": "الطائرة",
+      "allAircraft": "كل الطائرات",
+      "activity": "النشاط",
+      "allAlerts": "كل التنبيهات",
+      "activeOnly": "النشطة فقط",
+      "from": "من",
+      "to": "إلى"
+    },
+    "menu": {
+      "label": "إجراءات التنبيه {id}",
+      "view": "عرض التفاصيل",
+      "acknowledge": "إقرار",
+      "assign": "إسناد",
+      "resolve": "حل"
+    },
+    "acknowledgeDialog": {
+      "title": "إقرار التنبيه",
+      "note": "ملاحظة",
+      "notePlaceholder": "مثال: تم التواصل مع الطيار عبر الراديو",
+      "submit": "إقرار"
+    },
+    "assignDialog": {
+      "title": "إسناد التنبيه",
+      "staff": "الموظف",
+      "noStaff": "لا يوجد موظفون للإسناد.",
+      "submit": "إسناد",
+      "errors": {
+        "userRequired": "اختر موظفاً"
+      }
+    },
+    "resolveDialog": {
+      "title": "حل التنبيه",
+      "resolution": "طريقة الحل",
+      "note": "ملاحظة",
+      "notePlaceholder": "مثال: عادت الطائرة إلى منطقة التدريب",
+      "submit": "حل"
     }
   }
 }
