@@ -20,7 +20,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { Aircraft, AircraftZoneStatus } from "@/types/aircraft";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AircraftEventList } from "@/components/aircraft/aircraft-events";
+import { airborneSince } from "@/lib/aircraft/events";
+import type {
+  Aircraft,
+  AircraftEvent,
+  AircraftZoneStatus,
+} from "@/types/aircraft";
 import { cn } from "@/lib/utils";
 
 function Field({
@@ -33,11 +40,11 @@ function Field({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-col gap-0.5", className)}>
-      <dt className="text-[0.6rem] font-medium tracking-widest text-muted-foreground uppercase rtl:tracking-normal">
+    <div className={cn("flex flex-col gap-px", className)}>
+      <dt className="text-[0.55rem] leading-tight font-medium tracking-widest text-muted-foreground uppercase rtl:tracking-normal">
         {label}
       </dt>
-      <dd className="font-mono text-xs tabular-nums">{value}</dd>
+      <dd className="font-mono text-[0.7rem] leading-snug tabular-nums">{value}</dd>
     </div>
   );
 }
@@ -75,6 +82,12 @@ type AircraftInfoPanelProps = {
   /** Whether the camera is following the selected aircraft. */
   following: boolean;
   onToggleFollow: () => void;
+  /** Recent events of the selected aircraft, oldest first. */
+  events: AircraftEvent[];
+  /** Ids of the events whose position is known. */
+  locatableEvents: Set<string>;
+  /** Called when an event is clicked, to show where it happened. */
+  onSelectEvent: (event: AircraftEvent) => void;
   onSelectAircraft: (id: string) => void;
 };
 
@@ -86,6 +99,9 @@ export function AircraftInfoPanel({
   signalLossTimeoutSec,
   following,
   onToggleFollow,
+  events,
+  locatableEvents,
+  onSelectEvent,
   onSelectAircraft,
 }: AircraftInfoPanelProps) {
   const t = useTranslations("AircraftInfoPanel");
@@ -95,6 +111,7 @@ export function AircraftInfoPanel({
   // Phones only: the secondary fields are folded away so the panel doesn't
   // cover the map. Always shown from `sm` up.
   const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState<"details" | "events">("details");
   const secondary = expanded ? undefined : "max-sm:hidden";
 
   const position = aircraft?.currentPosition ?? null;
@@ -124,6 +141,19 @@ export function AircraftInfoPanel({
       : paused
         ? "paused"
         : "live";
+
+  // Only trusted while the aircraft is reporting and not on the ground.
+  const takeoffTime =
+    !signalLost && details?.status !== "onGround"
+      ? airborneSince(events)
+      : null;
+  let flight: string = details?.flightId ?? t("noValue");
+  if (takeoffTime !== null) {
+    flight = t("airborneSince", {
+      flight: details?.flightId ?? t("noValue"),
+      duration: format.relativeTime(takeoffTime, now),
+    });
+  }
 
   const integer = (value: number) =>
     format.number(value, { maximumFractionDigits: 0 });
@@ -190,7 +220,7 @@ export function AircraftInfoPanel({
   return (
     <Card
       size="sm"
-      className="w-full bg-card/80 shadow-xl backdrop-blur-md supports-backdrop-filter:bg-card/70 sm:w-72"
+      className="w-full bg-card/80 shadow-xl backdrop-blur-md supports-backdrop-filter:bg-card/70 sm:min-h-0 sm:w-72"
     >
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
@@ -240,7 +270,11 @@ export function AircraftInfoPanel({
               className="sm:hidden"
               aria-expanded={expanded}
               aria-label={expanded ? t("hideDetails") : t("showDetails")}
-              onClick={() => setExpanded((value) => !value)}
+              onClick={() => {
+                // Folding shows only the main fields, so back to that tab.
+                if (expanded) setTab("details");
+                setExpanded(!expanded);
+              }}
             >
               <ChevronUp
                 className={cn("transition-transform", expanded && "rotate-180")}
@@ -271,7 +305,7 @@ export function AircraftInfoPanel({
                 size="xs"
                 variant={id === aircraft?.id ? "default" : "outline"}
                 aria-pressed={id === aircraft?.id}
-                className="font-mono"
+                className="h-5 px-1.5 font-mono text-[0.65rem]"
                 onClick={() => onSelectAircraft(id)}
               >
                 {callsign ?? name}
@@ -281,134 +315,179 @@ export function AircraftInfoPanel({
         )}
       </CardHeader>
       <Separator />
-      <CardContent>
-        <dl className="grid grid-cols-3 gap-x-4 gap-y-3 sm:grid-cols-2">
-          <Field
-            label={t("fields.altitude")}
-            value={
-              position
-                ? t("units.feetAmsl", { value: integer(position.altitude) })
-                : t("noValue")
-            }
-          />
-          <Field
-            label={t("fields.groundSpeed")}
-            value={
-              position
-                ? t("units.knots", { value: integer(position.speed) })
-                : t("noValue")
-            }
-          />
-          <Field
-            label={t("fields.heading")}
-            value={
-              position
-                ? t("units.heading", {
-                    point: t(
-                      `compass.${COMPASS_POINTS[Math.round((((position.heading % 360) + 360) % 360) / 45) % 8]}`,
-                    ),
-                    value: format.number(Math.round(position.heading) % 360, {
-                      minimumIntegerDigits: 3,
-                      useGrouping: false,
-                    }),
-                  })
-                : t("noValue")
-            }
-          />
-          <Field
-            label={t("fields.heightAgl")}
-            className={secondary}
-            value={
-              details?.heightAglFt != null
-                ? t("units.feet", {
-                    value: integer(Math.max(0, details.heightAglFt)),
-                  })
-                : t("noValue")
-            }
-          />
-          <Field
-            label={t("fields.vertical")}
-            className={secondary}
-            value={vertical}
-          />
-          <Field
-            label={t("fields.boundary")}
-            className={secondary}
-            value={
-              boundary != null
-                ? t("units.nauticalMiles", {
-                    value: format.number(boundary, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                      signDisplay: "exceptZero",
-                    }),
-                  })
-                : t("noValue")
-            }
-          />
-          <Field
-            label={t("fields.pilot")}
-            className={secondary}
-            value={details?.pilotName ?? t("noValue")}
-          />
-          <Field
-            label={t("fields.engine")}
-            className={secondary}
-            value={
-              details?.engineOn == null
-                ? t("noValue")
-                : t(details.engineOn ? "engine.on" : "engine.off")
-            }
-          />
-          <Field
-            label={t("fields.signal")}
-            className={secondary}
-            value={percent(details?.signalStrength)}
-          />
-          <Field
-            label={t("fields.battery")}
-            className={secondary}
-            value={percent(details?.batteryPercent)}
-          />
-          <Field
-            label={t("fields.tracker")}
-            className={cn("col-span-full", secondary)}
-            value={details?.trackerModel ?? t("noValue")}
-          />
-          <Field
-            label={t("fields.lastUpdate")}
-            className={cn("col-span-full", secondary)}
-            value={
-              position
-                ? t("units.utcTimeAgo", {
-                    time: format.dateTime(position.timestamp, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hourCycle: "h23",
-                      timeZone: "UTC",
-                    }),
-                    ago: format.relativeTime(position.timestamp, now),
-                  })
-                : t("noValue")
-            }
-          />
-          <Field
-            label={t("fields.latitude")}
-            className={secondary}
-            value={position ? coordinate(position.lat) : t("noValue")}
-          />
-          <Field
-            label={t("fields.longitude")}
-            className={secondary}
-            value={position ? coordinate(position.lng) : t("noValue")}
-          />
-          <Field
-            label={t("fields.zone")}
-            className="col-span-full"
-            value={zone}
-          />
-        </dl>
+      {/* Header and tabs stay put; only the open tab scrolls. */}
+      <CardContent className="flex min-h-0 flex-1 flex-col">
+        <Tabs
+          value={tab}
+          onValueChange={(value) => setTab(value as "details" | "events")}
+          className="min-h-0 flex-1 gap-3"
+        >
+          {aircraft && (
+            <TabsList className={cn("w-full shrink-0", secondary)}>
+              <TabsTrigger value="details" className="text-xs">
+                {t("tabs.details")}
+              </TabsTrigger>
+              <TabsTrigger value="events" className="text-xs">
+                {t("tabs.events")}
+                {events.length > 0 && (
+                  <span className="rounded-full bg-muted px-1.5 text-[0.65rem] tabular-nums">
+                    {format.number(events.length)}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          )}
+          <TabsContent
+            value="details"
+            className="min-h-0 overflow-y-auto pe-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin] max-sm:max-h-[40dvh]"
+          >
+            <dl className="grid grid-cols-3 gap-x-4 gap-y-2 sm:grid-cols-2">
+              <Field
+                label={t("fields.altitude")}
+                value={
+                  position
+                    ? t("units.feetAmsl", { value: integer(position.altitude) })
+                    : t("noValue")
+                }
+              />
+              <Field
+                label={t("fields.groundSpeed")}
+                value={
+                  position
+                    ? t("units.knots", { value: integer(position.speed) })
+                    : t("noValue")
+                }
+              />
+              <Field
+                label={t("fields.heading")}
+                value={
+                  position
+                    ? t("units.heading", {
+                        point: t(
+                          `compass.${COMPASS_POINTS[Math.round((((position.heading % 360) + 360) % 360) / 45) % 8]}`,
+                        ),
+                        value: format.number(
+                          Math.round(position.heading) % 360,
+                          {
+                            minimumIntegerDigits: 3,
+                            useGrouping: false,
+                          },
+                        ),
+                      })
+                    : t("noValue")
+                }
+              />
+              <Field
+                label={t("fields.heightAgl")}
+                className={secondary}
+                value={
+                  details?.heightAglFt != null
+                    ? t("units.feet", {
+                        value: integer(Math.max(0, details.heightAglFt)),
+                      })
+                    : t("noValue")
+                }
+              />
+              <Field
+                label={t("fields.vertical")}
+                className={secondary}
+                value={vertical}
+              />
+              <Field
+                label={t("fields.boundary")}
+                className={secondary}
+                value={
+                  boundary != null
+                    ? t("units.nauticalMiles", {
+                        value: format.number(boundary, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                          signDisplay: "exceptZero",
+                        }),
+                      })
+                    : t("noValue")
+                }
+              />
+              <Field
+                label={t("fields.pilot")}
+                className={secondary}
+                value={details?.pilotName ?? t("noValue")}
+              />
+              <Field
+                label={t("fields.engine")}
+                className={secondary}
+                value={
+                  details?.engineOn == null
+                    ? t("noValue")
+                    : t(details.engineOn ? "engine.on" : "engine.off")
+                }
+              />
+              <Field
+                label={t("fields.signal")}
+                className={secondary}
+                value={percent(details?.signalStrength)}
+              />
+              <Field
+                label={t("fields.battery")}
+                className={secondary}
+                value={percent(details?.batteryPercent)}
+              />
+              <Field
+                label={t("fields.flight")}
+                className={cn("col-span-full", secondary)}
+                value={flight}
+              />
+              <Field
+                label={t("fields.tracker")}
+                className={cn("col-span-full", secondary)}
+                value={details?.trackerModel ?? t("noValue")}
+              />
+              <Field
+                label={t("fields.lastUpdate")}
+                className={cn("col-span-full", secondary)}
+                value={
+                  position
+                    ? t("units.utcTimeAgo", {
+                        time: format.dateTime(position.timestamp, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hourCycle: "h23",
+                          timeZone: "UTC",
+                        }),
+                        ago: format.relativeTime(position.timestamp, now),
+                      })
+                    : t("noValue")
+                }
+              />
+              <Field
+                label={t("fields.latitude")}
+                className={secondary}
+                value={position ? coordinate(position.lat) : t("noValue")}
+              />
+              <Field
+                label={t("fields.longitude")}
+                className={secondary}
+                value={position ? coordinate(position.lng) : t("noValue")}
+              />
+              <Field
+                label={t("fields.zone")}
+                className="col-span-full"
+                value={zone}
+              />
+            </dl>
+          </TabsContent>
+          <TabsContent
+            value="events"
+            className="min-h-0 overflow-y-auto pe-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin] max-sm:max-h-[40dvh]"
+          >
+            <AircraftEventList
+              events={events}
+              locatable={locatableEvents}
+              onSelectEvent={onSelectEvent}
+            />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

@@ -94,6 +94,35 @@ export type LiveTrackingSnapshot = {
   kpis: LiveTrackingKpis;
 };
 
+/** One point of `GET /v1/tracking/live/{aircraft}/trail?minutes=N`. */
+export type TrailPoint = {
+  /** Unix epoch, milliseconds */
+  time: number;
+  lat: number;
+  lon: number;
+  altitudeFt: number;
+  heightAglFt: number;
+  groundSpeedKt: number;
+  /** Tracking status at that point; sometimes null. */
+  status: string | null;
+};
+
+/** One entry of `GET /v1/tracking/live/timeline` (filter: `?aircraftId=`). */
+export type TimelineEvent = {
+  id: string;
+  /**
+   * "engineStart", "engineShutdown", "takeoff", "landing", "signalLost",
+   * "signalRestored", "statusChanged"
+   */
+  type: string;
+  aircraftId: string;
+  flightId: string | null;
+  /** Unix epoch, milliseconds */
+  time: number;
+  /** `{ from, to }` statuses for "statusChanged"; empty otherwise. */
+  data: { from?: string; to?: string } | [];
+};
+
 export type LiveTrackingKpis = {
   aircraftAirborne: number;
   activeAlerts: number;

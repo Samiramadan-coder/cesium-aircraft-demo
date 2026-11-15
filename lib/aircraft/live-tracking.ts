@@ -1,4 +1,6 @@
 import type {
+  AircraftEvent,
+  AircraftTrailPoint,
   AircraftUpdate,
   AirfieldLayout,
   FlightZone,
@@ -8,7 +10,9 @@ import type { Tracker } from "@/types/trackers";
 import type {
   LatLon,
   LiveTrackingSnapshot,
+  TimelineEvent,
   TrackedZone,
+  TrailPoint,
 } from "@/types/tracking";
 
 const METERS_PER_DEG_LAT = 111_320;
@@ -96,6 +100,7 @@ export function toAircraftUpdates(
         signalStrength: position.signalStrength,
         batteryPercent: position.batteryPercent,
         engineOn: position.engineOn,
+        flightId: position.flightId,
         trackerModel:
           trackerByAircraftId.get(position.aircraftId)?.model ?? null,
       },
@@ -151,4 +156,33 @@ export function toLiveAlerts(snapshot: LiveTrackingSnapshot): LiveAlert[] {
       aircraftLabel: aircraftById.get(aircraftId)?.registration ?? aircraftId,
     }))
     .sort((a, b) => b.triggeredAt - a.triggeredAt);
+}
+
+/** A trail from the API, in the shape the map draws. */
+export function toAircraftTrail(points: TrailPoint[]): AircraftTrailPoint[] {
+  return points.map((point) => ({
+    lat: point.lat,
+    lng: point.lon,
+    altitude: point.altitudeFt,
+    timestamp: point.time,
+    status: point.status,
+  }));
+}
+
+/** Timeline events, oldest first. */
+export function toAircraftEvents(events: TimelineEvent[]): AircraftEvent[] {
+  return events
+    .map((event) => {
+      const data = Array.isArray(event.data) ? {} : event.data;
+      return {
+        id: event.id,
+        aircraftId: event.aircraftId,
+        type: event.type,
+        flightId: event.flightId,
+        timestamp: event.time,
+        from: data.from,
+        to: data.to,
+      };
+    })
+    .sort((a, b) => a.timestamp - b.timestamp);
 }

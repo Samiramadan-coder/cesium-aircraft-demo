@@ -7,10 +7,12 @@ import type * as CesiumModule from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import type {
   AircraftMapApi,
+  AircraftTrailPoint,
   AircraftUpdate,
   AirfieldLayout,
   CameraMode,
   FlightZone,
+  MapMarker,
 } from "@/types/aircraft";
 import {
   type Cesium,
@@ -127,6 +129,21 @@ const ZONE_FILL_ALPHA: Record<ZoneAlert, number> = {
   approaching: 0.26,
   inside: 0.4,
 };
+
+/** A longer gap between two trail points (lost signal) breaks the line. */
+const TRAIL_GAP_MS = 60_000;
+
+/** Route color of each warning / violation status; others use the default. */
+const TRAIL_STATUS_COLORS: Record<string, string> = {
+  nearBoundary: "#fbbf24",
+  nearCeiling: "#fbbf24",
+  atzAltitudeWarning: "#fbbf24",
+  ceilingExceeded: "#f87171",
+  outsideZone: "#f87171",
+};
+
+/** Camera distance for flyTo, meters. */
+const FLY_TO_RANGE_M = 2_500;
 
 /** Drawn width of the runway line, pixels. */
 const RUNWAY_WIDTH_PX = 8;
@@ -391,6 +408,146 @@ function createAircraftScene(
     for (const entity of airfieldEntities) entity.show = visible;
   }
 
+  // Route history from the API, drawn under the live path: one polyline per
+  // run of points with the same color, so warnings show up on the route.
+  type TrailSegment = {
+    entity: CesiumModule.Entity;
+    /** Status color, or null for the default (selected / unselected) one. */
+    color: string | null;
+  };
+  const trailSegments = new Map<string, TrailSegment[]>();
+  // Trail entity -> aircraft id, so clicking a route selects its aircraft.
+  const trailOwners = new Map<CesiumModule.Entity, string>();
+
+  function trailSegmentColor(aircraftId: string, color: string | null) {
+    if (color) return Cesium.Color.fromCssColorString(color);
+    return aircraftId === selectedId ? selectedTrailColor : trailColor;
+  }
+
+  function clearTrail(id: string) {
+    for (const { entity } of trailSegments.get(id) ?? []) {
+      viewer.entities.remove(entity);
+      trailOwners.delete(entity);
+    }
+    trailSegments.delete(id);
+  }
+
+  function setTrail(id: string, points: AircraftTrailPoint[]) {
+    clearTrail(id);
+    const segments: TrailSegment[] = [];
+    let run: AircraftTrailPoint[] = [];
+    let runColor: string | null = null;
+
+    const flush = () => {
+      if (run.length < 2) return;
+      const entity = viewer.entities.add({
+        polyline: {
+          positions: run.map((p) =>
+            Cesium.Cartesian3.fromDegrees(
+              p.lng,
+              p.lat,
+              p.altitude * FEET_TO_METERS,
+            ),
+          ),
+          width: 6,
+          material: new Cesium.PolylineGlowMaterialProperty({
+            glowPower: 0.2,
+            color: trailSegmentColor(id, runColor),
+          }),
+        },
+      });
+      trailOwners.set(entity, id);
+      segments.push({ entity, color: runColor });
+    };
+
+    for (const point of points) {
+      const color = TRAIL_STATUS_COLORS[point.status ?? ""] ?? null;
+      const previous = run.at(-1);
+      if (!previous || point.timestamp - previous.timestamp > TRAIL_GAP_MS) {
+        flush();
+        run = [point];
+        runColor = color;
+      } else if (color !== runColor) {
+        // Start the next color where this one ends, so the line is unbroken.
+        flush();
+        run = [previous, point];
+        runColor = color;
+      } else {
+        run.push(point);
+      }
+    }
+    flush();
+    trailSegments.set(id, segments);
+  }
+
+  function recolorTrail(id: string | null) {
+    if (id === null) return;
+    for (const { entity, color } of trailSegments.get(id) ?? []) {
+      entity.polyline!.material = new Cesium.PolylineGlowMaterialProperty({
+        glowPower: 0.2,
+        color: trailSegmentColor(id, color),
+      });
+    }
+  }
+
+  let markerEntities: CesiumModule.Entity[] = [];
+
+  function setMarkers(markers: MapMarker[]) {
+    for (const entity of markerEntities) viewer.entities.remove(entity);
+    markerEntities = markers.map((marker) =>
+      viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(
+          marker.lng,
+          marker.lat,
+          marker.altitude * FEET_TO_METERS,
+        ),
+        point: {
+          pixelSize: 9,
+          color: Cesium.Color.fromCssColorString(marker.color),
+          outlineColor: Cesium.Color.BLACK.withAlpha(0.7),
+          outlineWidth: 1.5,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+        label: {
+          text: marker.label,
+          font: "11px sans-serif",
+          fillColor: Cesium.Color.WHITE,
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -10),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          // Labels only up close, so they don't clutter the overview.
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
+            0,
+            15_000,
+          ),
+        },
+      }),
+    );
+  }
+
+  function flyTo(point: { lat: number; lng: number; altitude: number }) {
+    viewer.trackedEntity = undefined;
+    camera.flyToBoundingSphere(
+      new Cesium.BoundingSphere(
+        Cesium.Cartesian3.fromDegrees(
+          point.lng,
+          point.lat,
+          point.altitude * FEET_TO_METERS,
+        ),
+      ),
+      {
+        duration: 1.2,
+        offset: new Cesium.HeadingPitchRange(
+          camera.heading,
+          Cesium.Math.toRadians(OVERVIEW_PITCH_DEG),
+          FLY_TO_RANGE_M,
+        ),
+      },
+    );
+  }
+
   function showModel(track: AircraftTrack, uri: string) {
     const settings = { ...DEFAULT_MODEL_SETTINGS, ...MODEL_SETTINGS[uri] };
     track.modelSettings = settings;
@@ -572,6 +729,7 @@ function createAircraftScene(
     // Removing the entity takes its model, label and trail with it.
     viewer.entities.remove(track.entity);
     tracks.delete(id);
+    clearTrail(id);
     for (const record of zoneRecords.values()) {
       if (record.aircraftStates.delete(id)) styleZone(record);
     }
@@ -583,11 +741,14 @@ function createAircraftScene(
       if (previous) {
         previous.trail.color = new Cesium.ConstantProperty(trailColor);
       }
+      const previousId = selectedId;
       selectedId = id;
       const next = id === null ? undefined : tracks.get(id);
       if (next) {
         next.trail.color = new Cesium.ConstantProperty(selectedTrailColor);
       }
+      recolorTrail(previousId);
+      recolorTrail(id);
     }
     if (cameraMode === "follow") followSelectedAircraft();
   }
@@ -602,8 +763,10 @@ function createAircraftScene(
       // Drill through, so an aircraft inside or behind a zone volume can
       // still be clicked.
       for (const { id: picked } of scene.drillPick(click.position, 5)) {
-        if (picked instanceof Cesium.Entity && tracks.has(picked.id)) {
-          onSelect(picked.id);
+        if (!(picked instanceof Cesium.Entity)) continue;
+        const id = tracks.has(picked.id) ? picked.id : trailOwners.get(picked);
+        if (id) {
+          onSelect(id);
           return;
         }
       }
@@ -654,6 +817,9 @@ function createAircraftScene(
     setZones,
     setAirfield,
     setAirfieldVisible,
+    setTrail,
+    setMarkers,
+    flyTo,
     setSelectedAircraft,
     setCameraMode,
     setPaused,
@@ -770,6 +936,9 @@ export default function AircraftMap({
         onReady({
           updateAircraft: aircraftScene.updateAircraft,
           removeAircraft: aircraftScene.removeAircraft,
+          setTrail: aircraftScene.setTrail,
+          setMarkers: aircraftScene.setMarkers,
+          flyTo: aircraftScene.flyTo,
           resetCamera: () => aircraftScene.resetCamera(),
         });
       })

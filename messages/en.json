@@ -59,7 +59,8 @@
       "engine": "Engine",
       "signal": "Signal",
       "battery": "Battery",
-      "tracker": "Tracker"
+      "tracker": "Tracker",
+      "flight": "Flight"
     },
     "units": {
       "feet": "{value} ft",
@@ -113,7 +114,25 @@
       "signalLost": "Signal lost"
     },
     "follow": "Follow aircraft",
-    "unfollow": "Stop following"
+    "unfollow": "Stop following",
+    "airborneSince": "{flight} · took off {duration}",
+    "tabs": {
+      "details": "Details",
+      "events": "Events"
+    }
+  },
+  "AircraftEvents": {
+    "types": {
+      "engineStart": "Engine start",
+      "engineShutdown": "Engine shutdown",
+      "takeoff": "Takeoff",
+      "landing": "Landing",
+      "signalLost": "Signal lost",
+      "signalRestored": "Signal restored"
+    },
+    "statusChanged": "{from} → {to}",
+    "none": "No recent events",
+    "showOnMap": "Show on the map"
   },
   "AircraftKpis": {
     "aircraftAirborne": "Aircraft in the air",

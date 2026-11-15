@@ -33,6 +33,46 @@ export type AircraftDetails = {
   engineOn?: boolean;
   /** e.g. "Teltonika FMC650" */
   trackerModel?: string | null;
+  /** The flight in progress or last flown, e.g. "fl-0143". */
+  flightId?: string | null;
+};
+
+/** A past position of an aircraft, for drawing its route. */
+export type AircraftTrailPoint = {
+  lat: number;
+  lng: number;
+  /** Feet, same reference as `AircraftPosition.altitude` */
+  altitude: number;
+  /** Unix epoch, milliseconds */
+  timestamp: number;
+  /** Tracking status at that point, colors the route; null if unknown. */
+  status: string | null;
+};
+
+/** Something that happened to an aircraft, e.g. a takeoff. */
+export type AircraftEvent = {
+  id: string;
+  aircraftId: string;
+  /** "takeoff", "landing", "statusChanged", … */
+  type: string;
+  flightId: string | null;
+  /** Unix epoch, milliseconds */
+  timestamp: number;
+  /** For "statusChanged": the statuses before and after. */
+  from?: string;
+  to?: string;
+};
+
+/** A labelled point drawn on the map, e.g. where an aircraft took off. */
+export type MapMarker = {
+  id: string;
+  lat: number;
+  lng: number;
+  /** Feet */
+  altitude: number;
+  label: string;
+  /** CSS color */
+  color: string;
 };
 
 /** The home aerodrome, drawn on the map. */
@@ -124,5 +164,11 @@ export type CameraMode = "follow" | "free";
 export type AircraftMapApi = {
   updateAircraft: (update: AircraftUpdate) => void;
   removeAircraft: (id: string) => void;
+  /** Replaces the drawn route history of one aircraft. */
+  setTrail: (id: string, points: AircraftTrailPoint[]) => void;
+  /** Replaces all markers. */
+  setMarkers: (markers: MapMarker[]) => void;
+  /** Flies the camera to look at a point. */
+  flyTo: (point: { lat: number; lng: number; altitude: number }) => void;
   resetCamera: () => void;
 };

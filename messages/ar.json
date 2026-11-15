@@ -59,7 +59,8 @@
       "engine": "المحرك",
       "signal": "الإشارة",
       "battery": "البطارية",
-      "tracker": "جهاز التتبع"
+      "tracker": "جهاز التتبع",
+      "flight": "الرحلة"
     },
     "units": {
       "feet": "{value} قدم",
@@ -113,7 +114,25 @@
       "signalLost": "فقدان الإشارة"
     },
     "follow": "تتبع الطائرة",
-    "unfollow": "إيقاف التتبع"
+    "unfollow": "إيقاف التتبع",
+    "airborneSince": "{flight} · أقلعت {duration}",
+    "tabs": {
+      "details": "البيانات",
+      "events": "الأحداث"
+    }
+  },
+  "AircraftEvents": {
+    "types": {
+      "engineStart": "تشغيل المحرك",
+      "engineShutdown": "إيقاف المحرك",
+      "takeoff": "إقلاع",
+      "landing": "هبوط",
+      "signalLost": "فقدان الإشارة",
+      "signalRestored": "عودة الإشارة"
+    },
+    "statusChanged": "{from} ← {to}",
+    "none": "لا توجد أحداث حديثة",
+    "showOnMap": "عرض على الخريطة"
   },
   "AircraftKpis": {
     "aircraftAirborne": "طائرات في الجو",

@@ -2,6 +2,8 @@
 
 import type {
   Aircraft,
+  AircraftEvent,
+  AircraftTrailPoint,
   CameraMode,
   AircraftMapApi,
   AircraftUpdate,
@@ -14,6 +16,8 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { LiveAlert } from "@/lib/aircraft/live-tracking";
+import { eventColor, findTrailPoint, isMapEvent } from "@/lib/aircraft/events";
+import { useEventLabel } from "@/components/aircraft/aircraft-events";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
 import { FALCON_AIRPORT } from "@/lib/aircraft/flight-zones";
 import { AircraftControls } from "@/components/aircraft/aircraft-controls";
@@ -46,6 +50,10 @@ type AircraftDemoProps = {
   hasMapKey: boolean;
   /** Last known position of every tracked aircraft (GET /v1/tracking/live). */
   initialAircraft: AircraftUpdate[];
+  /** Recent route of each aircraft, by aircraft id (…/{aircraft}/trail). */
+  trails: Record<string, AircraftTrailPoint[]>;
+  /** Recent events of all aircraft, oldest first (…/live/timeline). */
+  events: AircraftEvent[];
   /** Airspace to draw (GET /v1/tracking/live). */
   zones: FlightZone[];
   /** Fleet counters from the snapshot (GET /v1/tracking/live). */
@@ -64,6 +72,8 @@ export function AircraftDemo({
   googleMapsApiKey,
   hasMapKey,
   initialAircraft,
+  trails,
+  events,
   zones,
   kpis,
   airfield,
@@ -136,8 +146,61 @@ export function AircraftDemo({
   // TODO: live updates (WebSocket or polling) once agreed with the backend.
   useEffect(() => {
     if (!mapApi) return;
+    for (const [id, points] of Object.entries(trails)) {
+      mapApi.setTrail(id, points);
+    }
     for (const update of initialAircraft) updateAircraft(update);
-  }, [mapApi, initialAircraft, updateAircraft]);
+  }, [mapApi, trails, initialAircraft, updateAircraft]);
+
+  // Events of the selected aircraft, and where each one happened.
+  const selectedEvents = useMemo(
+    () => events.filter((event) => event.aircraftId === selectedAircraftId),
+    [events, selectedAircraftId],
+  );
+  const eventPositions = useMemo(() => {
+    const trail = selectedAircraftId ? (trails[selectedAircraftId] ?? []) : [];
+    const positions = new Map<string, AircraftTrailPoint>();
+    for (const event of selectedEvents) {
+      const point = findTrailPoint(trail, event.timestamp);
+      if (point) positions.set(event.id, point);
+    }
+    return positions;
+  }, [selectedEvents, selectedAircraftId, trails]);
+  const locatableEvents = useMemo(
+    () => new Set(eventPositions.keys()),
+    [eventPositions],
+  );
+
+  // Markers for the selected aircraft's takeoffs, landings and warnings.
+  const eventLabel = useEventLabel();
+  useEffect(() => {
+    mapApi?.setMarkers(
+      selectedEvents.flatMap((event) => {
+        const point = eventPositions.get(event.id);
+        if (!point || !isMapEvent(event)) return [];
+        return [
+          {
+            id: event.id,
+            lat: point.lat,
+            lng: point.lng,
+            altitude: point.altitude,
+            label: eventLabel(event),
+            color: eventColor(event),
+          },
+        ];
+      }),
+    );
+  }, [mapApi, selectedEvents, eventPositions, eventLabel]);
+
+  const showEvent = useCallback(
+    (event: AircraftEvent) => {
+      const point = eventPositions.get(event.id);
+      if (!point) return;
+      setCameraMode("free");
+      mapApi?.flyTo(point);
+    },
+    [mapApi, eventPositions],
+  );
 
   return (
     // Fills the shell's content area (see components/layout/app-shell.tsx).
@@ -158,7 +221,7 @@ export function AircraftDemo({
       {/* Phones: controls on top, info panel docked at the bottom (above the
           Cesium credits). Wider screens: panel and controls side by side. */}
       <div className="pointer-events-none absolute inset-0 flex flex-col-reverse justify-between gap-3 p-3 pb-9 sm:flex-row sm:items-start sm:p-4">
-        <div className="pointer-events-auto flex w-full flex-col gap-2 sm:w-72">
+        <div className="pointer-events-auto flex w-full flex-col gap-2 sm:max-h-full sm:w-72">
           <AircraftKpis kpis={kpis} />
           <AircraftInfoPanel
             aircraftList={aircraftList}
@@ -170,6 +233,9 @@ export function AircraftDemo({
             onToggleFollow={() =>
               setCameraMode((mode) => (mode === "follow" ? "free" : "follow"))
             }
+            events={selectedEvents}
+            locatableEvents={locatableEvents}
+            onSelectEvent={showEvent}
             onSelectAircraft={selectAircraft}
           />
           <AircraftAlerts alerts={alerts} onSelectAircraft={selectAircraft} />
