@@ -190,7 +190,9 @@
       "alerts": "التنبيهات",
       "trackers": "أجهزة التتبع",
       "engineHours": "ساعات المحرك والطيران",
-      "adminstration": "الإدارة"
+      "adminstration": "الإدارة",
+      "aircrafts": "الطائرات",
+      "pilots": "الطيارون"
     }
   },
   "Header": {
@@ -1210,6 +1212,127 @@
       "search": "ابحث عن منطقة بالاسم",
       "allStatuses": "كل الحالات",
       "noMatches": "لا توجد مناطق تطابق البحث أو الفلتر."
+    }
+  },
+  "Aircrafts": {
+    "empty": "لا توجد طائرات مسجلة بعد.",
+    "columns": {
+      "aircraft": "الطائرة",
+      "type": "النوع",
+      "pilot": "الطيار المعيّن",
+      "tracker": "جهاز التتبع",
+      "serviceInterval": "فترة الصيانة",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "hours": "{value} س",
+    "noPilot": "غير معيّن",
+    "noTracker": "غير مركّب",
+    "statuses": {
+      "active": "نشطة",
+      "inactive": "غير نشطة"
+    },
+    "errorPage": {
+      "title": "تعذّر تحميل الطائرات",
+      "description": "لم يتم تحميل قائمة الطائرات. تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "addAircraft": "إضافة طائرة",
+    "menu": {
+      "label": "إجراءات {aircraft}",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "deleteDialog": {
+      "title": "حذف الطائرة؟",
+      "description": "سيتم حذف <strong>{aircraft}</strong> من الأسطول والخريطة المباشرة. لا يمكن التراجع عن ذلك.",
+      "confirm": "حذف"
+    },
+    "form": {
+      "title": "إضافة طائرة",
+      "description": "سجّل طائرة جديدة في الأسطول.",
+      "editTitle": "تعديل الطائرة",
+      "editDescription": "حدّث بيانات الطائرة. لا يمكن تغيير المعرّف.",
+      "name": "الاسم",
+      "nameAr": "الاسم بالعربية",
+      "id": "المعرّف",
+      "registration": "رقم التسجيل",
+      "type": "النوع",
+      "pilot": "الطيار المعيّن",
+      "serviceInterval": "فترة الصيانة (ساعات)",
+      "color": "اللون",
+      "save": "إضافة طائرة",
+      "saveChanges": "حفظ التغييرات",
+      "errors": {
+        "idRequired": "أدخل معرّف الطائرة.",
+        "idInvalid": "استخدم حروفًا إنجليزية صغيرة وأرقامًا وشرطات، مثل falcon-three.",
+        "registrationRequired": "أدخل رقم التسجيل.",
+        "nameRequired": "أدخل اسم الطائرة.",
+        "typeRequired": "اختر النوع.",
+        "colorInvalid": "استخدم لونًا بصيغة hex، مثل #4A9EDB.",
+        "intervalInvalid": "أدخل عددًا صحيحًا من الساعات أكبر من 0.",
+        "photoType": "استخدم صورة بصيغة JPEG أو PNG أو WebP.",
+        "photoSize": "يجب ألا يتجاوز حجم الصورة 5 ميجابايت."
+      },
+      "photo": "الصورة",
+      "photoPreview": "صورة الطائرة",
+      "choosePhoto": "اختر صورة",
+      "changePhoto": "تغيير الصورة",
+      "removePhoto": "إزالة",
+      "photoHint": "JPEG أو PNG أو WebP، بحد أقصى 5 ميجابايت.",
+      "photoFailed": "تم حفظ الطائرة، لكن لم يتم رفع الصورة: {message}"
+    }
+  },
+  "Pilots": {
+    "addPilot": "إضافة طيار",
+    "empty": "لا يوجد طيارون مسجلون بعد.",
+    "noAircraft": "لا توجد طائرة معيّنة",
+    "columns": {
+      "pilot": "الطيار",
+      "license": "رقم الرخصة",
+      "phone": "الهاتف",
+      "aircraft": "الطائرات المعيّنة",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "statuses": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "menu": {
+      "label": "إجراءات {pilot}",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "deleteDialog": {
+      "title": "حذف الطيار؟",
+      "description": "سيتم حذف <strong>{pilot}</strong>، وستصبح الطائرات المعيّنة له بدون طيار. لا يمكن التراجع عن ذلك.",
+      "confirm": "حذف"
+    },
+    "errorPage": {
+      "title": "تعذّر تحميل الطيارين",
+      "description": "لم يتم تحميل قائمة الطيارين. تحقق من الاتصال وحاول مرة أخرى."
+    },
+    "form": {
+      "title": "إضافة طيار",
+      "description": "سجّل طيارًا جديدًا.",
+      "editTitle": "تعديل الطيار",
+      "editDescription": "حدّث بيانات الطيار. لا يمكن تغيير المعرّف.",
+      "name": "الاسم",
+      "nameAr": "الاسم بالعربية",
+      "id": "المعرّف",
+      "initials": "الأحرف الأولى",
+      "licenseNumber": "رقم الرخصة",
+      "phone": "الهاتف",
+      "save": "إضافة طيار",
+      "saveChanges": "حفظ التغييرات",
+      "errors": {
+        "idRequired": "أدخل معرّف الطيار.",
+        "idInvalid": "استخدم حروفًا إنجليزية صغيرة وأرقامًا وشرطات، مثل pilot-khan.",
+        "nameRequired": "أدخل اسم الطيار.",
+        "initialsRequired": "أدخل الأحرف الأولى.",
+        "initialsInvalid": "استخدم 3 أحرف بحد أقصى.",
+        "phoneInvalid": "أدخل رقم هاتف صحيحًا، مثل ‎+971 50 123 4567."
+      }
     }
   }
 }

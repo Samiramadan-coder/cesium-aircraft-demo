@@ -19,6 +19,19 @@ export type TrackedAircraft = {
   trackerId: string | null;
 };
 
+/** Body of `POST /v1/aircraft`; PATCH `/v1/aircraft/{id}` takes it without `id`. */
+export type AircraftPayload = Pick<
+  TrackedAircraft,
+  | "id"
+  | "registration"
+  | "name"
+  | "nameAr"
+  | "type"
+  | "color"
+  | "pilotId"
+  | "serviceIntervalHours"
+>;
+
 export type TrackedPilot = {
   id: string;
   name: string;
@@ -28,6 +41,12 @@ export type TrackedPilot = {
   phone: string | null;
   active: boolean;
 };
+
+/** Body of `POST /v1/pilots`; PATCH `/v1/pilots/{id}` takes it without `id`. */
+export type PilotPayload = Pick<
+  TrackedPilot,
+  "id" | "name" | "nameAr" | "initials" | "licenseNumber" | "phone"
+>;
 
 export type TrackedPosition = {
   aircraftId: string;

@@ -190,7 +190,9 @@
       "alerts": "Alerts",
       "trackers": "Trackers",
       "engineHours": "Engine & Flight Hours",
-      "adminstration": "Adminstration"
+      "adminstration": "Adminstration",
+      "aircrafts": "AirCrafts",
+      "pilots": "Pilots"
     }
   },
   "Header": {
@@ -1210,6 +1212,127 @@
       "search": "Search zones by name",
       "allStatuses": "All statuses",
       "noMatches": "No zones match your search or filter."
+    }
+  },
+  "Aircrafts": {
+    "empty": "No aircraft registered yet.",
+    "columns": {
+      "aircraft": "Aircraft",
+      "type": "Type",
+      "pilot": "Assigned pilot",
+      "tracker": "Tracker",
+      "serviceInterval": "Service interval",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "hours": "{value}h",
+    "noPilot": "Unassigned",
+    "noTracker": "Not installed",
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "errorPage": {
+      "title": "Couldn't load aircraft",
+      "description": "The aircraft list didn't load. Check your connection and try again."
+    },
+    "addAircraft": "Add aircraft",
+    "menu": {
+      "label": "Actions for {aircraft}",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Delete aircraft?",
+      "description": "<strong>{aircraft}</strong> will be removed from the fleet and the live map. This can't be undone.",
+      "confirm": "Delete"
+    },
+    "form": {
+      "title": "Add aircraft",
+      "description": "Register a new aircraft in the fleet.",
+      "editTitle": "Edit aircraft",
+      "editDescription": "Update the aircraft's details. The ID can't be changed.",
+      "name": "Name",
+      "nameAr": "Arabic name",
+      "id": "ID",
+      "registration": "Registration",
+      "type": "Type",
+      "pilot": "Assigned pilot",
+      "serviceInterval": "Service interval (hours)",
+      "color": "Color",
+      "save": "Add aircraft",
+      "saveChanges": "Save changes",
+      "errors": {
+        "idRequired": "Enter the aircraft ID.",
+        "idInvalid": "Use lowercase letters, numbers and dashes, e.g. falcon-three.",
+        "registrationRequired": "Enter the registration.",
+        "nameRequired": "Enter the aircraft name.",
+        "typeRequired": "Choose the type.",
+        "colorInvalid": "Use a hex color, e.g. #4A9EDB.",
+        "intervalInvalid": "Enter a whole number of hours above 0.",
+        "photoType": "Use a JPEG, PNG or WebP image.",
+        "photoSize": "The photo must be 5 MB or smaller."
+      },
+      "photo": "Photo",
+      "photoPreview": "Aircraft photo",
+      "choosePhoto": "Choose photo",
+      "changePhoto": "Change photo",
+      "removePhoto": "Remove",
+      "photoHint": "JPEG, PNG or WebP, up to 5 MB.",
+      "photoFailed": "The aircraft was saved, but the photo didn't upload: {message}"
+    }
+  },
+  "Pilots": {
+    "addPilot": "Add pilot",
+    "empty": "No pilots registered yet.",
+    "noAircraft": "No aircraft assigned",
+    "columns": {
+      "pilot": "Pilot",
+      "license": "License number",
+      "phone": "Phone",
+      "aircraft": "Assigned aircraft",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "statuses": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "menu": {
+      "label": "Actions for {pilot}",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Delete pilot?",
+      "description": "<strong>{pilot}</strong> will be removed, and any aircraft assigned to them will be left without a pilot. This can't be undone.",
+      "confirm": "Delete"
+    },
+    "errorPage": {
+      "title": "Couldn't load pilots",
+      "description": "The pilots list didn't load. Check your connection and try again."
+    },
+    "form": {
+      "title": "Add pilot",
+      "description": "Register a new pilot.",
+      "editTitle": "Edit pilot",
+      "editDescription": "Update the pilot's details. The ID can't be changed.",
+      "name": "Name",
+      "nameAr": "Arabic name",
+      "id": "ID",
+      "initials": "Initials",
+      "licenseNumber": "License number",
+      "phone": "Phone",
+      "save": "Add pilot",
+      "saveChanges": "Save changes",
+      "errors": {
+        "idRequired": "Enter the pilot ID.",
+        "idInvalid": "Use lowercase letters, numbers and dashes, e.g. pilot-khan.",
+        "nameRequired": "Enter the pilot name.",
+        "initialsRequired": "Enter the initials.",
+        "initialsInvalid": "Use up to 3 letters.",
+        "phoneInvalid": "Enter a valid phone number, e.g. +971 50 123 4567."
+      }
     }
   }
 }

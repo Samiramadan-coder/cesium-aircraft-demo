@@ -2,6 +2,8 @@ import type { LucideIcon } from "lucide-react";
 import {
   Gauge,
   Hexagon,
+  IdCard,
+  Plane,
   Radio,
   Route,
   Satellite,
@@ -19,6 +21,8 @@ export type NavItem = {
     | "alerts"
     | "trackers"
     | "engineHours"
+    | "aircrafts"
+    | "pilots"
     | "adminstration";
   href: string;
   icon: LucideIcon;
@@ -39,6 +43,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { key: "alerts", href: "/alerts", icon: TriangleAlert },
       { key: "trackers", href: "/trackers", icon: Satellite },
       { key: "engineHours", href: "/engine-hours", icon: Gauge },
+      { key: "aircrafts", href: "/aircrafts", icon: Plane },
+      { key: "pilots", href: "/pilots", icon: IdCard },
       { key: "adminstration", href: "/adminstration", icon: Users },
     ],
   },
