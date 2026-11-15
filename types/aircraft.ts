@@ -13,11 +13,47 @@ export type AircraftPosition = {
   timestamp: number;
 };
 
+/** Tracking data the backend computes per position, shown in the info panel. */
+export type AircraftDetails = {
+  /** e.g. "Gyrocopter" */
+  type?: string;
+  photoUrl?: string | null;
+  pilotName?: string | null;
+  /** e.g. "onGround", "normal", "nearCeiling", "signalLost" */
+  status?: string;
+  /** Height above the aerodrome, feet */
+  heightAglFt?: number;
+  verticalSpeedFpm?: number;
+  /** Positive inside the zone, negative outside; null when unknown. */
+  distanceToBoundaryNm?: number | null;
+  /** 0–100 */
+  signalStrength?: number | null;
+  /** 0–100 */
+  batteryPercent?: number | null;
+  engineOn?: boolean;
+  /** e.g. "Teltonika FMC650" */
+  trackerModel?: string | null;
+};
+
+/** The home aerodrome, drawn on the map. */
+export type AirfieldLayout = {
+  icao: string;
+  referencePoint: { lat: number; lng: number };
+  /** Runway ends, e.g. "15" and "33". */
+  runwayThresholds: Array<{
+    designator: string;
+    threshold: { lat: number; lng: number };
+  }>;
+  /** The traffic pattern flown around the runway. */
+  circuitPattern: Array<{ lat: number; lng: number }>;
+};
+
 export type Aircraft = {
   /** Stable identity, e.g. the tracker device id */
   id: string;
   name: string;
   callsign?: string;
+  details?: AircraftDetails;
   /** glTF / GLB to render this aircraft with; the default model if omitted. */
   modelUrl?: string;
   /** Multiplies the model's size; overrides the model's own default scale. */
@@ -36,6 +72,8 @@ export type AircraftUpdate = Omit<AircraftPosition, "timestamp"> & {
   id: string;
   name?: string;
   callsign?: string;
+  /** Replaces the previous details when present. */
+  details?: AircraftDetails;
   modelUrl?: string;
   modelScale?: number;
   timestamp?: number;
@@ -74,11 +112,7 @@ export type FlightZone = {
  * within the polygon horizontally but outside the altitude band.
  */
 export type AircraftZoneState =
-  | "outside"
-  | "approaching"
-  | "inside"
-  | "above"
-  | "below";
+  "outside" | "approaching" | "inside" | "above" | "below";
 
 export type AircraftZoneStatus = {
   zone: FlightZone;

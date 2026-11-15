@@ -8,6 +8,7 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import type {
   AircraftMapApi,
   AircraftUpdate,
+  AirfieldLayout,
   CameraMode,
   FlightZone,
 } from "@/types/aircraft";
@@ -126,6 +127,9 @@ const ZONE_FILL_ALPHA: Record<ZoneAlert, number> = {
   approaching: 0.26,
   inside: 0.4,
 };
+
+/** Drawn width of the runway line, pixels. */
+const RUNWAY_WIDTH_PX = 8;
 
 const feet = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
@@ -289,6 +293,102 @@ function createAircraftScene(
       if (existing) viewer.entities.remove(existing.entity);
       zoneRecords.set(zone.id, createZone(zone));
     }
+  }
+
+  // The home aerodrome: runway, circuit and reference point, draped on the
+  // ground. Rebuilt when the layout changes; hidden as a whole on request.
+  let airfieldEntities: CesiumModule.Entity[] = [];
+  let airfieldVisible = true;
+
+  function setAirfield(layout: AirfieldLayout | null) {
+    for (const entity of airfieldEntities) viewer.entities.remove(entity);
+    airfieldEntities = [];
+    if (!layout) return;
+
+    const toDegrees = (points: Array<{ lat: number; lng: number }>) =>
+      Cesium.Cartesian3.fromDegreesArray(points.flatMap((p) => [p.lng, p.lat]));
+
+    const thresholds = layout.runwayThresholds;
+    if (thresholds.length >= 2) {
+      airfieldEntities.push(
+        viewer.entities.add({
+          name: `${layout.icao} runway`,
+          polyline: {
+            positions: toDegrees(thresholds.map((t) => t.threshold)),
+            width: RUNWAY_WIDTH_PX,
+            clampToGround: true,
+            material:
+              Cesium.Color.fromCssColorString("#e5e7eb").withAlpha(0.85),
+          },
+        }),
+      );
+    }
+    for (const { designator, threshold } of thresholds) {
+      airfieldEntities.push(
+        viewer.entities.add({
+          name: `RWY ${designator}`,
+          position: Cesium.Cartesian3.fromDegrees(threshold.lng, threshold.lat),
+          label: {
+            text: designator,
+            font: "bold 12px monospace",
+            fillColor: Cesium.Color.WHITE,
+            showBackground: true,
+            backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+        }),
+      );
+    }
+
+    if (layout.circuitPattern.length >= 2) {
+      airfieldEntities.push(
+        viewer.entities.add({
+          name: `${layout.icao} circuit`,
+          polyline: {
+            positions: toDegrees(layout.circuitPattern),
+            width: 2,
+            clampToGround: true,
+            material: new Cesium.PolylineDashMaterialProperty({
+              color: Cesium.Color.fromCssColorString("#38bdf8"),
+              dashLength: 16,
+            }),
+          },
+        }),
+      );
+    }
+
+    const { lat, lng } = layout.referencePoint;
+    airfieldEntities.push(
+      viewer.entities.add({
+        name: layout.icao,
+        position: Cesium.Cartesian3.fromDegrees(lng, lat),
+        point: {
+          pixelSize: 7,
+          color: Cesium.Color.fromCssColorString("#38bdf8"),
+          outlineColor: Cesium.Color.WHITE,
+          outlineWidth: 1.5,
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+        label: {
+          text: layout.icao,
+          font: "bold 12px sans-serif",
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -10),
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+      }),
+    );
+    setAirfieldVisible(airfieldVisible);
+  }
+
+  function setAirfieldVisible(visible: boolean) {
+    airfieldVisible = visible;
+    for (const entity of airfieldEntities) entity.show = visible;
   }
 
   function showModel(track: AircraftTrack, uri: string) {
@@ -552,6 +652,8 @@ function createAircraftScene(
     removeAircraft,
     resetCamera,
     setZones,
+    setAirfield,
+    setAirfieldVisible,
     setSelectedAircraft,
     setCameraMode,
     setPaused,
@@ -570,6 +672,9 @@ type AircraftMapProps = {
   googleMapsApiKey?: string;
   /** Zones to draw; pass a new array (and new objects for changed zones) to update. */
   zones: FlightZone[];
+  /** Home aerodrome to draw; null draws none. */
+  airfield: AirfieldLayout | null;
+  showAirfield: boolean;
   selectedAircraftId: string | null;
   cameraMode: CameraMode;
   paused: boolean;
@@ -583,6 +688,8 @@ export default function AircraftMap({
   center,
   googleMapsApiKey,
   zones,
+  airfield,
+  showAirfield,
   selectedAircraftId,
   cameraMode,
   paused,
@@ -596,6 +703,8 @@ export default function AircraftMap({
     center,
     googleMapsApiKey,
     zones,
+    airfield,
+    showAirfield,
     selectedAircraftId,
     cameraMode,
     paused,
@@ -607,12 +716,15 @@ export default function AircraftMap({
       center,
       googleMapsApiKey,
       zones,
+      airfield,
+      showAirfield,
       selectedAircraftId,
       cameraMode,
       paused,
       onSelectAircraft,
     };
     sceneRef.current?.setZones(zones);
+    sceneRef.current?.setAirfieldVisible(showAirfield);
     sceneRef.current?.setSelectedAircraft(selectedAircraftId);
     sceneRef.current?.setCameraMode(cameraMode);
     sceneRef.current?.setPaused(paused);
@@ -620,11 +732,18 @@ export default function AircraftMap({
     center,
     googleMapsApiKey,
     zones,
+    airfield,
+    showAirfield,
     selectedAircraftId,
     cameraMode,
     paused,
     onSelectAircraft,
   ]);
+
+  // Separate so toggling the layer doesn't rebuild it.
+  useEffect(() => {
+    sceneRef.current?.setAirfield(airfield);
+  }, [airfield]);
 
   useEffect(() => {
     let cancelled = false;
@@ -640,6 +759,8 @@ export default function AircraftMap({
           (id) => settingsRef.current.onSelectAircraft(id),
         );
         aircraftScene.setZones(settingsRef.current.zones);
+        aircraftScene.setAirfield(settingsRef.current.airfield);
+        aircraftScene.setAirfieldVisible(settingsRef.current.showAirfield);
         aircraftScene.setSelectedAircraft(
           settingsRef.current.selectedAircraftId,
         );

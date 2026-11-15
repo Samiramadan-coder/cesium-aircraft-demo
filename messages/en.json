@@ -25,7 +25,10 @@
     "pause": "Pause",
     "pauseHint": "Pause simulation",
     "resume": "Resume",
-    "resumeHint": "Resume simulation"
+    "resumeHint": "Resume simulation",
+    "airfield": "Airfield",
+    "showAirfieldHint": "Show the runway and circuit",
+    "hideAirfieldHint": "Hide the runway and circuit"
   },
   "AircraftInfoPanel": {
     "noAircraft": "No aircraft",
@@ -38,7 +41,8 @@
     "status": {
       "acquiring": "Acquiring",
       "paused": "Paused",
-      "live": "Live"
+      "live": "Live",
+      "lastKnown": "Last known"
     },
     "fields": {
       "altitude": "Altitude",
@@ -47,13 +51,26 @@
       "lastUpdate": "Last update",
       "latitude": "Latitude",
       "longitude": "Longitude",
-      "zone": "Zone"
+      "zone": "Zone",
+      "heightAgl": "Height AGL",
+      "vertical": "Vertical",
+      "boundary": "To boundary",
+      "pilot": "Pilot",
+      "engine": "Engine",
+      "signal": "Signal",
+      "battery": "Battery",
+      "tracker": "Tracker"
     },
     "units": {
       "feet": "{value} ft",
       "knots": "{value} kt",
       "degrees": "{value}°",
-      "utcTime": "{time} UTC"
+      "utcTime": "{time} UTC",
+      "feetAmsl": "{value} ft AMSL",
+      "nauticalMiles": "{value} NM",
+      "percent": "{value}%",
+      "heading": "{point} · {value}°",
+      "utcTimeAgo": "{time} UTC · {ago}"
     },
     "noValue": "—",
     "zoneStatus": "{zone} · {state}",
@@ -65,7 +82,47 @@
       "below": "Below",
       "violation": "Violation"
     },
-    "clearOfZones": "Clear of all zones"
+    "clearOfZones": "Clear of all zones",
+    "compass": {
+      "N": "N",
+      "NE": "NE",
+      "E": "E",
+      "SE": "SE",
+      "S": "S",
+      "SW": "SW",
+      "W": "W",
+      "NW": "NW"
+    },
+    "vertical": {
+      "climbing": "Climbing",
+      "descending": "Descending",
+      "level": "Level"
+    },
+    "engine": {
+      "on": "On",
+      "off": "Off"
+    },
+    "trackingStatus": {
+      "normal": "Normal",
+      "onGround": "On ground",
+      "nearBoundary": "Near boundary",
+      "nearCeiling": "Near ceiling",
+      "ceilingExceeded": "Ceiling exceeded",
+      "outsideZone": "Outside zone",
+      "atzAltitudeWarning": "ATZ altitude warning",
+      "signalLost": "Signal lost"
+    },
+    "follow": "Follow aircraft",
+    "unfollow": "Stop following"
+  },
+  "AircraftKpis": {
+    "aircraftAirborne": "Aircraft in the air",
+    "activeAlerts": "Active alerts"
+  },
+  "AircraftAlerts": {
+    "title": "Active alerts",
+    "viewAll": "View all",
+    "more": "{count, plural, one {# more alert} other {# more alerts}}"
   },
   "LoginPage": {
     "metaTitle": "Sign in",

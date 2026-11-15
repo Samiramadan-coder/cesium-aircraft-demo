@@ -1,7 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { LocateFixed, Move3d, Pause, Play, RotateCcw } from "lucide-react";
+import {
+  LandPlot,
+  LocateFixed,
+  Move3d,
+  Pause,
+  Play,
+  RotateCcw,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -54,6 +61,8 @@ function ControlButton({
 type AircraftControlsProps = {
   cameraMode: CameraMode;
   paused: boolean;
+  showAirfield: boolean;
+  onShowAirfieldChange: (show: boolean) => void;
   onCameraModeChange: (mode: CameraMode) => void;
   onResetCamera: () => void;
   onPausedChange: (paused: boolean) => void;
@@ -62,6 +71,8 @@ type AircraftControlsProps = {
 export function AircraftControls({
   cameraMode,
   paused,
+  showAirfield,
+  onShowAirfieldChange,
   onCameraModeChange,
   onResetCamera,
   onPausedChange,
@@ -95,6 +106,14 @@ export function AircraftControls({
           <RotateCcw data-icon="inline-start" />
         </ControlButton>
         <Separator orientation="vertical" className="mx-1 h-5 self-center" />
+        <ControlButton
+          label={t("airfield")}
+          hint={showAirfield ? t("hideAirfieldHint") : t("showAirfieldHint")}
+          active={showAirfield}
+          onClick={() => onShowAirfieldChange(!showAirfield)}
+        >
+          <LandPlot data-icon="inline-start" />
+        </ControlButton>
         <ControlButton
           label={paused ? t("resume") : t("pause")}
           hint={paused ? t("resumeHint") : t("pauseHint")}

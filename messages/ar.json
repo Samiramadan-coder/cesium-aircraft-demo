@@ -25,7 +25,10 @@
     "pause": "إيقاف مؤقت",
     "pauseHint": "إيقاف المحاكاة مؤقتًا",
     "resume": "استئناف",
-    "resumeHint": "استئناف المحاكاة"
+    "resumeHint": "استئناف المحاكاة",
+    "airfield": "المطار",
+    "showAirfieldHint": "إظهار المدرج ومسار الدوران",
+    "hideAirfieldHint": "إخفاء المدرج ومسار الدوران"
   },
   "AircraftInfoPanel": {
     "noAircraft": "لا توجد طائرة",
@@ -38,7 +41,8 @@
     "status": {
       "acquiring": "جارٍ الالتقاط",
       "paused": "متوقف مؤقتًا",
-      "live": "مباشر"
+      "live": "مباشر",
+      "lastKnown": "آخر موقع"
     },
     "fields": {
       "altitude": "الارتفاع",
@@ -47,13 +51,26 @@
       "lastUpdate": "آخر تحديث",
       "latitude": "خط العرض",
       "longitude": "خط الطول",
-      "zone": "المنطقة"
+      "zone": "المنطقة",
+      "heightAgl": "الارتفاع فوق الأرض",
+      "vertical": "الحركة العمودية",
+      "boundary": "المسافة إلى الحدود",
+      "pilot": "الطيار",
+      "engine": "المحرك",
+      "signal": "الإشارة",
+      "battery": "البطارية",
+      "tracker": "جهاز التتبع"
     },
     "units": {
       "feet": "{value} قدم",
       "knots": "{value} عقدة",
       "degrees": "{value}°",
-      "utcTime": "{time} UTC"
+      "utcTime": "{time} UTC",
+      "feetAmsl": "{value} قدم فوق سطح البحر",
+      "nauticalMiles": "{value} ميل بحري",
+      "percent": "{value}%",
+      "heading": "{point} · {value}°",
+      "utcTimeAgo": "{time} UTC · {ago}"
     },
     "noValue": "—",
     "zoneStatus": "{zone} · {state}",
@@ -65,7 +82,47 @@
       "below": "تحت",
       "violation": "مخالفة"
     },
-    "clearOfZones": "خارج جميع المناطق"
+    "clearOfZones": "خارج جميع المناطق",
+    "compass": {
+      "N": "شمال",
+      "NE": "شمال شرق",
+      "E": "شرق",
+      "SE": "جنوب شرق",
+      "S": "جنوب",
+      "SW": "جنوب غرب",
+      "W": "غرب",
+      "NW": "شمال غرب"
+    },
+    "vertical": {
+      "climbing": "صعود",
+      "descending": "هبوط",
+      "level": "مستوٍ"
+    },
+    "engine": {
+      "on": "يعمل",
+      "off": "متوقف"
+    },
+    "trackingStatus": {
+      "normal": "طبيعي",
+      "onGround": "على الأرض",
+      "nearBoundary": "قرب الحدود",
+      "nearCeiling": "قرب السقف",
+      "ceilingExceeded": "تجاوز السقف",
+      "outsideZone": "خارج المنطقة",
+      "atzAltitudeWarning": "تحذير ارتفاع منطقة المطار",
+      "signalLost": "فقدان الإشارة"
+    },
+    "follow": "تتبع الطائرة",
+    "unfollow": "إيقاف التتبع"
+  },
+  "AircraftKpis": {
+    "aircraftAirborne": "طائرات في الجو",
+    "activeAlerts": "تنبيهات نشطة"
+  },
+  "AircraftAlerts": {
+    "title": "التنبيهات النشطة",
+    "viewAll": "عرض الكل",
+    "more": "{count, plural, one {تنبيه آخر} two {تنبيهان آخران} few {# تنبيهات أخرى} many {# تنبيهًا آخر} other {# تنبيه آخر}}"
   },
   "LoginPage": {
     "metaTitle": "تسجيل الدخول",

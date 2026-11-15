@@ -5,16 +5,21 @@ import type {
   CameraMode,
   AircraftMapApi,
   AircraftUpdate,
+  AirfieldLayout,
   FlightZone,
 } from "@/types/aircraft";
+import type { LiveTrackingKpis } from "@/types/tracking";
 
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { LiveAlert } from "@/lib/aircraft/live-tracking";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
 import { FALCON_AIRPORT } from "@/lib/aircraft/flight-zones";
 import { AircraftControls } from "@/components/aircraft/aircraft-controls";
 import { AircraftInfoPanel } from "@/components/aircraft/aircraft-info-panel";
+import { AircraftKpis } from "@/components/aircraft/aircraft-kpis";
+import { AircraftAlerts } from "@/components/aircraft/aircraft-alerts";
 
 function MapLoading() {
   const t = useTranslations("AircraftDemo");
@@ -43,6 +48,14 @@ type AircraftDemoProps = {
   initialAircraft: AircraftUpdate[];
   /** Airspace to draw (GET /v1/tracking/live). */
   zones: FlightZone[];
+  /** Fleet counters from the snapshot (GET /v1/tracking/live). */
+  kpis: LiveTrackingKpis;
+  /** Home aerodrome (runway, circuit), drawn on the map. */
+  airfield: AirfieldLayout | null;
+  /** Alerts active when the snapshot was taken. */
+  alerts: LiveAlert[];
+  /** No position for this long marks an aircraft's signal as lost. */
+  signalLossTimeoutSec?: number;
 };
 
 // Client side of the home page: the Cesium map and its live state.
@@ -52,6 +65,10 @@ export function AircraftDemo({
   hasMapKey,
   initialAircraft,
   zones,
+  kpis,
+  airfield,
+  alerts,
+  signalLossTimeoutSec,
 }: AircraftDemoProps) {
   const t = useTranslations("AircraftDemo");
   const [mapApi, setMapApi] = useState<AircraftMapApi | null>(null);
@@ -69,6 +86,11 @@ export function AircraftDemo({
     : null;
   const [cameraMode, setCameraMode] = useState<CameraMode>("free");
   const [paused, setPaused] = useState(false);
+  const [showAirfield, setShowAirfield] = useState(true);
+  const center = useMemo(
+    () => airfield?.referencePoint ?? FALCON_AIRPORT,
+    [airfield],
+  );
 
   // Single entry point for tracking data. A WebSocket handler can call this
   // exact function later instead of the mock feed.
@@ -82,6 +104,7 @@ export function AircraftDemo({
         id,
         name: update.name ?? known?.name ?? id,
         callsign: update.callsign ?? known?.callsign,
+        details: update.details ?? known?.details,
         modelUrl: update.modelUrl ?? known?.modelUrl,
         modelScale: update.modelScale ?? known?.modelScale,
         currentPosition: {
@@ -120,9 +143,11 @@ export function AircraftDemo({
     // Fills the shell's content area (see components/layout/app-shell.tsx).
     <div className="dark absolute inset-0 overflow-hidden bg-black text-foreground">
       <AircraftMap
-        center={FALCON_AIRPORT}
+        center={center}
         googleMapsApiKey={googleMapsApiKey}
         zones={zones}
+        airfield={airfield}
+        showAirfield={showAirfield}
         selectedAircraftId={selectedAircraftId}
         cameraMode={cameraMode}
         paused={paused}
@@ -133,19 +158,28 @@ export function AircraftDemo({
       {/* Phones: controls on top, info panel docked at the bottom (above the
           Cesium credits). Wider screens: panel and controls side by side. */}
       <div className="pointer-events-none absolute inset-0 flex flex-col-reverse justify-between gap-3 p-3 pb-9 sm:flex-row sm:items-start sm:p-4">
-        <div className="pointer-events-auto w-full sm:w-auto">
+        <div className="pointer-events-auto flex w-full flex-col gap-2 sm:w-72">
+          <AircraftKpis kpis={kpis} />
           <AircraftInfoPanel
             aircraftList={aircraftList}
             aircraft={selectedAircraft}
             zoneStatus={zoneStatus}
             paused={paused}
+            signalLossTimeoutSec={signalLossTimeoutSec}
+            following={cameraMode === "follow"}
+            onToggleFollow={() =>
+              setCameraMode((mode) => (mode === "follow" ? "free" : "follow"))
+            }
             onSelectAircraft={selectAircraft}
           />
+          <AircraftAlerts alerts={alerts} onSelectAircraft={selectAircraft} />
         </div>
         <div className="pointer-events-auto self-end sm:self-auto">
           <AircraftControls
             cameraMode={cameraMode}
             paused={paused}
+            showAirfield={showAirfield}
+            onShowAirfieldChange={setShowAirfield}
             onCameraModeChange={setCameraMode}
             onResetCamera={() => {
               setCameraMode("free");

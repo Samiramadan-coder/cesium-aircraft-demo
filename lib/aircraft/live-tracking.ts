@@ -1,4 +1,10 @@
-import type { AircraftUpdate, FlightZone } from "@/types/aircraft";
+import type {
+  AircraftUpdate,
+  AirfieldLayout,
+  FlightZone,
+} from "@/types/aircraft";
+import type { Alert } from "@/types/alerts";
+import type { Tracker } from "@/types/trackers";
 import type {
   LatLon,
   LiveTrackingSnapshot,
@@ -59,17 +65,40 @@ export function toActiveFlightZones(zones: TrackedZone[]): FlightZone[] {
     .filter((zone): zone is FlightZone => zone !== null);
 }
 
-/** One map update per aircraft that has a known position. */
+/**
+ * One map update per aircraft that has a known position. `trackers` adds the
+ * tracker model to the details.
+ */
 export function toAircraftUpdates(
   snapshot: LiveTrackingSnapshot,
+  trackers: Pick<Tracker, "aircraftId" | "model">[] = [],
 ): AircraftUpdate[] {
   const aircraftById = new Map(snapshot.aircraft.map((a) => [a.id, a]));
+  const pilotById = new Map(snapshot.pilots.map((p) => [p.id, p]));
+  const trackerByAircraftId = new Map(
+    trackers.map((tracker) => [tracker.aircraftId, tracker]),
+  );
   return snapshot.positions.map((position) => {
     const aircraft = aircraftById.get(position.aircraftId);
+    const pilotId = position.pilotId ?? aircraft?.pilotId;
     return {
       id: position.aircraftId,
       name: aircraft?.name,
       callsign: aircraft?.registration,
+      details: {
+        type: aircraft?.type,
+        photoUrl: aircraft?.photoUrl,
+        pilotName: pilotId ? (pilotById.get(pilotId)?.name ?? null) : null,
+        status: position.status,
+        heightAglFt: position.heightAglFt,
+        verticalSpeedFpm: position.verticalSpeedFpm,
+        distanceToBoundaryNm: position.distanceToBoundaryNm,
+        signalStrength: position.signalStrength,
+        batteryPercent: position.batteryPercent,
+        engineOn: position.engineOn,
+        trackerModel:
+          trackerByAircraftId.get(position.aircraftId)?.model ?? null,
+      },
       lat: position.lat,
       lng: position.lon,
       // TODO: confirm the reference (AMSL vs WGS84 ellipsoid) with the backend.
@@ -79,4 +108,47 @@ export function toAircraftUpdates(
       timestamp: position.time,
     };
   });
+}
+
+/** The aerodrome from the snapshot, in the shape the map draws. */
+export function toAirfieldLayout({
+  aerodrome,
+}: LiveTrackingSnapshot): AirfieldLayout | null {
+  if (!aerodrome?.referencePoint) return null;
+  return {
+    icao: aerodrome.icao,
+    referencePoint: toLatLng(aerodrome.referencePoint),
+    runwayThresholds: (aerodrome.runwayThresholds ?? []).map(
+      ({ designator, threshold }) => ({
+        designator,
+        threshold: toLatLng(threshold),
+      }),
+    ),
+    circuitPattern: (aerodrome.circuitPattern ?? []).map(toLatLng),
+  };
+}
+
+/** A currently active alert, as listed next to the map. */
+export type LiveAlert = Pick<
+  Alert,
+  "id" | "type" | "severity" | "title" | "aircraftId" | "triggeredAt"
+> & {
+  /** Registration of the aircraft, or its id when unknown. */
+  aircraftLabel: string;
+};
+
+/** Active alerts from the snapshot, newest first. */
+export function toLiveAlerts(snapshot: LiveTrackingSnapshot): LiveAlert[] {
+  const aircraftById = new Map(snapshot.aircraft.map((a) => [a.id, a]));
+  return (snapshot.activeAlerts ?? [])
+    .map(({ id, type, severity, title, aircraftId, triggeredAt }) => ({
+      id,
+      type,
+      severity,
+      title,
+      aircraftId,
+      triggeredAt,
+      aircraftLabel: aircraftById.get(aircraftId)?.registration ?? aircraftId,
+    }))
+    .sort((a, b) => b.triggeredAt - a.triggeredAt);
 }

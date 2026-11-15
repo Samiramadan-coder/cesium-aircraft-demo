@@ -1,4 +1,4 @@
-import type { AlertChannel } from "./alerts";
+import type { Alert, AlertChannel } from "./alerts";
 
 export type LatLon = {
   lat: number;
@@ -87,8 +87,16 @@ export type LiveTrackingSnapshot = {
   aircraft: TrackedAircraft[];
   pilots: TrackedPilot[];
   positions: TrackedPosition[];
-  activeAlerts: unknown[];
+  activeAlerts: Alert[];
   zones: TrackedZone[];
+  settings: TrackingSettings;
+  aerodrome: Aerodrome;
+  kpis: LiveTrackingKpis;
+};
+
+export type LiveTrackingKpis = {
+  aircraftAirborne: number;
+  activeAlerts: number;
 };
 
 /**
