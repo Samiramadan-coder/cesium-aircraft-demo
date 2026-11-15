@@ -119,7 +119,7 @@
   },
   "Header": {
     "notifications": "Notifications",
-    "notificationsUnread": "Notifications (unread)",
+    "notificationsUnread": "Notifications ({count} unread)",
     "weather": "{station} Weather",
     "accountMenu": "Account menu for {name}",
     "profile": "Profile",
@@ -129,7 +129,10 @@
       "operations": "Operations",
       "engineer": "Engineer",
       "viewer": "Viewer"
-    }
+    },
+    "markAllRead": "Mark all as read",
+    "noNotifications": "No notifications yet",
+    "unread": "Unread"
   },
   "Profile": {
     "account": "Account details",

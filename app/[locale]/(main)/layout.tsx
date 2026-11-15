@@ -1,10 +1,11 @@
-import { unstable_rethrow } from "next/navigation";
 import { api } from "@/lib/api/client";
-import { CurrentUser, StaffMember } from "@/types/user";
 import { AirportWeather } from "@/types/weather";
+import { unstable_rethrow } from "next/navigation";
 import { Notifications } from "@/types/notifications";
+import { CurrentUser, StaffMember } from "@/types/user";
 import { AppShell } from "@/components/layout/app-shell";
 import { EngineersProvider } from "@/components/common/engineers-provider";
+import { NotificationsProvider } from "@/components/notifications/notifications-provider";
 
 /**
  * Engineer names for the maintenance and tracker forms. A failure (e.g. a
@@ -37,12 +38,10 @@ export default async function Layout({
   ]);
 
   return (
-    <AppShell
-      user={user}
-      weather={weather}
-      hasUnreadNotifications={notifications.unreadCount > 0}
-    >
-      <EngineersProvider engineers={engineers}>{children}</EngineersProvider>
-    </AppShell>
+    <NotificationsProvider initial={notifications}>
+      <AppShell user={user} weather={weather}>
+        <EngineersProvider engineers={engineers}>{children}</EngineersProvider>
+      </AppShell>
+    </NotificationsProvider>
   );
 }

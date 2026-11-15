@@ -12,6 +12,8 @@ export default async function AircraftDemoPage() {
     Boolean(googleMapsApiKey) ||
     Boolean(process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN);
 
+  console.log(snapshot);
+
   return (
     <AircraftDemo
       googleMapsApiKey={googleMapsApiKey}

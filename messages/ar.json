@@ -119,7 +119,7 @@
   },
   "Header": {
     "notifications": "الإشعارات",
-    "notificationsUnread": "الإشعارات (غير مقروءة)",
+    "notificationsUnread": "الإشعارات ({count} غير مقروءة)",
     "weather": "طقس {station}",
     "accountMenu": "قائمة حساب {name}",
     "profile": "الملف الشخصي",
@@ -129,7 +129,10 @@
       "operations": "العمليات",
       "engineer": "مهندس",
       "viewer": "مشاهد"
-    }
+    },
+    "markAllRead": "تحديد الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات بعد",
+    "unread": "غير مقروء"
   },
   "Profile": {
     "account": "بيانات الحساب",

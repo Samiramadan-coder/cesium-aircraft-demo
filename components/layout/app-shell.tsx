@@ -9,12 +9,10 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 export function AppShell({
   user,
   weather,
-  hasUnreadNotifications,
   children,
 }: {
   user: CurrentUser;
   weather: AirportWeather;
-  hasUnreadNotifications: boolean;
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,7 +25,6 @@ export function AppShell({
         <AppHeader
           user={user}
           weather={weather}
-          hasUnreadNotifications={hasUnreadNotifications}
           sidebarOpen={sidebarOpen}
           onOpenSidebar={() => setSidebarOpen(true)}
         />
