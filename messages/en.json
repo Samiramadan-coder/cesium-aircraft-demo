@@ -131,6 +131,17 @@
       "viewer": "Viewer"
     }
   },
+  "Profile": {
+    "account": "Account details",
+    "name": "Full name",
+    "email": "Email",
+    "role": "Role",
+    "language": "Language",
+    "permissions": "Permissions",
+    "permissionsDescription": "What your role lets you manage. Ask an administrator to change them.",
+    "granted": "Allowed",
+    "notGranted": "Not allowed"
+  },
   "Pages": {
     "comingSoon": "Coming soon",
     "flights": {

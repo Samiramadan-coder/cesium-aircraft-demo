@@ -28,7 +28,7 @@ const INTERPOLATION_BUFFER_S = 1.5;
 
 // Overview camera (initial view and Reset): distance from the centre of the
 // flight area and downward tilt.
-const OVERVIEW_RANGE_M = 40_000;
+const OVERVIEW_RANGE_M = 20_000;
 const OVERVIEW_PITCH_DEG = -35;
 
 type ModelSettings = {

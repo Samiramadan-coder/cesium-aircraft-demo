@@ -4,12 +4,18 @@ import { api } from "@/lib/api/client";
 import { CurrentUser } from "@/types/user";
 import { redirect } from "next/navigation";
 import { resolveLocale } from "@/lib/api/locale";
-import { setAuthToken } from "@/lib/api/auth-token";
+import { clearAuthToken, setAuthToken } from "@/lib/api/auth-token";
 import type { LoginValues } from "@/lib/validations/auth";
 import { toActionResult, type ActionFailure } from "@/lib/api/errors";
-import { HOME_PATH, localizePath, safeCallbackUrl } from "@/lib/auth-routes";
+import {
+  HOME_PATH,
+  SIGN_IN_PATH,
+  localizePath,
+  safeCallbackUrl,
+} from "@/lib/auth-routes";
 
 const LOGIN_ENDPOINT = "/v1/auth/login";
+const LOGOUT_ENDPOINT = "/v1/auth/logout";
 
 // TODO: confirm the response shape with the backend and drop the
 // alternatives that don't apply
@@ -48,4 +54,20 @@ export async function login(
 
   const locale = await resolveLocale();
   redirect(safeCallbackUrl(callbackUrl, localizePath(HOME_PATH, locale)));
+}
+
+// Revokes the token on the backend, then clears the cookie and goes to the
+// login page. A failed (or already expired) logout still signs out locally,
+// so the user is never left stuck signed in
+export async function logout(): Promise<void> {
+  try {
+    await api.post(LOGOUT_ENDPOINT, undefined, { skipAuthRedirect: true });
+  } catch (error) {
+    console.error("[auth] Logout request failed", error);
+  }
+
+  await clearAuthToken();
+
+  const locale = await resolveLocale();
+  redirect(localizePath(SIGN_IN_PATH, locale));
 }

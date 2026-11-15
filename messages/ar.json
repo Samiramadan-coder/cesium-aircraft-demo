@@ -131,6 +131,17 @@
       "viewer": "مشاهد"
     }
   },
+  "Profile": {
+    "account": "بيانات الحساب",
+    "name": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "language": "اللغة",
+    "permissions": "الصلاحيات",
+    "permissionsDescription": "ما يسمح لك دورك بإدارته. تواصل مع المسؤول لتغييرها.",
+    "granted": "مسموح",
+    "notGranted": "غير مسموح"
+  },
   "Pages": {
     "comingSoon": "قريبًا",
     "flights": {

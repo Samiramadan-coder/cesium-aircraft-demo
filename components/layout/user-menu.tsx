@@ -1,10 +1,12 @@
 "use client";
 
 import { Menu } from "@base-ui/react/menu";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { useTransition } from "react";
+import { ChevronDown, LoaderCircle, LogOut, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { PROFILE_PATH } from "@/constants/navigation";
+import { logout } from "@/lib/actions/auth";
 import { initials } from "@/lib/utils";
 import type { CurrentUser } from "@/types/user";
 
@@ -15,6 +17,12 @@ const itemClass =
 export function UserMenu({ user }: { user: CurrentUser }) {
   const t = useTranslations("Header");
   const role = t(`roles.${user.role}`);
+  const [signingOut, startSignOut] = useTransition();
+
+  // Stays open with a spinner until the action redirects to the login page
+  function signOut() {
+    startSignOut(() => logout());
+  }
 
   return (
     <Menu.Root>
@@ -51,10 +59,17 @@ export function UserMenu({ user }: { user: CurrentUser }) {
               <User aria-hidden />
               {t("profile")}
             </Menu.LinkItem>
-            {/* TODO: sign out (backend logout endpoint + clear the auth
-                cookie, then go to the login page). Only closes the menu. */}
-            <Menu.Item className={itemClass}>
-              <LogOut aria-hidden />
+            <Menu.Item
+              className={itemClass}
+              disabled={signingOut}
+              closeOnClick={false}
+              onClick={signOut}
+            >
+              {signingOut ? (
+                <LoaderCircle className="animate-spin" aria-hidden />
+              ) : (
+                <LogOut aria-hidden />
+              )}
               {t("signOut")}
             </Menu.Item>
           </Menu.Popup>
