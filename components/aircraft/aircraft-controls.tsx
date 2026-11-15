@@ -1,16 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  Languages,
-  LocateFixed,
-  Move3d,
-  Pause,
-  Play,
-  RotateCcw,
-} from "lucide-react";
+import { LocateFixed, Move3d, Pause, Play, RotateCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useLocaleToggle } from "@/components/common/locale-switcher";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -43,39 +35,18 @@ function ControlButton({
             size="sm"
             variant={active ? "default" : "ghost"}
             aria-pressed={active}
+            aria-label={label}
+            // Square, finger-sized icon buttons on phones.
+            className="max-sm:size-9 max-sm:px-0"
             onClick={onClick}
           />
         }
       >
         {children}
-        {label}
+        {/* Icon-only on phones so the bar fits on one line. */}
+        <span className="max-sm:hidden">{label}</span>
       </TooltipTrigger>
       <TooltipContent side="bottom">{hint}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-/** Switches to the next locale, keeping the current page. */
-function LocaleButton() {
-  const t = useTranslations("LocaleSwitcher");
-  const { next, switchLocale } = useLocaleToggle();
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            size="sm"
-            variant="ghost"
-            lang={next}
-            onClick={switchLocale}
-          />
-        }
-      >
-        <Languages data-icon="inline-start" />
-        {t(`locales.${next}`)}
-      </TooltipTrigger>
-      <TooltipContent side="bottom">{t("hint")}</TooltipContent>
     </Tooltip>
   );
 }
@@ -135,8 +106,6 @@ export function AircraftControls({
             <Pause data-icon="inline-start" />
           )}
         </ControlButton>
-        <Separator orientation="vertical" className="mx-1 h-5 self-center" />
-        <LocaleButton />
       </Card>
     </TooltipProvider>
   );

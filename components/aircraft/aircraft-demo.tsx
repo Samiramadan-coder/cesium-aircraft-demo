@@ -130,8 +130,10 @@ export function AircraftDemo({
         onReady={setMapApi}
       />
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-start gap-3 p-4 sm:flex-row sm:justify-between">
-        <div className="pointer-events-auto">
+      {/* Phones: controls on top, info panel docked at the bottom (above the
+          Cesium credits). Wider screens: panel and controls side by side. */}
+      <div className="pointer-events-none absolute inset-0 flex flex-col-reverse justify-between gap-3 p-3 pb-9 sm:flex-row sm:items-start sm:p-4">
+        <div className="pointer-events-auto w-full sm:w-auto">
           <AircraftInfoPanel
             aircraftList={aircraftList}
             aircraft={selectedAircraft}
@@ -140,7 +142,7 @@ export function AircraftDemo({
             onSelectAircraft={selectAircraft}
           />
         </div>
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto self-end sm:self-auto">
           <AircraftControls
             cameraMode={cameraMode}
             paused={paused}
@@ -155,7 +157,7 @@ export function AircraftDemo({
       </div>
 
       {!hasMapKey && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-10 flex justify-center px-4">
+        <div className="pointer-events-none absolute inset-x-0 top-16 flex justify-center px-4 sm:top-auto sm:bottom-10">
           <p className="rounded-md bg-amber-500/15 px-3 py-1.5 text-xs text-amber-200 ring-1 ring-amber-500/30 backdrop-blur">
             {t("mapKeyMissing", {
               googleVariable: "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY",

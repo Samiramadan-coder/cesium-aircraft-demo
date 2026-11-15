@@ -29,6 +29,8 @@
   },
   "AircraftInfoPanel": {
     "noAircraft": "لا توجد طائرة",
+    "showDetails": "عرض التفاصيل",
+    "hideDetails": "إخفاء التفاصيل",
     "description": "{name} · {model}",
     "defaultModel": "النموذج الافتراضي",
     "selectAircraft": "اختر طائرة",

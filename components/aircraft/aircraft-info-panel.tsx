@@ -1,4 +1,5 @@
-import { Plane } from "lucide-react";
+import { useState } from "react";
+import { ChevronUp, Plane } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,10 @@ export function AircraftInfoPanel({
 }: AircraftInfoPanelProps) {
   const t = useTranslations("AircraftInfoPanel");
   const format = useFormatter();
+  // Phones only: the secondary fields are folded away so the panel doesn't
+  // cover the map. Always shown from `sm` up.
+  const [expanded, setExpanded] = useState(false);
+  const secondary = expanded ? undefined : "max-sm:hidden";
 
   const position = aircraft?.currentPosition ?? null;
   const name = aircraft ? (aircraft.callsign ?? aircraft.name) : t("noAircraft");
@@ -90,28 +95,45 @@ export function AircraftInfoPanel({
   return (
     <Card
       size="sm"
-      className="w-72 bg-card/80 shadow-xl backdrop-blur-md supports-backdrop-filter:bg-card/70"
+      className="w-full bg-card/80 shadow-xl backdrop-blur-md supports-backdrop-filter:bg-card/70 sm:w-72"
     >
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="flex items-center gap-2 font-mono tracking-wide">
-            <Plane className="size-4 text-sky-400" />
-            {name}
+          <CardTitle className="flex min-w-0 items-center gap-2 font-mono tracking-wide">
+            <Plane className="size-4 shrink-0 text-sky-400" />
+            <span className="truncate">{name}</span>
           </CardTitle>
-          <Badge variant="outline" className="gap-1.5">
-            <span
-              className={
-                status === "live"
-                  ? "size-1.5 rounded-full bg-emerald-400"
-                  : "size-1.5 rounded-full bg-amber-400"
-              }
-            />
-            {t(`status.${status}`)}
-          </Badge>
+          <div className="flex shrink-0 items-center gap-1">
+            <Badge variant="outline" className="gap-1.5">
+              <span
+                className={
+                  status === "live"
+                    ? "size-1.5 rounded-full bg-emerald-400"
+                    : "size-1.5 rounded-full bg-amber-400"
+                }
+              />
+              {t(`status.${status}`)}
+            </Badge>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="sm:hidden"
+              aria-expanded={expanded}
+              aria-label={expanded ? t("hideDetails") : t("showDetails")}
+              onClick={() => setExpanded((value) => !value)}
+            >
+              <ChevronUp
+                className={cn("transition-transform", expanded && "rotate-180")}
+              />
+            </Button>
+          </div>
         </div>
-        <CardDescription className="text-xs">{description}</CardDescription>
+        <CardDescription className={cn("text-xs", secondary)}>
+          {description}
+        </CardDescription>
         {aircraftList.length > 1 && (
-          <div className="flex max-h-24 flex-wrap gap-1 overflow-y-auto pt-1">
+          // One scrollable row on phones, wrapped grid of chips from `sm` up.
+          <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pt-1 sm:mx-0 sm:max-h-24 sm:flex-wrap sm:overflow-x-visible sm:overflow-y-auto sm:px-0 *:shrink-0">
             {aircraftList.map(({ id, name, callsign }) => (
               <Button
                 key={id}
@@ -129,7 +151,7 @@ export function AircraftInfoPanel({
       </CardHeader>
       <Separator />
       <CardContent>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <dl className="grid grid-cols-3 gap-x-4 gap-y-3 sm:grid-cols-2">
           <Field
             label={t("fields.altitude")}
             value={
@@ -161,6 +183,7 @@ export function AircraftInfoPanel({
           />
           <Field
             label={t("fields.lastUpdate")}
+            className={secondary}
             value={
               position
                 ? t("units.utcTime", {
@@ -177,13 +200,15 @@ export function AircraftInfoPanel({
           />
           <Field
             label={t("fields.latitude")}
+            className={secondary}
             value={position ? coordinate(position.lat) : t("noValue")}
           />
           <Field
             label={t("fields.longitude")}
+            className={secondary}
             value={position ? coordinate(position.lng) : t("noValue")}
           />
-          <Field label={t("fields.zone")} className="col-span-2" value={zone} />
+          <Field label={t("fields.zone")} className="col-span-full" value={zone} />
         </dl>
       </CardContent>
     </Card>

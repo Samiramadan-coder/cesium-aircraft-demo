@@ -29,6 +29,8 @@
   },
   "AircraftInfoPanel": {
     "noAircraft": "No aircraft",
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
     "description": "{name} · {model}",
     "defaultModel": "default model",
     "selectAircraft": "Select an aircraft",
