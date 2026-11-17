@@ -40,10 +40,10 @@ type ModelSettings = {
   /** Keeps the aircraft visible from far away; true scale up close. */
   minimumPixelSize: number;
   maximumScale: number;
-  // Degrees added to the reported attitude, for models whose native
-  // orientation differs. Cesium turns glTF +Z into the direction of flight,
-  // so a model whose nose points along glTF +Z needs 0. One whose nose points
-  // along glTF +X needs 90, -X needs -90, and -Z needs 180.
+  // Degrees added to the reported attitude. Model files are normalized to
+  // nose along glTF +Z (which Cesium flies forward) by
+  // scripts/normalize-model.mjs, so these stay 0; prefer normalizing a new
+  // model over setting them.
   headingOffset: number;
   pitchOffset: number;
   rollOffset: number;
@@ -53,15 +53,14 @@ const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   scale: 1,
   minimumPixelSize: 72,
   maximumScale: 4000,
-  // All bundled models (light propeller aircraft, in meters, ~9.5 m wingspan)
-  // have their nose along glTF +X and wings along glTF Z.
-  headingOffset: 90,
+  headingOffset: 0,
   pitchOffset: 0,
   rollOffset: 0,
 };
 
-// Per-model overrides of the defaults above, keyed by model URL. Add an entry
-// when a model needs a different size or orientation. Sources and licenses
+// Per-model overrides of the defaults above, keyed by model URL. Normally
+// empty: fix a model's size or orientation in the file with
+// `npm run normalize-model` instead. Sources and licenses
 // of the model files are listed in public/models/CREDITS.md.
 const MODEL_SETTINGS: Record<string, Partial<ModelSettings>> = {};
 

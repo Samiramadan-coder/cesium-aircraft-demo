@@ -3,8 +3,9 @@
 The models below are used unmodified under the
 [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/)
 license (CC-BY 3.0), which requires this attribution to be kept wherever the
-models are used or redistributed. Scale and orientation corrections are applied
-in code (`components/aircraft/aircraft-map.tsx`), not in the files.
+models are used or redistributed. Each file's orientation (and scale, where
+needed) has been normalized with `scripts/normalize-model.mjs`, which adds a
+root transform and leaves the geometry unchanged.
 
 | File             | Model          | Author         | Source                           | License   |
 | ---------------- | -------------- | -------------- | -------------------------------- | --------- |
