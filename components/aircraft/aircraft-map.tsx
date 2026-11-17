@@ -41,9 +41,9 @@ type ModelSettings = {
   minimumPixelSize: number;
   maximumScale: number;
   // Degrees added to the reported attitude, for models whose native
-  // orientation differs. A heading offset of 0 suits models whose nose points
-  // along Cesium's +X axis (glTF +Z), like the Cesium Air sample. Use
-  // 90 / -90 / 180 if a model appears to fly sideways or backwards.
+  // orientation differs. Cesium turns glTF +Z into the direction of flight,
+  // so a model whose nose points along glTF +Z needs 0. One whose nose points
+  // along glTF +X needs 90, -X needs -90, and -Z needs 180.
   headingOffset: number;
   pitchOffset: number;
   rollOffset: number;
@@ -53,7 +53,9 @@ const DEFAULT_MODEL_SETTINGS: ModelSettings = {
   scale: 1,
   minimumPixelSize: 72,
   maximumScale: 4000,
-  headingOffset: 0,
+  // All bundled models (light propeller aircraft, in meters, ~9.5 m wingspan)
+  // have their nose along glTF +X and wings along glTF Z.
+  headingOffset: 90,
   pitchOffset: 0,
   rollOffset: 0,
 };
@@ -61,15 +63,7 @@ const DEFAULT_MODEL_SETTINGS: ModelSettings = {
 // Per-model overrides of the defaults above, keyed by model URL. Add an entry
 // when a model needs a different size or orientation. Sources and licenses
 // of the model files are listed in public/models/CREDITS.md.
-const MODEL_SETTINGS: Record<string, Partial<ModelSettings>> = {
-  // Airliner, modelled in centimeter-like units: scaled to a ~31 m wingspan.
-  "/models/aircraft-1.glb": { scale: 0.02 },
-  // Light propeller aircraft, already in meters, but its nose points along
-  // glTF -Z, so it is turned around.
-  "/models/aircraft-2.glb": { headingOffset: 180 },
-  // Jet trainer: scaled to a ~10 m wingspan.
-  "/models/aircraft-3.glb": { scale: 0.075 },
-};
+const MODEL_SETTINGS: Record<string, Partial<ModelSettings>> = {};
 
 // Whether each model URL can actually be loaded, checked once per URL.
 const modelChecks = new Map<string, Promise<boolean>>();

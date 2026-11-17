@@ -39,6 +39,20 @@ const COLORS = {
   landing: "#f59e0b",
 };
 
+/** `orientation`, turned so a model whose nose is on local +Y faces +X. */
+function noseForward(Cesium: Cesium, orientation: CesiumModule.Property) {
+  const turn = Cesium.Quaternion.fromAxisAngle(
+    Cesium.Cartesian3.UNIT_Z,
+    -Cesium.Math.PI_OVER_TWO,
+  );
+  const scratch = new Cesium.Quaternion();
+  return new Cesium.CallbackProperty((time, result) => {
+    const q = orientation.getValue(time!, scratch);
+    if (!q) return undefined;
+    return Cesium.Quaternion.multiply(q, turn, result ?? new Cesium.Quaternion());
+  }, false);
+}
+
 function createReplayScene(
   Cesium: Cesium,
   container: HTMLDivElement,
@@ -130,8 +144,13 @@ function createReplayScene(
       new Cesium.TimeInterval({ start, stop }),
     ]),
     position,
-    // Nose along the direction of travel (the model's nose is +X).
-    orientation: new Cesium.VelocityOrientationProperty(position),
+    // Nose along the direction of travel. VelocityOrientationProperty points
+    // the model's local +X along the velocity, but the model's nose (glTF +X)
+    // ends up on local +Y, so it is first turned 90° clockwise.
+    orientation: noseForward(
+      Cesium,
+      new Cesium.VelocityOrientationProperty(position),
+    ),
     model: { uri: MODEL_URL, minimumPixelSize: 56, maximumScale: 4000 },
     path: {
       leadTime: 0,
