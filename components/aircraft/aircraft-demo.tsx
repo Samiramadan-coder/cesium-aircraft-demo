@@ -15,7 +15,7 @@ import type { LiveTrackingKpis } from "@/types/tracking";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { LiveAlert } from "@/lib/aircraft/live-tracking";
+import type { LiveAlert, LivePositions } from "@/lib/aircraft/live-tracking";
 import { eventColor, findTrailPoint, isMapEvent } from "@/lib/aircraft/events";
 import { useEventLabel } from "@/components/aircraft/aircraft-events";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
@@ -64,7 +64,12 @@ type AircraftDemoProps = {
   alerts: LiveAlert[];
   /** No position for this long marks an aircraft's signal as lost. */
   signalLossTimeoutSec?: number;
+  /** Backend clock when the snapshot was taken, Unix ms. */
+  serverTime: number;
 };
+
+/** How often the latest positions are fetched. */
+const POLL_INTERVAL_MS = 3_000;
 
 // Client side of the home page: the Cesium map and its live state.
 // Data fetched by the server page is passed in as props.
@@ -75,13 +80,16 @@ export function AircraftDemo({
   trails,
   events,
   zones,
-  kpis,
   airfield,
-  alerts,
+  alerts: initialAlerts,
+  kpis: initialKpis,
   signalLossTimeoutSec,
+  serverTime,
 }: AircraftDemoProps) {
   const t = useTranslations("AircraftDemo");
   const [mapApi, setMapApi] = useState<AircraftMapApi | null>(null);
+  const [kpis, setKpis] = useState(initialKpis);
+  const [alerts, setAlerts] = useState(initialAlerts);
   // Latest state of every aircraft, keyed by id. Kept in a ref so the
   // per-second updates of aircraft nobody is looking at don't re-render.
   const aircraftById = useRef(new Map<string, Aircraft>());
@@ -106,15 +114,23 @@ export function AircraftDemo({
   // exact function later instead of the mock feed.
   const updateAircraft = useCallback(
     (update: AircraftUpdate) => {
-      mapApi?.updateAircraft(update);
-
       const { id, lat, lng, altitude, speed, heading } = update;
       const known = aircraftById.current.get(id);
+      // Polling returns the same position until the tracker reports again.
+      if (known && update.timestamp === known.currentPosition.timestamp) return;
+      mapApi?.updateAircraft(update);
       const aircraft: Aircraft = {
         id,
         name: update.name ?? known?.name ?? id,
         callsign: update.callsign ?? known?.callsign,
-        details: update.details ?? known?.details,
+        // Polled updates don't carry the tracker model; keep the known one.
+        details: update.details
+          ? {
+              ...update.details,
+              trackerModel:
+                update.details.trackerModel ?? known?.details?.trackerModel,
+            }
+          : known?.details,
         modelUrl: update.modelUrl ?? known?.modelUrl,
         modelScale: update.modelScale ?? known?.modelScale,
         currentPosition: {
@@ -143,14 +159,58 @@ export function AircraftDemo({
   }, []);
 
   // Put the snapshot from the server on the map once it is ready.
-  // TODO: live updates (WebSocket or polling) once agreed with the backend.
   useEffect(() => {
     if (!mapApi) return;
+    mapApi.setClockOffset(serverTime - Date.now());
     for (const [id, points] of Object.entries(trails)) {
       mapApi.setTrail(id, points);
     }
     for (const update of initialAircraft) updateAircraft(update);
-  }, [mapApi, trails, initialAircraft, updateAircraft]);
+  }, [mapApi, trails, initialAircraft, updateAircraft, serverTime]);
+
+  // Then keep it live. TODO: replace with the backend's WebSocket feed once
+  // it exists; updateAircraft stays the single entry point.
+  useEffect(() => {
+    if (!mapApi) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      // Hidden tabs don't need positions; resume on the next tick.
+      if (document.visibilityState === "visible") {
+        try {
+          const sentAt = Date.now();
+          const response = await fetch("/api/tracking/live", {
+            cache: "no-store",
+            signal: controller.signal,
+          });
+          if (response.ok) {
+            const live: LivePositions = await response.json();
+            // The snapshot was taken somewhere during the request.
+            mapApi.setClockOffset(live.serverTime - (sentAt + Date.now()) / 2);
+            for (const update of live.aircraft) updateAircraft(update);
+            setKpis(live.kpis);
+            setAlerts(live.alerts);
+          } else if (response.status === 401) {
+            // Session ended: reloading sends the user to sign in.
+            window.location.reload();
+            return;
+          }
+        } catch (error) {
+          if (controller.signal.aborted) return;
+          console.error("[live] Polling failed", error);
+        }
+      }
+      if (!controller.signal.aborted)
+        timer = setTimeout(poll, POLL_INTERVAL_MS);
+    };
+    timer = setTimeout(poll, POLL_INTERVAL_MS);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [mapApi, updateAircraft]);
 
   // Events of the selected aircraft, and where each one happened.
   const selectedEvents = useMemo(

@@ -71,6 +71,7 @@ export default async function AircraftDemoPage() {
       airfield={toAirfieldLayout(snapshot)}
       alerts={toLiveAlerts(snapshot)}
       signalLossTimeoutSec={snapshot.settings?.signalLossTimeoutSec}
+      serverTime={snapshot.serverTime}
     />
   );
 }

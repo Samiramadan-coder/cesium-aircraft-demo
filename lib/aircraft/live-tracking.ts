@@ -106,13 +106,33 @@ export function toAircraftUpdates(
       },
       lat: position.lat,
       lng: position.lon,
-      // TODO: confirm the reference (AMSL vs WGS84 ellipsoid) with the backend.
+      // Above mean sea level (GPS), e.g. ~890 ft on the 907 ft aerodrome.
       altitude: position.altitudeFt,
       speed: position.groundSpeedKt,
       heading: position.headingDeg,
+      verticalSpeed: position.verticalSpeedFpm,
+      onGround: position.status === "onGround",
       timestamp: position.time,
     };
   });
+}
+
+/** What the live map polls (app/api/tracking/live). */
+export type LivePositions = {
+  /** Backend clock when the snapshot was taken, Unix ms. */
+  serverTime: number;
+  aircraft: AircraftUpdate[];
+  kpis: LiveTrackingSnapshot["kpis"];
+  alerts: LiveAlert[];
+};
+
+export function toLivePositions(snapshot: LiveTrackingSnapshot): LivePositions {
+  return {
+    serverTime: snapshot.serverTime,
+    aircraft: toAircraftUpdates(snapshot),
+    kpis: snapshot.kpis,
+    alerts: toLiveAlerts(snapshot),
+  };
 }
 
 /** The aerodrome from the snapshot, in the shape the map draws. */
@@ -123,6 +143,7 @@ export function toAirfieldLayout({
   return {
     icao: aerodrome.icao,
     referencePoint: toLatLng(aerodrome.referencePoint),
+    elevationFt: aerodrome.elevationFt,
     runwayThresholds: (aerodrome.runwayThresholds ?? []).map(
       ({ designator, threshold }) => ({
         designator,

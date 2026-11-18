@@ -79,6 +79,8 @@ export type MapMarker = {
 export type AirfieldLayout = {
   icao: string;
   referencePoint: { lat: number; lng: number };
+  /** Aerodrome elevation, feet above mean sea level. */
+  elevationFt: number;
   /** Runway ends, e.g. "15" and "33". */
   runwayThresholds: Array<{
     designator: string;
@@ -117,7 +119,13 @@ export type AircraftUpdate = Omit<AircraftPosition, "timestamp"> & {
   modelUrl?: string;
   modelScale?: number;
   timestamp?: number;
+  /** Feet per minute, positive climbing; used to tilt the nose. */
+  verticalSpeed?: number;
+  /** On the ground: drawn on the runway surface, level. */
+  onGround?: boolean;
+  /** Degrees; derived from the climb rate when omitted. */
   pitch?: number;
+  /** Degrees, right wing down positive; derived from the turn rate when omitted. */
   roll?: number;
 };
 
@@ -162,6 +170,8 @@ export type AircraftZoneStatus = {
 export type CameraMode = "follow" | "free";
 
 export type AircraftMapApi = {
+  /** Backend clock minus this computer's, ms, so "now" matches the data. */
+  setClockOffset: (offsetMs: number) => void;
   updateAircraft: (update: AircraftUpdate) => void;
   removeAircraft: (id: string) => void;
   /** Replaces the drawn route history of one aircraft. */

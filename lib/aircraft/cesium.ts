@@ -53,9 +53,14 @@ export function addBaseScene(
         // The viewer has no geocoder, so no non-Google geocoder is used.
         onlyUsingWithGoogleGeocoder: true,
       },
-      // Sharper ground and buildings (default 16), at the cost of more
-      // tile downloads and memory.
-      { maximumScreenSpaceError: 8 },
+      {
+        // Sharper ground and buildings (default 16), at the cost of more
+        // tile downloads and memory.
+        maximumScreenSpaceError: 8,
+        // The photos already contain the buildings' shadows; only receive
+        // the aircraft's (when the map turns shadows on).
+        shadows: Cesium.ShadowMode.RECEIVE_ONLY,
+      },
     )
       .then((tileset) => {
         if (viewer.isDestroyed()) tileset.destroy();
