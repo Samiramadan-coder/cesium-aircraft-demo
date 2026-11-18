@@ -1034,7 +1034,12 @@ function createAircraftScene(
   const chase = {
     range: CHASE_RANGE_M,
     pitch: Cesium.Math.toRadians(CHASE_PITCH_DEG),
+    /** The aircraft's heading, eased so the camera swings smoothly. */
     heading: undefined as number | undefined,
+    /** How far the user has turned the camera round the aircraft. */
+    orbit: 0,
+    /** Camera heading set last frame, to see how much the user turned it. */
+    applied: 0,
     /** True once the camera is locked onto the aircraft. */
     locked: false,
   };
@@ -1092,6 +1097,12 @@ function createAircraftScene(
         Cesium.Math.toRadians(-85),
         Cesium.Math.toRadians(-3),
       );
+      // Dragging left / right turns the camera round the aircraft; keep
+      // that angle while following.
+      chase.orbit = Cesium.Math.negativePiToPi(
+        chase.orbit +
+          Cesium.Math.negativePiToPi(camera.heading - chase.applied),
+      );
     }
 
     chase.heading ??= Cesium.Math.toRadians(track.lastHeading);
@@ -1102,9 +1113,10 @@ function createAircraftScene(
         Cesium.Math.negativePiToPi(heading - chase.heading) * ease;
     }
 
+    chase.applied = chase.heading + chase.orbit;
     camera.lookAt(
       target,
-      new Cesium.HeadingPitchRange(chase.heading, chase.pitch, chase.range),
+      new Cesium.HeadingPitchRange(chase.applied, chase.pitch, chase.range),
     );
     chase.locked = true;
   });
@@ -1114,11 +1126,13 @@ function createAircraftScene(
     if (chase.locked) camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
     chase.locked = false;
     chase.heading = undefined;
+    chase.orbit = 0;
   }
 
   function followSelectedAircraft() {
     // The preUpdate listener takes over; start behind the new aircraft.
     chase.heading = undefined;
+    chase.orbit = 0;
   }
 
   function updateAircraft(update: AircraftUpdate) {
