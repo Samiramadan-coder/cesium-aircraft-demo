@@ -6,9 +6,10 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   experimental: {
     serverActions: {
-      // Aircraft photos are sent through a server action (default limit 1 MB);
-      // keep in step with MAX_PHOTO_BYTES in lib/validations/aircraft.ts.
-      bodySizeLimit: "6mb",
+      // Aircraft photos and 3D models are sent through server actions
+      // (default limit 1 MB); keep in step with MAX_PHOTO_BYTES and
+      // MAX_MODEL_BYTES in lib/validations/aircraft.ts.
+      bodySizeLimit: "21mb",
     },
   },
 };

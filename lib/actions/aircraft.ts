@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api/client";
+import { isModelFile } from "@/lib/aircraft/model-url";
 import { runAction, type ActionResult } from "@/lib/api/errors";
 import type { AircraftPayload, TrackedAircraft } from "@/types/tracking";
 
@@ -37,7 +38,8 @@ export async function updateAircraft(
 }
 
 /**
- * `POST /v1/aircraft/{id}/photo` with the image in a `photo` field. Separate
+ * `POST /v1/aircraft/{id}/photo` with an image, or a 3D model (.glb) for the
+ * live map, in a `photo` field. Separate
  * from the details, so the form calls it after the aircraft is saved.
  */
 export async function uploadAircraftPhoto(
@@ -50,7 +52,13 @@ export async function uploadAircraftPhoto(
   }
 
   const body = new FormData();
-  body.append("photo", photo);
+  // Browsers often send a .glb without a type; give it the glTF one.
+  body.append(
+    "photo",
+    photo instanceof File && isModelFile(photo) && !photo.type
+      ? new File([photo], photo.name, { type: "model/gltf-binary" })
+      : photo,
+  );
   return mutate(() =>
     api.post<unknown>(`${aircraftPath(aircraftId)}/photo`, body),
   );

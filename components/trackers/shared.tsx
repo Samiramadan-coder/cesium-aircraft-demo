@@ -9,6 +9,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { photoImageUrl } from "@/lib/aircraft/model-url";
 import type { TrackerStatus } from "@/types/trackers";
 import type { TrackedAircraft } from "@/types/tracking";
 
@@ -133,13 +134,13 @@ export function AircraftCell({
   if (!aircraft) {
     return <span className="text-foreground-2">{t("noAircraft")}</span>;
   }
+  // Null when the "photo" is a 3D model.
+  const photoUrl = photoImageUrl(aircraft.photoUrl);
 
   return (
     <div className="flex items-center gap-2.5">
       <Avatar>
-        {aircraft.photoUrl && (
-          <AvatarImage src={aircraft.photoUrl} alt={aircraft.name} />
-        )}
+        {photoUrl && <AvatarImage src={photoUrl} alt={aircraft.name} />}
         <AvatarFallback
           className="text-foreground"
           style={{ backgroundColor: aircraft.color ?? "var(--card-2)" }}

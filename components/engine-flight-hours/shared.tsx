@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { photoImageUrl } from "@/lib/aircraft/model-url";
 import {
   Table,
   TableBody,
@@ -203,12 +204,14 @@ export function AircraftAvatar({
   profile: TrackedAircraft | null;
   className?: string;
 }) {
+  // Null when the "photo" is a 3D model.
+  const photoUrl = photoImageUrl(profile?.photoUrl);
   return (
     <Avatar size="lg" className={cn("size-11 rounded-lg after:rounded-lg", className)}>
-      {profile?.photoUrl && (
+      {photoUrl && (
         <AvatarImage
-          src={profile.photoUrl}
-          alt={profile.name}
+          src={photoUrl}
+          alt={profile?.name}
           className="rounded-lg"
         />
       )}

@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ImageUp, Plane, X } from "lucide-react";
+import { Box, ImageUp, Plane, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { FieldError } from "react-hook-form";
 import { cn } from "cn";
-import { PHOTO_TYPES } from "@/lib/validations/aircraft";
+import { PHOTO_ACCEPT } from "@/lib/validations/aircraft";
+import { isModelFile, isModelUrl } from "@/lib/aircraft/model-url";
 import { LabeledField, fieldA11yProps } from "@/components/form/labeled-field";
 import { Button } from "@/components/ui/button";
 
 /**
  * Photo picker with a preview. `value` is a newly picked file (null keeps the
  * aircraft's current photo, `currentUrl`); the form uploads it after saving.
+ * The photo may be a 3D model (.glb), which the live map draws the aircraft
+ * with; it has no image preview.
  */
 export default function PhotoField({
   value,
@@ -53,6 +56,9 @@ export default function PhotoField({
     onChange(file);
   }
   const previewUrl = pickedUrl ?? currentUrl;
+  // A .glb can't be previewed as an image; show an icon and its file name.
+  const isModel = value ? isModelFile(value) : isModelUrl(currentUrl);
+  const currentFileName = currentUrl?.split(/[?#]/)[0].split("/").pop();
 
   function clear() {
     pick(null);
@@ -67,9 +73,15 @@ export default function PhotoField({
             "flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border",
             error && "border-danger",
           )}
-          style={previewUrl ? undefined : { backgroundColor: color }}
+          style={previewUrl && !isModel ? undefined : { backgroundColor: color }}
         >
-          {previewUrl ? (
+          {isModel ? (
+            <Box
+              role="img"
+              aria-label={t("modelPreview")}
+              className="size-7 text-foreground"
+            />
+          ) : previewUrl ? (
             // A local object URL or the API's URL, so not next/image.
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -86,7 +98,7 @@ export default function PhotoField({
           <input
             ref={inputRef}
             type="file"
-            accept={PHOTO_TYPES.join(",")}
+            accept={PHOTO_ACCEPT}
             className="sr-only"
             {...fieldA11yProps("photo", error)}
             onBlur={onBlur}
@@ -118,8 +130,12 @@ export default function PhotoField({
             )}
           </div>
 
-          <p className="truncate text-xs text-foreground-2">
-            {value ? value.name : t("photoHint")}
+          <p className="truncate text-xs text-foreground-2" dir="auto">
+            {value
+              ? value.name
+              : isModel && currentFileName
+                ? decodeURIComponent(currentFileName)
+                : t("photoHint")}
           </p>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SLUG_PATTERN } from "@/lib/slugify";
+import { isModelFile } from "@/lib/aircraft/model-url";
 
 export type AircraftErrorKey =
   | "idRequired"
@@ -10,11 +11,18 @@ export type AircraftErrorKey =
   | "colorInvalid"
   | "intervalInvalid"
   | "photoType"
-  | "photoSize";
+  | "photoSize"
+  | "modelSize";
 
-/** Keep in step with `serverActions.bodySizeLimit` in next.config.ts. */
+/** Keep both in step with `serverActions.bodySizeLimit` in next.config.ts. */
 export const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+/** A 3D model (.glb) uploaded as the photo; drawn on the live map. */
+export const MAX_MODEL_BYTES = 20 * 1024 * 1024;
 export const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+/** For the file picker: the image types, or a .glb model. */
+export const PHOTO_ACCEPT = [...PHOTO_TYPES, ".glb", "model/gltf-binary"].join(
+  ",",
+);
 
 /** Takes a translator for `Aircrafts.form.errors`. */
 export function createAircraftSchema(t: (key: AircraftErrorKey) => string) {
@@ -40,10 +48,19 @@ export function createAircraftSchema(t: (key: AircraftErrorKey) => string) {
       .custom<File | null>()
       .refine(
         (file) =>
-          !file || (PHOTO_TYPES as readonly string[]).includes(file.type),
+          !file ||
+          isModelFile(file) ||
+          (PHOTO_TYPES as readonly string[]).includes(file.type),
         t("photoType"),
       )
-      .refine((file) => !file || file.size <= MAX_PHOTO_BYTES, t("photoSize")),
+      .refine(
+        (file) => !file || !isModelFile(file) || file.size <= MAX_MODEL_BYTES,
+        t("modelSize"),
+      )
+      .refine(
+        (file) => !file || isModelFile(file) || file.size <= MAX_PHOTO_BYTES,
+        t("photoSize"),
+      ),
   });
 }
 

@@ -16,6 +16,8 @@ import type {
   TrailPoint,
 } from "@/types/tracking";
 
+import { isModelUrl, photoImageUrl } from "@/lib/aircraft/model-url";
+
 const METERS_PER_DEG_LAT = 111_320;
 const METERS_PER_NM = 1852;
 /** Points used to draw a circle zone as a polygon. */
@@ -127,7 +129,8 @@ export function toAircraftUpdate(
     callsign: aircraft?.registration,
     details: {
       type: aircraft?.type,
-      photoUrl: aircraft?.photoUrl,
+      // A .glb "photo" is the aircraft's 3D model, not a picture.
+      photoUrl: photoImageUrl(aircraft?.photoUrl),
       pilotName: pilotId ? (directory.pilots[pilotId] ?? null) : null,
       status: position.status,
       heightAglFt: position.heightAglFt,
@@ -139,6 +142,8 @@ export function toAircraftUpdate(
       flightId: position.flightId,
       trackerModel: directory.trackerModels[position.aircraftId] ?? null,
     },
+    // The map shows its default model when this is undefined.
+    modelUrl: isModelUrl(aircraft?.photoUrl) ? aircraft.photoUrl : undefined,
     lat: position.lat,
     lng: position.lon,
     // Above mean sea level (GPS), e.g. ~890 ft on the 907 ft aerodrome.

@@ -20,6 +20,7 @@ import {
   createViewer,
   loadCesium,
 } from "@/lib/aircraft/cesium";
+import { groundedModelUrl } from "@/lib/aircraft/glb-ground";
 import { getAircraftZoneState } from "@/lib/aircraft/zones";
 
 // Used for aircraft without a `modelUrl`, and when theirs fails to load.
@@ -115,28 +116,6 @@ const DEFAULT_MODEL_SETTINGS: ModelSettings = {
 // `npm run normalize-model` instead. Sources and licenses
 // of the model files are listed in public/models/CREDITS.md.
 const MODEL_SETTINGS: Record<string, Partial<ModelSettings>> = {};
-
-// Whether each model URL can actually be loaded, checked once per URL.
-const modelChecks = new Map<string, Promise<boolean>>();
-
-function isModelAvailable(url: string) {
-  let check = modelChecks.get(url);
-  if (!check) {
-    check = fetch(url, { method: "HEAD" }).then(
-      (response) => response.ok,
-      () => false,
-    );
-    check.then((available) => {
-      if (!available) {
-        console.warn(
-          `Aircraft model ${url} not found, using ${DEFAULT_AIRCRAFT_MODEL_URL} instead.`,
-        );
-      }
-    });
-    modelChecks.set(url, check);
-  }
-  return check;
-}
 
 type AircraftTrack = {
   entity: CesiumModule.Entity;
@@ -858,8 +837,9 @@ function createAircraftScene(
     );
   }
 
-  function showModel(track: AircraftTrack, uri: string) {
-    const settings = { ...DEFAULT_MODEL_SETTINGS, ...MODEL_SETTINGS[uri] };
+  /** `uri` may be a blob URL of `modelUrl`, which keys MODEL_SETTINGS. */
+  function showModel(track: AircraftTrack, uri: string, modelUrl = uri) {
+    const settings = { ...DEFAULT_MODEL_SETTINGS, ...MODEL_SETTINGS[modelUrl] };
     track.modelSettings = settings;
     track.entity.model = new Cesium.ModelGraphics({
       uri,
@@ -913,6 +893,8 @@ function createAircraftScene(
 
   // Gives one aircraft its model. Aircraft may share a model or each have
   // their own; a model that cannot be loaded is replaced by the default one.
+  // Any model (e.g. uploaded) is first lifted so its wheels are on its
+  // origin, which Cesium puts on the runway; see lib/aircraft/glb-ground.ts.
   function setTrackModel(
     track: AircraftTrack,
     modelUrl: string | undefined,
@@ -920,13 +902,22 @@ function createAircraftScene(
   ) {
     track.modelUrl = modelUrl;
     track.modelScale = modelScale;
-    showModel(track, modelUrl ?? DEFAULT_AIRCRAFT_MODEL_URL);
-    if (!modelUrl) return;
-    isModelAvailable(modelUrl).then((available) => {
-      if (available || track.modelUrl !== modelUrl || viewer.isDestroyed()) {
+    if (!modelUrl) {
+      showModel(track, DEFAULT_AIRCRAFT_MODEL_URL);
+      return;
+    }
+    // A new aircraft shows the default model until its own is ready.
+    if (!track.entity.model) showModel(track, DEFAULT_AIRCRAFT_MODEL_URL);
+    groundedModelUrl(modelUrl).then((uri) => {
+      if (
+        viewer.isDestroyed() ||
+        track.modelUrl !== modelUrl ||
+        track.modelScale !== modelScale
+      ) {
         return;
       }
-      showModel(track, DEFAULT_AIRCRAFT_MODEL_URL);
+      if (uri) showModel(track, uri, modelUrl);
+      else showModel(track, DEFAULT_AIRCRAFT_MODEL_URL);
     });
   }
 
