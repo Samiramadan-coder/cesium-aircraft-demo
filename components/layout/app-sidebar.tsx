@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname } from "@/i18n/navigation";
 import { NAV_SECTIONS, isActiveHref } from "@/constants/navigation";
+import { usePermissions } from "@/components/auth/permissions-provider";
 
 type AppSidebarProps = {
   open: boolean;
@@ -16,6 +17,7 @@ type AppSidebarProps = {
 export function AppSidebar({ open, onClose }: AppSidebarProps) {
   const t = useTranslations("Navigation");
   const pathname = usePathname();
+  const permissions = usePermissions();
 
   return (
     <>
@@ -65,7 +67,9 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
               <p className="mb-2 px-3 font-big-shoulders text-xs tracking-[0.2em] text-muted uppercase rtl:tracking-normal">
                 {t(`sections.${section.key}`)}
               </p>
-              {section.items.map(({ key, href, icon: Icon }) => {
+              {section.items
+                .filter((item) => !item.permission || permissions[item.permission])
+                .map(({ key, href, icon: Icon }) => {
                 const active = isActiveHref(pathname, href);
                 return (
                   <Link

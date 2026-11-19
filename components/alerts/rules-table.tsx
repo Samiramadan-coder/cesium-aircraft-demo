@@ -13,6 +13,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { usePermission } from "@/components/auth/permissions-provider";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ErrorNotice } from "@/components/trackers/feedback";
 import {
@@ -68,6 +69,8 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
   const t = useTranslations("Alerts.rules");
   const alertType = useAlertType();
   const [error, setError] = useState<string | null>(null);
+  // Without it the rules are shown but can't be changed
+  const readOnly = !usePermission("manageOperations");
   const [, startTransition] = useTransition();
   const [shown, setShown] = useOptimistic(rules, (state, next: AlertRule) =>
     state.map((rule) => (rule.id === next.id ? next : rule)),
@@ -118,6 +121,7 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
                 <SeveritySelect
                   value={rule.severity}
                   label={t("severityLabel", { rule: name })}
+                  disabled={readOnly}
                   onChange={(severity) => update(rule, { severity })}
                 />
               </TableCell>
@@ -128,6 +132,7 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
 
               <TableCell>
                 <Switch
+                  disabled={readOnly}
                   checked={rule.sound}
                   aria-label={t("soundLabel", { rule: name })}
                   onCheckedChange={(sound) => update(rule, { sound })}
@@ -136,6 +141,7 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
 
               <TableCell>
                 <Switch
+                  disabled={readOnly}
                   checked={rule.toast}
                   aria-label={t("toastLabel", { rule: name })}
                   onCheckedChange={(toast) => update(rule, { toast })}
@@ -152,11 +158,12 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
                         key={channel}
                         type="button"
                         aria-pressed={on}
+                        disabled={readOnly}
                         aria-label={t(`channels.${channel}`)}
                         title={t(`channels.${channel}`)}
                         onClick={() => toggleChannel(rule, channel)}
                         className={cn(
-                          "grid size-8 place-items-center rounded-md border transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                          "grid size-8 place-items-center rounded-md border transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-60",
                           on
                             ? "border-primary/40 bg-primary/10 text-primary"
                             : "border-border bg-card-2/40 text-foreground-2 hover:bg-card-2 hover:text-foreground",
@@ -171,6 +178,7 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
 
               <TableCell className="pe-4">
                 <Switch
+                  disabled={readOnly}
                   checked={rule.enabled}
                   aria-label={t("enabledLabel", { rule: name })}
                   onCheckedChange={(enabled) => update(rule, { enabled })}
@@ -188,10 +196,12 @@ export default function RulesTable({ rules }: { rules: AlertRule[] }) {
 function SeveritySelect({
   value,
   label,
+  disabled,
   onChange,
 }: {
   value: AlertSeverity;
   label: string;
+  disabled?: boolean;
   onChange: (value: AlertSeverity) => void;
 }) {
   const t = useTranslations("Alerts.severity");
@@ -204,6 +214,7 @@ function SeveritySelect({
     <Select
       items={items}
       value={value}
+      disabled={disabled}
       onValueChange={(next: AlertSeverity | null) =>
         next && next !== value && onChange(next)
       }

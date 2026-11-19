@@ -2,6 +2,7 @@ import { CircuitBoard, Plus } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/auth/permissions-provider";
 import type { FirmwareVersion, KPIS } from "@/types/trackers";
 import FirmwareVersions from "./firmware-versions";
 import TrackerForm from "./tracker-form";
@@ -59,32 +60,34 @@ export default function Header({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <FirmwareVersions
-          versions={firmwareVersions}
-          trigger={
-            <Button
-              type="button"
-              size="lg"
-              variant="outline"
-              className="border-border bg-card text-foreground hover:bg-card-2"
-            >
-              <CircuitBoard />
-              {t("firmwareVersions.button")}
-            </Button>
-          }
-        />
+      <Can permission="manageFleet">
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <FirmwareVersions
+            versions={firmwareVersions}
+            trigger={
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="border-border bg-card text-foreground hover:bg-card-2"
+              >
+                <CircuitBoard />
+                {t("firmwareVersions.button")}
+              </Button>
+            }
+          />
 
-        <TrackerForm
-          models={firmwareVersions.map((item) => item.model)}
-          trigger={
-            <Button type="button" size="lg">
-              <Plus />
-              {t("addDevice")}
-            </Button>
-          }
-        />
-      </div>
+          <TrackerForm
+            models={firmwareVersions.map((item) => item.model)}
+            trigger={
+              <Button type="button" size="lg">
+                <Plus />
+                {t("addDevice")}
+              </Button>
+            }
+          />
+        </div>
+      </Can>
     </section>
   );
 }

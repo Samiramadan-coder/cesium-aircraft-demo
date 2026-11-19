@@ -10,6 +10,7 @@ import {
   TriangleAlert,
   Users,
 } from "lucide-react";
+import type { Permission } from "@/types/user";
 
 // Sidebar entries. `key` is the translation key under "Navigation.items"
 // and the page namespace under "Pages"; paths are unprefixed (no locale).
@@ -26,6 +27,8 @@ export type NavItem = {
     | "adminstration";
   href: string;
   icon: LucideIcon;
+  /** Hidden from users without it; the page also guards itself. */
+  permission?: Permission;
 };
 
 export type NavSection = {
@@ -45,7 +48,12 @@ export const NAV_SECTIONS: NavSection[] = [
       { key: "engineHours", href: "/engine-hours", icon: Gauge },
       { key: "aircrafts", href: "/aircrafts", icon: Plane },
       { key: "pilots", href: "/pilots", icon: IdCard },
-      { key: "adminstration", href: "/adminstration", icon: Users },
+      {
+        key: "adminstration",
+        href: "/adminstration",
+        icon: Users,
+        permission: "manageUsers",
+      },
     ],
   },
 ];

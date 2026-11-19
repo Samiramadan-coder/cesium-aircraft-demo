@@ -17,8 +17,9 @@ import {
 const LOGIN_ENDPOINT = "/v1/auth/login";
 const LOGOUT_ENDPOINT = "/v1/auth/logout";
 
-// TODO: confirm the response shape with the backend and drop the
-// alternatives that don't apply
+// `user` (role + permissions) is the same object `/v1/auth/me` returns;
+// the app reads it from there on every navigation (lib/auth/current-user),
+// so permission changes apply without signing in again
 type LoginResponse = {
   token: string;
   user: CurrentUser;

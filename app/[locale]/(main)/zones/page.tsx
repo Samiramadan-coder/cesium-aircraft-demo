@@ -10,6 +10,7 @@ import type {
   TrackingSettings as Settings,
 } from "@/types/tracking";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/auth/permissions-provider";
 import AerodromeCard from "@/components/zones/aerodrome-card";
 import DataPreview from "@/components/zones/data-preview";
 import Filters from "@/components/zones/filters";
@@ -39,14 +40,16 @@ export default async function Page({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Filters />
 
-        <ZoneForm
-          trigger={
-            <Button type="button" size="lg">
-              <Plus />
-              {t("addZone")}
-            </Button>
-          }
-        />
+        <Can permission="manageOperations">
+          <ZoneForm
+            trigger={
+              <Button type="button" size="lg">
+                <Plus />
+                {t("addZone")}
+              </Button>
+            }
+          />
+        </Can>
       </div>
 
       <DataPreview zones={zones} filtered={filtered} />

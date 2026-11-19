@@ -10,12 +10,30 @@ import type {
   AirfieldLayout,
   FlightZone,
 } from "@/types/aircraft";
-import type { LiveTrackingKpis } from "@/types/tracking";
+import type { Alert } from "@/types/alerts";
+import type {
+  LiveTrackingKpis,
+  TimelineEvent,
+  TrackedPosition,
+} from "@/types/tracking";
 
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { LiveAlert, LivePositions } from "@/lib/aircraft/live-tracking";
+import {
+  isActiveAlert,
+  toAircraftEvent,
+  toAircraftUpdate,
+  toLiveAlert,
+  type LiveAlert,
+  type LivePositions,
+  type TrackingDirectory,
+} from "@/lib/aircraft/live-tracking";
+import {
+  useChannelEvents,
+  useRealtimeStatus,
+} from "@/components/realtime/realtime-provider";
 import { eventColor, findTrailPoint, isMapEvent } from "@/lib/aircraft/events";
 import { useEventLabel } from "@/components/aircraft/aircraft-events";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
@@ -50,6 +68,8 @@ type AircraftDemoProps = {
   hasMapKey: boolean;
   /** Last known position of every tracked aircraft (GET /v1/tracking/live). */
   initialAircraft: AircraftUpdate[];
+  /** Names behind the ids in realtime messages. */
+  directory: TrackingDirectory;
   /** Recent route of each aircraft, by aircraft id (…/{aircraft}/trail). */
   trails: Record<string, AircraftTrailPoint[]>;
   /** Recent events of all aircraft, oldest first (…/live/timeline). */
@@ -68,8 +88,11 @@ type AircraftDemoProps = {
   serverTime: number;
 };
 
-/** How often the latest positions are fetched. */
+// Positions, alerts and events arrive over the realtime connection. The
+// snapshot is still fetched: often while that connection is down, rarely
+// while it is up (counters, and anything a reconnect missed).
 const POLL_INTERVAL_MS = 3_000;
+const RESYNC_INTERVAL_MS = 60_000;
 
 // Client side of the home page: the Cesium map and its live state.
 // Data fetched by the server page is passed in as props.
@@ -77,8 +100,9 @@ export function AircraftDemo({
   googleMapsApiKey,
   hasMapKey,
   initialAircraft,
+  directory,
   trails,
-  events,
+  events: initialEvents,
   zones,
   airfield,
   alerts: initialAlerts,
@@ -90,6 +114,13 @@ export function AircraftDemo({
   const [mapApi, setMapApi] = useState<AircraftMapApi | null>(null);
   const [kpis, setKpis] = useState(initialKpis);
   const [alerts, setAlerts] = useState(initialAlerts);
+  const [events, setEvents] = useState(initialEvents);
+  // Where events that arrived live happened (the loaded routes end before
+  // them): the aircraft's position when the event came in.
+  const [liveEventPoints, setLiveEventPoints] = useState(
+    () => new Map<string, AircraftTrailPoint>(),
+  );
+  const realtime = useRealtimeStatus();
   // Latest state of every aircraft, keyed by id. Kept in a ref so the
   // per-second updates of aircraft nobody is looking at don't re-render.
   const aircraftById = useRef(new Map<string, Aircraft>());
@@ -110,14 +141,21 @@ export function AircraftDemo({
     [airfield],
   );
 
-  // Single entry point for tracking data. A WebSocket handler can call this
-  // exact function later instead of the mock feed.
+  // Single entry point for tracking data: snapshot, polling and realtime.
   const updateAircraft = useCallback(
     (update: AircraftUpdate) => {
       const { id, lat, lng, altitude, speed, heading } = update;
       const known = aircraftById.current.get(id);
-      // Polling returns the same position until the tracker reports again.
-      if (known && update.timestamp === known.currentPosition.timestamp) return;
+      // Polling returns the same position until the tracker reports again,
+      // and realtime may repeat one around a reconnect.
+      // A snapshot can also be older than what realtime already delivered.
+      if (
+        known &&
+        update.timestamp !== undefined &&
+        update.timestamp <= known.currentPosition.timestamp
+      ) {
+        return;
+      }
       mapApi?.updateAircraft(update);
       const aircraft: Aircraft = {
         id,
@@ -158,6 +196,21 @@ export function AircraftDemo({
     setSelectedAircraft(aircraftById.current.get(id) ?? null);
   }, []);
 
+  // ?aircraft=<id> (e.g. "Show on map" in a notification): select it and
+  // fly there, once it is on the map.
+  const requestedAircraft = useSearchParams().get("aircraft");
+  const shownRequest = useRef<string | null>(null);
+  useEffect(() => {
+    if (!mapApi || !requestedAircraft) return;
+    if (shownRequest.current === requestedAircraft) return;
+    const aircraft = aircraftById.current.get(requestedAircraft);
+    if (!aircraft) return; // not reported yet; retried as aircraft appear
+    shownRequest.current = requestedAircraft;
+    setCameraMode("free");
+    selectAircraft(requestedAircraft);
+    mapApi.flyTo(aircraft.currentPosition);
+  }, [mapApi, requestedAircraft, aircraftList, selectAircraft]);
+
   // Put the snapshot from the server on the map once it is ready.
   useEffect(() => {
     if (!mapApi) return;
@@ -168,12 +221,13 @@ export function AircraftDemo({
     for (const update of initialAircraft) updateAircraft(update);
   }, [mapApi, trails, initialAircraft, updateAircraft, serverTime]);
 
-  // Then keep it live. TODO: replace with the backend's WebSocket feed once
-  // it exists; updateAircraft stays the single entry point.
+  // Then keep it live: realtime messages (below), plus the snapshot.
+  const realtimeConnected = realtime === "connected";
   useEffect(() => {
     if (!mapApi) return;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
+    const interval = realtimeConnected ? RESYNC_INTERVAL_MS : POLL_INTERVAL_MS;
 
     const poll = async () => {
       // Hidden tabs don't need positions; resume on the next tick.
@@ -201,16 +255,61 @@ export function AircraftDemo({
           console.error("[live] Polling failed", error);
         }
       }
-      if (!controller.signal.aborted)
-        timer = setTimeout(poll, POLL_INTERVAL_MS);
+      if (!controller.signal.aborted) timer = setTimeout(poll, interval);
     };
-    timer = setTimeout(poll, POLL_INTERVAL_MS);
+    // Right away when the connection comes back (catch up on what it
+    // missed) or drops (don't wait a minute); otherwise after one interval.
+    timer = setTimeout(poll, realtimeConnected ? 0 : POLL_INTERVAL_MS);
 
     return () => {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [mapApi, updateAircraft]);
+  }, [mapApi, updateAircraft, realtimeConnected]);
+
+  // Realtime messages (private channel "tracking").
+  useChannelEvents("tracking", {
+    "position.updated": (position: TrackedPosition) => {
+      updateAircraft(toAircraftUpdate(position, directory));
+    },
+    "alert.raised": (alert: Alert) => applyAlert(alert),
+    "alert.updated": (alert: Alert) => applyAlert(alert),
+    "timeline.event": (message: TimelineEvent) => {
+      const event = toAircraftEvent(message);
+      setEvents((list) =>
+        list.some((e) => e.id === event.id)
+          ? list
+          : [...list, event].sort((a, b) => a.timestamp - b.timestamp),
+      );
+      const position = aircraftById.current.get(event.aircraftId);
+      if (position) {
+        const { lat, lng, altitude } = position.currentPosition;
+        setLiveEventPoints((points) =>
+          new Map(points).set(event.id, {
+            lat,
+            lng,
+            altitude,
+            timestamp: event.timestamp,
+            status: position.details?.status ?? null,
+          }),
+        );
+      }
+    },
+  });
+
+  /** Adds, updates or removes an alert in the active list. */
+  function applyAlert(alert: Alert) {
+    setAlerts((list) => {
+      const others = list.filter((item) => item.id !== alert.id);
+      const next = isActiveAlert(alert)
+        ? [toLiveAlert(alert, directory), ...others].sort(
+            (a, b) => b.triggeredAt - a.triggeredAt,
+          )
+        : others;
+      setKpis((current) => ({ ...current, activeAlerts: next.length }));
+      return next;
+    });
+  }
 
   // Events of the selected aircraft, and where each one happened.
   const selectedEvents = useMemo(
@@ -221,11 +320,12 @@ export function AircraftDemo({
     const trail = selectedAircraftId ? (trails[selectedAircraftId] ?? []) : [];
     const positions = new Map<string, AircraftTrailPoint>();
     for (const event of selectedEvents) {
-      const point = findTrailPoint(trail, event.timestamp);
+      const point =
+        liveEventPoints.get(event.id) ?? findTrailPoint(trail, event.timestamp);
       if (point) positions.set(event.id, point);
     }
     return positions;
-  }, [selectedEvents, selectedAircraftId, trails]);
+  }, [selectedEvents, selectedAircraftId, trails, liveEventPoints]);
   const locatableEvents = useMemo(
     () => new Set(eventPositions.keys()),
     [eventPositions],

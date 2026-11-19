@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CircleCheck, Ellipsis, Eye, UserPlus, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,8 @@ export default function AlertMenu({
 }) {
   const t = useTranslations("Alerts.menu");
   const [opened, setOpened] = useState<Opened | null>(null);
+  // Without it the menu only offers "View"
+  const canManage = usePermission("manageOperations");
 
   /** `open`/`onOpenChange` props for the dialog that `key` opens. */
   const dialog = (key: Opened) => ({
@@ -70,40 +73,48 @@ export default function AlertMenu({
             {t("view")}
           </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
+          {canManage && (
+            <>
+              <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            className={itemClassName}
-            disabled={alert.status !== "open"}
-            onClick={() => setOpened("acknowledge")}
-          >
-            <Check />
-            {t("acknowledge")}
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                className={itemClassName}
+                disabled={alert.status !== "open"}
+                onClick={() => setOpened("acknowledge")}
+              >
+                <Check />
+                {t("acknowledge")}
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            className={itemClassName}
-            disabled={resolved}
-            onClick={() => setOpened("assign")}
-          >
-            <UserPlus />
-            {t("assign")}
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                className={itemClassName}
+                disabled={resolved}
+                onClick={() => setOpened("assign")}
+              >
+                <UserPlus />
+                {t("assign")}
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            className={itemClassName}
-            disabled={resolved}
-            onClick={() => setOpened("resolve")}
-          >
-            <CircleCheck />
-            {t("resolve")}
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                className={itemClassName}
+                disabled={resolved}
+                onClick={() => setOpened("resolve")}
+              >
+                <CircleCheck />
+                {t("resolve")}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AcknowledgeAlert alert={alert} {...dialog("acknowledge")} />
-      <AssignAlert alert={alert} staff={staff} {...dialog("assign")} />
-      <ResolveAlert alert={alert} {...dialog("resolve")} />
+      {canManage && (
+        <>
+          <AcknowledgeAlert alert={alert} {...dialog("acknowledge")} />
+          <AssignAlert alert={alert} staff={staff} {...dialog("assign")} />
+          <ResolveAlert alert={alert} {...dialog("resolve")} />
+        </>
+      )}
     </>
   );
 }

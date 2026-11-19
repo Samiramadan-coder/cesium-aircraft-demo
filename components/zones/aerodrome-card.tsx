@@ -13,6 +13,7 @@ import {
   controlClassName,
 } from "@/components/form/form-controls";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import { Input } from "@/components/ui/input";
 import { ErrorNotice, Notice } from "@/components/trackers/feedback";
 import type { Aerodrome, LatLon } from "@/types/tracking";
@@ -32,6 +33,8 @@ export default function AerodromeCard({ aerodrome }: { aerodrome: Aerodrome }) {
   const t = useTranslations("Zones.aerodrome");
   const format = useFormatter();
   const [saved, setSaved] = useState(false);
+  // Without it the aerodrome is shown but can't be renamed
+  const locked = !usePermission("manageOperations");
 
   const schema = z.object({
     name: z
@@ -115,7 +118,10 @@ export default function AerodromeCard({ aerodrome }: { aerodrome: Aerodrome }) {
       )}
       {saved && <Notice tone="success">{t("saved")}</Notice>}
 
-      <div className="flex flex-wrap items-end gap-3">
+      <fieldset
+        disabled={locked}
+        className="flex min-w-0 flex-wrap items-end gap-3"
+      >
         <LabeledField
           id="aerodrome-name"
           label={t("name")}
@@ -130,7 +136,7 @@ export default function AerodromeCard({ aerodrome }: { aerodrome: Aerodrome }) {
             {...register("name", { onChange: () => setSaved(false) })}
           />
         </LabeledField>
-        {isDirty && (
+        {!locked && isDirty && (
           <Button
             type="button"
             variant="outline"
@@ -141,11 +147,13 @@ export default function AerodromeCard({ aerodrome }: { aerodrome: Aerodrome }) {
             {t("discard")}
           </Button>
         )}
-        <Button type="submit" disabled={!isDirty || isSubmitting}>
-          {isSubmitting && <LoaderCircle className="animate-spin" />}
-          {t("save")}
-        </Button>
-      </div>
+        {!locked && (
+          <Button type="submit" disabled={!isDirty || isSubmitting}>
+            {isSubmitting && <LoaderCircle className="animate-spin" />}
+            {t("save")}
+          </Button>
+        )}
+      </fieldset>
 
       <dl className="grid gap-x-6 gap-y-3 border-t border-border pt-4 sm:grid-cols-2 lg:grid-cols-3">
         {details.map((item) => (

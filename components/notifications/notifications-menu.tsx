@@ -7,7 +7,8 @@ import { cn } from "cn";
 import { useNotifications } from "@/components/notifications/notifications-provider";
 import type { AppNotification } from "@/types/notifications";
 
-const SEVERITY_ICON = {
+/** Icon and color per severity, shared with the notification toast. */
+export const SEVERITY_ICON = {
   critical: { Icon: CircleAlert, className: "text-danger" },
   warning: { Icon: TriangleAlert, className: "text-primary" },
   info: { Icon: Info, className: "text-foreground-2" },

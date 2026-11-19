@@ -6,6 +6,7 @@ import { Maximize, PencilRuler, X } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { toFlightZone } from "@/lib/aircraft/live-tracking";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import type { FlightZone } from "@/types/aircraft";
 import type {
   TrackedZone,
@@ -46,6 +47,7 @@ export default function ZoneWorkspace({
   const t = useTranslations("Zones");
   const format = useFormatter();
   const [editing, setEditing] = useState(false);
+  const canEdit = usePermission("manageOperations");
   /** An older version shown on the map instead of the current boundary. */
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<BoundaryPreview | null>(null);
@@ -145,18 +147,20 @@ export default function ZoneWorkspace({
         />
       ) : (
         <div className="space-y-4 lg:self-start">
-          <Button
-            type="button"
-            size="lg"
-            className="w-full"
-            onClick={() => {
-              setViewingId(null);
-              setEditing(true);
-            }}
-          >
-            <PencilRuler />
-            {t("boundaryEditor.open")}
-          </Button>
+          {canEdit && (
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                setViewingId(null);
+                setEditing(true);
+              }}
+            >
+              <PencilRuler />
+              {t("boundaryEditor.open")}
+            </Button>
+          )}
           <ZoneSidebar zone={zone} />
           <ZoneGeometry computed={computed} />
           <ZoneHistory

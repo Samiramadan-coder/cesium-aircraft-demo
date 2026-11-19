@@ -210,7 +210,9 @@
     },
     "markAllRead": "Mark all as read",
     "noNotifications": "No notifications yet",
-    "unread": "Unread"
+    "unread": "Unread",
+    "showOnMap": "Show on map",
+    "dismiss": "Dismiss"
   },
   "Profile": {
     "account": "Account details",
@@ -222,6 +224,13 @@
     "permissionsDescription": "What your role lets you manage. Ask an administrator to change them.",
     "granted": "Allowed",
     "notGranted": "Not allowed"
+  },
+  "Permissions": {
+    "denied": {
+      "title": "You don't have access to this page",
+      "description": "Your role doesn't allow it. Ask an administrator if you need access.",
+      "back": "Back to live map"
+    }
   },
   "Pages": {
     "comingSoon": "Coming soon",

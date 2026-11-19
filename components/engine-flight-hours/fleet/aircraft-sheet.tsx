@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useLoad } from "@/hooks/use-load";
 import { getAircraftHours } from "@/lib/actions/engine-hours";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/auth/permissions-provider";
 import {
   Sheet,
   SheetContent,
@@ -197,21 +198,23 @@ function Overview({
         <UtilizationChart data={utilization} />
       </div>
 
-      <LogMaintenance
-        aircraft={maintenanceAircraft}
-        defaultAircraftId={details.aircraftId}
-        onLogged={onLogged}
-        trigger={
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="w-full border-border bg-card-2/40 text-foreground hover:bg-card-2"
-          >
-            {t("logMaintenance")}
-          </Button>
-        }
-      />
+      <Can permission="manageMaintenance">
+        <LogMaintenance
+          aircraft={maintenanceAircraft}
+          defaultAircraftId={details.aircraftId}
+          onLogged={onLogged}
+          trigger={
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full border-border bg-card-2/40 text-foreground hover:bg-card-2"
+            >
+              {t("logMaintenance")}
+            </Button>
+          }
+        />
+      </Can>
     </div>
   );
 }

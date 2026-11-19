@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/auth/permissions-provider";
 import type { MaintenanceAircraftOption } from "@/types/engine-flight-hours";
 import LogMaintenance from "./maintenance/log-maintenance";
 
@@ -18,15 +19,17 @@ export default function Header({
         <p className="text-sm text-foreground-2">{t("subtitle")}</p>
       </div>
 
-      <LogMaintenance
-        aircraft={maintenanceAircraft}
-        trigger={
-          <Button type="button" size="lg">
-            <Plus />
-            {t("logMaintenance")}
-          </Button>
-        }
-      />
+      <Can permission="manageMaintenance">
+        <LogMaintenance
+          aircraft={maintenanceAircraft}
+          trigger={
+            <Button type="button" size="lg">
+              <Plus />
+              {t("logMaintenance")}
+            </Button>
+          }
+        />
+      </Can>
     </section>
   );
 }

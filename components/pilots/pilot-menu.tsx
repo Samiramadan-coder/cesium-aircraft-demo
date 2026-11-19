@@ -5,6 +5,7 @@ import { Ellipsis, Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { deletePilot } from "@/lib/actions/pilots";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,12 +35,16 @@ export default function PilotMenu({
 }) {
   const t = useTranslations("Pilots");
   const [opened, setOpened] = useState<Opened | null>(null);
+  const canManage = usePermission("manageFleet");
 
   /** `open`/`onOpenChange` props for the dialog that `key` opens. */
   const dialog = (key: Opened) => ({
     open: opened === key,
     onOpenChange: (open: boolean) => setOpened(open ? key : null),
   });
+
+  // Every item edits the pilot
+  if (!canManage) return null;
 
   return (
     <>

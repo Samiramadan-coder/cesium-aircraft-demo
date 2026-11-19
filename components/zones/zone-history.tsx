@@ -7,6 +7,7 @@ import { cn } from "cn";
 import { restoreZoneVersion } from "@/lib/actions/zones";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import ConfirmDialog from "@/components/trackers/confirm-dialog";
 import { richTags } from "@/components/trackers/feedback";
 import { DATE_TIME_FORMAT } from "@/components/trackers/shared";
@@ -66,6 +67,7 @@ export default function ZoneHistory({
   const format = useFormatter();
   /** The version waiting for "Restore" to be confirmed. */
   const [restoring, setRestoring] = useState<ZoneVersion | null>(null);
+  const canRestore = usePermission("manageOperations");
 
   const formatDate = (version: ZoneVersion) =>
     format.dateTime(new Date(version.date), DATE_TIME_FORMAT);
@@ -168,7 +170,7 @@ export default function ZoneHistory({
                       {t(current ? "viewCurrent" : "viewOnMap")}
                     </Button>
                   )}
-                  {!current && (
+                  {!current && canRestore && (
                     <Button
                       type="button"
                       size="xs"

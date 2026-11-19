@@ -8,6 +8,7 @@ import {
   toAirfieldLayout,
   toFlightZones,
   toLiveAlerts,
+  toTrackingDirectory,
 } from "@/lib/aircraft/live-tracking";
 import type { Tracker } from "@/types/trackers";
 import type {
@@ -53,6 +54,9 @@ export default async function AircraftDemoPage() {
     ),
   );
 
+  // Names behind the ids in positions, alerts and realtime messages.
+  const directory = toTrackingDirectory(snapshot, trackers);
+
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const hasMapKey =
@@ -63,13 +67,14 @@ export default async function AircraftDemoPage() {
     <AircraftDemo
       googleMapsApiKey={googleMapsApiKey}
       hasMapKey={hasMapKey}
-      initialAircraft={toAircraftUpdates(snapshot, trackers)}
+      initialAircraft={toAircraftUpdates(snapshot, directory)}
+      directory={directory}
       trails={trails}
       events={toAircraftEvents(timeline)}
       zones={toFlightZones(snapshot)}
       kpis={snapshot.kpis}
       airfield={toAirfieldLayout(snapshot)}
-      alerts={toLiveAlerts(snapshot)}
+      alerts={toLiveAlerts(snapshot, directory)}
       signalLossTimeoutSec={snapshot.settings?.signalLossTimeoutSec}
       serverTime={snapshot.serverTime}
     />

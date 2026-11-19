@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { deleteZone } from "@/lib/actions/zones";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,7 @@ export default function ZoneMenu({
 }) {
   const t = useTranslations("Zones");
   const [opened, setOpened] = useState<Opened | null>(null);
+  const canManage = usePermission("manageOperations");
 
   /** `open`/`onOpenChange` props for the dialog that `key` opens. */
   const dialog = (key: Opened) => ({
@@ -71,39 +73,47 @@ export default function ZoneMenu({
             {t("menu.openMap")}
           </DropdownMenuItem>
 
-          <DropdownMenuItem
-            className={itemClassName}
-            onClick={() => setOpened("edit")}
-          >
-            <Pencil />
-            {t("menu.edit")}
-          </DropdownMenuItem>
+          {canManage && (
+            <>
+              <DropdownMenuItem
+                className={itemClassName}
+                onClick={() => setOpened("edit")}
+              >
+                <Pencil />
+                {t("menu.edit")}
+              </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
+              <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            variant="destructive"
-            className={itemClassName}
-            onClick={() => setOpened("delete")}
-          >
-            <Trash2 />
-            {t("menu.delete")}
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                className={itemClassName}
+                onClick={() => setOpened("delete")}
+              >
+                <Trash2 />
+                {t("menu.delete")}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ZoneForm zone={zone} {...dialog("edit")} />
+      {canManage && (
+        <>
+          <ZoneForm zone={zone} {...dialog("edit")} />
 
-      <ConfirmDialog
-        {...dialog("delete")}
-        title={t("deleteDialog.title")}
-        description={t.rich("deleteDialog.description", {
-          zone: name,
-          ...richTags,
-        })}
-        confirmLabel={t("deleteDialog.confirm")}
-        onConfirm={() => deleteZone(zone.id)}
-      />
+          <ConfirmDialog
+            {...dialog("delete")}
+            title={t("deleteDialog.title")}
+            description={t.rich("deleteDialog.description", {
+              zone: name,
+              ...richTags,
+            })}
+            confirmLabel={t("deleteDialog.confirm")}
+            onConfirm={() => deleteZone(zone.id)}
+          />
+        </>
+      )}
     </>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { useTranslations } from "next-intl";
 import { deleteTracker, unlinkTracker } from "@/lib/actions/trackers";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,8 @@ export default function TrackerMenu({
 }) {
   const t = useTranslations("Trackers");
   const [opened, setOpened] = useState<Opened | null>(null);
+  // Without it the menu only offers "View"
+  const canManage = usePermission("manageFleet");
 
   /** `open`/`onOpenChange` props for the dialog that `key` opens. */
   const dialog = (key: Opened) => ({
@@ -92,60 +95,64 @@ export default function TrackerMenu({
             {t("menu.view")}
           </DropdownMenuItem>
 
-          <DropdownMenuItem
-            className={itemClassName}
-            disabled={tracker.status === "notInstalled"}
-            onClick={() => setOpened("ping")}
-          >
-            <Radio />
-            {t("menu.ping")}
-          </DropdownMenuItem>
+          {canManage && (
+            <>
+              <DropdownMenuItem
+                className={itemClassName}
+                disabled={tracker.status === "notInstalled"}
+                onClick={() => setOpened("ping")}
+              >
+                <Radio />
+                {t("menu.ping")}
+              </DropdownMenuItem>
 
-          <DropdownMenuItem
-            className={itemClassName}
-            onClick={() => setOpened("firmware")}
-          >
-            <CircuitBoard />
-            {t("menu.checkFirmware")}
-          </DropdownMenuItem>
+              <DropdownMenuItem
+                className={itemClassName}
+                onClick={() => setOpened("firmware")}
+              >
+                <CircuitBoard />
+                {t("menu.checkFirmware")}
+              </DropdownMenuItem>
 
-          {aircraft ? (
-            <DropdownMenuItem
-              variant="destructive"
-              className={itemClassName}
-              onClick={() => setOpened("unlink")}
-            >
-              <Unlink />
-              {t("menu.unlink")}
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem
-              className={itemClassName}
-              onClick={() => setOpened("link")}
-            >
-              <Link2 />
-              {t("menu.link")}
-            </DropdownMenuItem>
+              {aircraft ? (
+                <DropdownMenuItem
+                  variant="destructive"
+                  className={itemClassName}
+                  onClick={() => setOpened("unlink")}
+                >
+                  <Unlink />
+                  {t("menu.unlink")}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  className={itemClassName}
+                  onClick={() => setOpened("link")}
+                >
+                  <Link2 />
+                  {t("menu.link")}
+                </DropdownMenuItem>
+              )}
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className={itemClassName}
+                onClick={() => setOpened("edit")}
+              >
+                <Pencil />
+                {t("menu.edit")}
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                variant="destructive"
+                className={itemClassName}
+                onClick={() => setOpened("delete")}
+              >
+                <Trash2 />
+                {t("menu.delete")}
+              </DropdownMenuItem>
+            </>
           )}
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem
-            className={itemClassName}
-            onClick={() => setOpened("edit")}
-          >
-            <Pencil />
-            {t("menu.edit")}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            variant="destructive"
-            className={itemClassName}
-            onClick={() => setOpened("delete")}
-          >
-            <Trash2 />
-            {t("menu.delete")}
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -155,44 +162,48 @@ export default function TrackerMenu({
         onClose={() => setOpened(null)}
       />
 
-      <PingTracker tracker={tracker} {...dialog("ping")} />
+      {canManage && (
+        <>
+          <PingTracker tracker={tracker} {...dialog("ping")} />
 
-      <CheckFirmware tracker={tracker} {...dialog("firmware")} />
+          <CheckFirmware tracker={tracker} {...dialog("firmware")} />
 
-      <LinkTracker
-        tracker={tracker}
-        aircraft={availableAircraft}
-        {...dialog("link")}
-      />
+          <LinkTracker
+            tracker={tracker}
+            aircraft={availableAircraft}
+            {...dialog("link")}
+          />
 
-      {aircraft && (
-        <ConfirmDialog
-          {...dialog("unlink")}
-          title={t("unlinkDialog.title")}
-          description={t.rich("unlinkDialog.description", {
-            device: tracker.model,
-            imei: tracker.imei,
-            aircraft: aircraftLabel(aircraft),
-            ...richTags,
-          })}
-          confirmLabel={t("unlinkDialog.confirm")}
-          onConfirm={() => unlinkTracker(tracker.id)}
-        />
+          {aircraft && (
+            <ConfirmDialog
+              {...dialog("unlink")}
+              title={t("unlinkDialog.title")}
+              description={t.rich("unlinkDialog.description", {
+                device: tracker.model,
+                imei: tracker.imei,
+                aircraft: aircraftLabel(aircraft),
+                ...richTags,
+              })}
+              confirmLabel={t("unlinkDialog.confirm")}
+              onConfirm={() => unlinkTracker(tracker.id)}
+            />
+          )}
+
+          <TrackerForm trackerId={tracker.id} models={models} {...dialog("edit")} />
+
+          <ConfirmDialog
+            {...dialog("delete")}
+            title={t("deleteDialog.title")}
+            description={t.rich("deleteDialog.description", {
+              device: tracker.model,
+              imei: tracker.imei,
+              ...richTags,
+            })}
+            confirmLabel={t("deleteDialog.confirm")}
+            onConfirm={() => deleteTracker(tracker.id)}
+          />
+        </>
       )}
-
-      <TrackerForm trackerId={tracker.id} models={models} {...dialog("edit")} />
-
-      <ConfirmDialog
-        {...dialog("delete")}
-        title={t("deleteDialog.title")}
-        description={t.rich("deleteDialog.description", {
-          device: tracker.model,
-          imei: tracker.imei,
-          ...richTags,
-        })}
-        confirmLabel={t("deleteDialog.confirm")}
-        onConfirm={() => deleteTracker(tracker.id)}
-      />
     </>
   );
 }

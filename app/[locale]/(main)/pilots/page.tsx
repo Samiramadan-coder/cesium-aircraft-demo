@@ -6,6 +6,7 @@ import type { TrackedAircraft, TrackedPilot } from "@/types/tracking";
 import DataPreview from "@/components/pilots/data-preview";
 import PilotForm from "@/components/pilots/pilot-form";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/auth/permissions-provider";
 
 export const generateMetadata = navPageMetadata("pilots");
 
@@ -18,16 +19,18 @@ export default async function Page() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <div className="flex justify-end">
-        <PilotForm
-          trigger={
-            <Button type="button" size="lg">
-              <Plus />
-              {t("addPilot")}
-            </Button>
-          }
-        />
-      </div>
+      <Can permission="manageFleet">
+        <div className="flex justify-end">
+          <PilotForm
+            trigger={
+              <Button type="button" size="lg">
+                <Plus />
+                {t("addPilot")}
+              </Button>
+            }
+          />
+        </div>
+      </Can>
 
       <DataPreview pilots={pilots} aircraft={aircraft} />
     </div>

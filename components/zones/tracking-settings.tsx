@@ -17,6 +17,7 @@ import {
   controlClassName,
 } from "@/components/form/form-controls";
 import { Button } from "@/components/ui/button";
+import { usePermission } from "@/components/auth/permissions-provider";
 import { Input } from "@/components/ui/input";
 import { ErrorNotice, Notice } from "@/components/trackers/feedback";
 import { ALERT_CHANNELS, type AlertChannel } from "@/types/alerts";
@@ -48,6 +49,8 @@ export default function TrackingSettings({ settings }: { settings: Settings }) {
   const t = useTranslations("Zones.settings");
   const tChannels = useTranslations("Alerts.rules.channels");
   const [saved, setSaved] = useState(false);
+  // Without it the settings are shown but can't be changed
+  const locked = !usePermission("manageOperations");
 
   const {
     control,
@@ -113,7 +116,7 @@ export default function TrackingSettings({ settings }: { settings: Settings }) {
       )}
       {saved && <Notice tone="success">{t("saved")}</Notice>}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <fieldset disabled={locked} className="grid min-w-0 gap-4 md:grid-cols-3 disabled:[&_button]:pointer-events-none disabled:[&_button]:opacity-60">
         <LabeledField
           id="signalLossTimeoutSec"
           label={t("signalLossTimeoutSec")}
@@ -209,7 +212,7 @@ export default function TrackingSettings({ settings }: { settings: Settings }) {
             </fieldset>
           )}
         />
-      </div>
+      </fieldset>
 
       <dl className="grid gap-2 border-t border-border pt-4 sm:grid-cols-2">
         {readOnly.map((item) => (
@@ -222,23 +225,25 @@ export default function TrackingSettings({ settings }: { settings: Settings }) {
         ))}
       </dl>
 
-      <div className="flex justify-end gap-2">
-        {isDirty && (
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isSubmitting}
-            className="border-border bg-card text-foreground hover:bg-card-2"
-            onClick={() => reset(toValues(settings))}
-          >
-            {t("discard")}
-          </Button>
+      {!locked && (
+        <div className="flex justify-end gap-2">
+          {isDirty && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSubmitting}
+              className="border-border bg-card text-foreground hover:bg-card-2"
+              onClick={() => reset(toValues(settings))}
+            >
+              {t("discard")}
+            </Button>
         )}
         <Button type="submit" disabled={!isDirty || isSubmitting}>
           {isSubmitting && <LoaderCircle className="animate-spin" />}
           {t("save")}
         </Button>
       </div>
+      )}
     </form>
   );
 }

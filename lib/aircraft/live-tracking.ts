@@ -11,6 +11,7 @@ import type {
   LatLon,
   LiveTrackingSnapshot,
   TimelineEvent,
+  TrackedPosition,
   TrackedZone,
   TrailPoint,
 } from "@/types/tracking";
@@ -70,51 +71,94 @@ export function toActiveFlightZones(zones: TrackedZone[]): FlightZone[] {
 }
 
 /**
- * One map update per aircraft that has a known position. `trackers` adds the
- * tracker model to the details.
+ * Names and labels that positions, alerts and events only refer to by id.
+ * Built from the snapshot on the server and passed to the page, so realtime
+ * messages are turned into the same shapes as the snapshot.
  */
-export function toAircraftUpdates(
+export type TrackingDirectory = {
+  aircraft: Record<
+    string,
+    Pick<
+      LiveTrackingSnapshot["aircraft"][number],
+      "name" | "registration" | "type" | "photoUrl" | "pilotId"
+    >
+  >;
+  /** Pilot name by pilot id. */
+  pilots: Record<string, string>;
+  /** Tracker model by aircraft id. */
+  trackerModels: Record<string, string | null>;
+};
+
+export function toTrackingDirectory(
   snapshot: LiveTrackingSnapshot,
   trackers: Pick<Tracker, "aircraftId" | "model">[] = [],
+): TrackingDirectory {
+  return {
+    aircraft: Object.fromEntries(
+      snapshot.aircraft.map(
+        ({ id, name, registration, type, photoUrl, pilotId }) => [
+          id,
+          { name, registration, type, photoUrl, pilotId },
+        ],
+      ),
+    ),
+    pilots: Object.fromEntries(snapshot.pilots.map((p) => [p.id, p.name])),
+    trackerModels: Object.fromEntries(
+      trackers
+        .filter((tracker) => tracker.aircraftId)
+        .map((tracker) => [tracker.aircraftId, tracker.model]),
+    ),
+  };
+}
+
+/**
+ * One map update from one position (snapshot item or realtime
+ * `position.updated`, which have the same shape).
+ */
+export function toAircraftUpdate(
+  position: TrackedPosition,
+  directory: TrackingDirectory,
+): AircraftUpdate {
+  const aircraft = directory.aircraft[position.aircraftId];
+  const pilotId = position.pilotId ?? aircraft?.pilotId;
+  return {
+    id: position.aircraftId,
+    name: aircraft?.name,
+    callsign: aircraft?.registration,
+    details: {
+      type: aircraft?.type,
+      photoUrl: aircraft?.photoUrl,
+      pilotName: pilotId ? (directory.pilots[pilotId] ?? null) : null,
+      status: position.status,
+      heightAglFt: position.heightAglFt,
+      verticalSpeedFpm: position.verticalSpeedFpm,
+      distanceToBoundaryNm: position.distanceToBoundaryNm,
+      signalStrength: position.signalStrength,
+      batteryPercent: position.batteryPercent,
+      engineOn: position.engineOn,
+      flightId: position.flightId,
+      trackerModel: directory.trackerModels[position.aircraftId] ?? null,
+    },
+    lat: position.lat,
+    lng: position.lon,
+    // Above mean sea level (GPS), e.g. ~890 ft on the 907 ft aerodrome.
+    altitude: position.altitudeFt,
+    speed: position.groundSpeedKt,
+    heading: position.headingDeg,
+    verticalSpeed: position.verticalSpeedFpm,
+    onGround: position.status === "onGround",
+    timestamp: position.time,
+  };
+}
+
+/** One map update per aircraft that has a known position. */
+export function toAircraftUpdates(
+  snapshot: LiveTrackingSnapshot,
+  directory: TrackingDirectory = toTrackingDirectory(snapshot),
 ): AircraftUpdate[] {
-  const aircraftById = new Map(snapshot.aircraft.map((a) => [a.id, a]));
-  const pilotById = new Map(snapshot.pilots.map((p) => [p.id, p]));
-  const trackerByAircraftId = new Map(
-    trackers.map((tracker) => [tracker.aircraftId, tracker]),
+  return snapshot.positions.map((position) =>
+    toAircraftUpdate(position, directory),
   );
-  return snapshot.positions.map((position) => {
-    const aircraft = aircraftById.get(position.aircraftId);
-    const pilotId = position.pilotId ?? aircraft?.pilotId;
-    return {
-      id: position.aircraftId,
-      name: aircraft?.name,
-      callsign: aircraft?.registration,
-      details: {
-        type: aircraft?.type,
-        photoUrl: aircraft?.photoUrl,
-        pilotName: pilotId ? (pilotById.get(pilotId)?.name ?? null) : null,
-        status: position.status,
-        heightAglFt: position.heightAglFt,
-        verticalSpeedFpm: position.verticalSpeedFpm,
-        distanceToBoundaryNm: position.distanceToBoundaryNm,
-        signalStrength: position.signalStrength,
-        batteryPercent: position.batteryPercent,
-        engineOn: position.engineOn,
-        flightId: position.flightId,
-        trackerModel:
-          trackerByAircraftId.get(position.aircraftId)?.model ?? null,
-      },
-      lat: position.lat,
-      lng: position.lon,
-      // Above mean sea level (GPS), e.g. ~890 ft on the 907 ft aerodrome.
-      altitude: position.altitudeFt,
-      speed: position.groundSpeedKt,
-      heading: position.headingDeg,
-      verticalSpeed: position.verticalSpeedFpm,
-      onGround: position.status === "onGround",
-      timestamp: position.time,
-    };
-  });
 }
 
 /** What the live map polls (app/api/tracking/live). */
@@ -127,11 +171,12 @@ export type LivePositions = {
 };
 
 export function toLivePositions(snapshot: LiveTrackingSnapshot): LivePositions {
+  const directory = toTrackingDirectory(snapshot);
   return {
     serverTime: snapshot.serverTime,
-    aircraft: toAircraftUpdates(snapshot),
+    aircraft: toAircraftUpdates(snapshot, directory),
     kpis: snapshot.kpis,
-    alerts: toLiveAlerts(snapshot),
+    alerts: toLiveAlerts(snapshot, directory),
   };
 }
 
@@ -163,19 +208,34 @@ export type LiveAlert = Pick<
   aircraftLabel: string;
 };
 
+/** One alert (snapshot or realtime `alert.raised` / `alert.updated`). */
+export function toLiveAlert(
+  { id, type, severity, title, aircraftId, triggeredAt }: Alert,
+  directory: TrackingDirectory,
+): LiveAlert {
+  return {
+    id,
+    type,
+    severity,
+    title,
+    aircraftId,
+    triggeredAt,
+    aircraftLabel: directory.aircraft[aircraftId]?.registration ?? aircraftId,
+  };
+}
+
+/** Whether an alert belongs in the active list. */
+export function isActiveAlert(alert: Alert) {
+  return alert.isActive && alert.status !== "resolved";
+}
+
 /** Active alerts from the snapshot, newest first. */
-export function toLiveAlerts(snapshot: LiveTrackingSnapshot): LiveAlert[] {
-  const aircraftById = new Map(snapshot.aircraft.map((a) => [a.id, a]));
+export function toLiveAlerts(
+  snapshot: LiveTrackingSnapshot,
+  directory: TrackingDirectory = toTrackingDirectory(snapshot),
+): LiveAlert[] {
   return (snapshot.activeAlerts ?? [])
-    .map(({ id, type, severity, title, aircraftId, triggeredAt }) => ({
-      id,
-      type,
-      severity,
-      title,
-      aircraftId,
-      triggeredAt,
-      aircraftLabel: aircraftById.get(aircraftId)?.registration ?? aircraftId,
-    }))
+    .map((alert) => toLiveAlert(alert, directory))
     .sort((a, b) => b.triggeredAt - a.triggeredAt);
 }
 
@@ -190,20 +250,21 @@ export function toAircraftTrail(points: TrailPoint[]): AircraftTrailPoint[] {
   }));
 }
 
+/** One timeline event (list item or realtime `timeline.event`). */
+export function toAircraftEvent(event: TimelineEvent): AircraftEvent {
+  const data = Array.isArray(event.data) ? {} : event.data;
+  return {
+    id: event.id,
+    aircraftId: event.aircraftId,
+    type: event.type,
+    flightId: event.flightId,
+    timestamp: event.time,
+    from: data.from,
+    to: data.to,
+  };
+}
+
 /** Timeline events, oldest first. */
 export function toAircraftEvents(events: TimelineEvent[]): AircraftEvent[] {
-  return events
-    .map((event) => {
-      const data = Array.isArray(event.data) ? {} : event.data;
-      return {
-        id: event.id,
-        aircraftId: event.aircraftId,
-        type: event.type,
-        flightId: event.flightId,
-        timestamp: event.time,
-        from: data.from,
-        to: data.to,
-      };
-    })
-    .sort((a, b) => a.timestamp - b.timestamp);
+  return events.map(toAircraftEvent).sort((a, b) => a.timestamp - b.timestamp);
 }

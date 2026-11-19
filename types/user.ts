@@ -17,6 +17,16 @@ export type CurrentUser = {
   };
 };
 
+/**
+ * What a user may change, from the login response and `/v1/auth/me`.
+ * Everyone signed in can view every page except administration.
+ * - manageFleet: aircraft, pilots, trackers and firmware versions
+ * - manageOperations: zones, tracking settings, aerodrome, alerts and rules
+ * - manageMaintenance: logging maintenance on engine hours
+ * - manageUsers: the administration pages (staff, alert recipients)
+ */
+export type Permission = keyof CurrentUser["permissions"];
+
 /** A row of `/v1/users`. */
 export type StaffMember = Omit<CurrentUser, "id"> & { id: string };
 

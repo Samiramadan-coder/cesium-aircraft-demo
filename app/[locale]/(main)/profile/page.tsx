@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Check, Mail, ShieldCheck, X } from "lucide-react";
-import { api } from "@/lib/api/client";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { initials } from "@/lib/utils";
 import { routing } from "@/i18n/routing";
-import type { CurrentUser } from "@/types/user";
 
 export async function generateMetadata({
   params,
@@ -27,7 +26,7 @@ const cardClass = "rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:p-5";
 
 export default async function Page() {
   const [user, t, tHeader, tStaff] = await Promise.all([
-    api.get<CurrentUser>("/v1/auth/me"),
+    getCurrentUser(),
     getTranslations("Profile"),
     getTranslations("Header"),
     getTranslations("Staff"),
