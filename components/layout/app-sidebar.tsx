@@ -36,7 +36,9 @@ export function AppSidebar({ open, onClose }: AppSidebarProps) {
         className={cn(
           "fixed inset-y-0 inset-s-0 z-50 flex w-64 flex-col border-e border-border bg-card transition-transform duration-200",
           "lg:static lg:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full rtl:translate-x-full",
+          open
+            ? "translate-x-0"
+            : "max-lg:-translate-x-full max-lg:rtl:translate-x-full",
         )}
       >
         <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border px-4">
