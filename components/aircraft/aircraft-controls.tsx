@@ -2,12 +2,12 @@
 
 import type { ReactNode } from "react";
 import {
+  House,
   LandPlot,
   LocateFixed,
   Move3d,
   Pause,
   Play,
-  RotateCcw,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -103,7 +103,7 @@ export function AircraftControls({
           hint={t("resetHint")}
           onClick={onResetCamera}
         >
-          <RotateCcw data-icon="inline-start" />
+          <House data-icon="inline-start" />
         </ControlButton>
         <Separator orientation="vertical" className="mx-1 h-5 self-center" />
         <ControlButton

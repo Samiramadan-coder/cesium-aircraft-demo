@@ -28,7 +28,11 @@
     "resumeHint": "استئناف المحاكاة",
     "airfield": "المطار",
     "showAirfieldHint": "إظهار المدرج ومسار الدوران",
-    "hideAirfieldHint": "إخفاء المدرج ومسار الدوران"
+    "hideAirfieldHint": "إخفاء المدرج ومسار الدوران",
+    "zoomIn": "تكبير",
+    "zoomOut": "تصغير",
+    "rotateLeft": "تدوير لليسار",
+    "rotateRight": "تدوير لليمين"
   },
   "AircraftInfoPanel": {
     "noAircraft": "لا توجد طائرة",

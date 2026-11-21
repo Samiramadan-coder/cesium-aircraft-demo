@@ -39,6 +39,7 @@ import { useEventLabel } from "@/components/aircraft/aircraft-events";
 import { getPrimaryZoneStatus } from "@/lib/aircraft/zones";
 import { FALCON_AIRPORT } from "@/lib/aircraft/flight-zones";
 import { AircraftControls } from "@/components/aircraft/aircraft-controls";
+import { MapNavControls } from "@/components/aircraft/map-nav-controls";
 import { AircraftInfoPanel } from "@/components/aircraft/aircraft-info-panel";
 import { AircraftKpis } from "@/components/aircraft/aircraft-kpis";
 import { AircraftAlerts } from "@/components/aircraft/aircraft-alerts";
@@ -468,6 +469,15 @@ export function AircraftDemo({
           />
         </div>
       </div>
+
+      {/* Zoom and rotate, at the side of the map (clear of the panels). */}
+      {mapApi && (
+        <div className="pointer-events-none absolute inset-y-0 end-3 flex items-center sm:end-4">
+          <div className="pointer-events-auto">
+            <MapNavControls onNudge={mapApi.nudgeCamera} />
+          </div>
+        </div>
+      )}
 
       {!hasMapKey && (
         <div className="pointer-events-none absolute inset-x-0 top-16 flex justify-center px-4 sm:top-auto sm:bottom-10">

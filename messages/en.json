@@ -28,7 +28,11 @@
     "resumeHint": "Resume simulation",
     "airfield": "Airfield",
     "showAirfieldHint": "Show the runway and circuit",
-    "hideAirfieldHint": "Hide the runway and circuit"
+    "hideAirfieldHint": "Hide the runway and circuit",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "rotateLeft": "Rotate left",
+    "rotateRight": "Rotate right"
   },
   "AircraftInfoPanel": {
     "noAircraft": "No aircraft",

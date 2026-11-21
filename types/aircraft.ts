@@ -186,4 +186,9 @@ export type AircraftMapApi = {
   /** Flies the camera to look at a point. */
   flyTo: (point: { lat: number; lng: number; altitude: number }) => void;
   resetCamera: () => void;
+  /** Zooms and/or turns the view, in button steps (eased). */
+  nudgeCamera: (nudge: CameraNudge) => void;
 };
+
+/** zoom: steps in (+) or out (-); rotate: steps right (+) or left (-). */
+export type CameraNudge = { zoom?: number; rotate?: number };

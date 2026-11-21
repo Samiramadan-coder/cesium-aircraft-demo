@@ -11,6 +11,7 @@ import type {
   AircraftUpdate,
   AirfieldLayout,
   CameraMode,
+  CameraNudge,
   FlightZone,
   MapMarker,
 } from "@/types/aircraft";
@@ -73,6 +74,16 @@ const CHASE_MIN_RANGE_M = 20;
 const CHASE_MAX_RANGE_M = 5_000;
 /** Seconds for the camera to swing most of the way round after a turn. */
 const CHASE_TURN_TIME_S = 1.2;
+
+// On-map zoom / rotate buttons: one press zooms by this factor or turns the
+// view by this angle, eased over a few frames instead of jumping.
+const ZOOM_STEP_FACTOR = 2;
+const ROTATE_STEP_DEG = 15;
+/** Seconds for a press to play out most of the way. */
+const NUDGE_EASE_TIME_S = 0.12;
+/** The free camera stops zooming in this close to what it looks at. */
+const MIN_ZOOM_DISTANCE_M = 30;
+const MAX_ZOOM_DISTANCE_M = 2_000_000;
 
 // Real sunlight and shadows by day; at night the scene is lit from the
 // camera instead, so the aircraft stays visible.
@@ -1059,6 +1070,89 @@ function createAircraftScene(
   const chaseLocal = new Cesium.Cartesian3();
   const chaseTime = new Cesium.JulianDate();
 
+  // Zoom / rotate still to play from the on-map buttons: zoom in steps
+  // (+ = closer), rotation in radians (+ = view turns right).
+  const nudge = { zoom: 0, rotate: 0 };
+  const nudgePivot = new Cesium.Cartesian3();
+  const nudgeEnu = new Cesium.Matrix4();
+  const screenCenter = new Cesium.Cartesian2();
+
+  /** Queues a zoom (+ in, - out) and/or turn (+ right, - left) in steps. */
+  function nudgeCamera({ zoom = 0, rotate = 0 }: CameraNudge) {
+    nudge.zoom += zoom;
+    nudge.rotate += Cesium.Math.toRadians(rotate * ROTATE_STEP_DEG);
+  }
+
+  /** The part of the queued zoom / rotation to apply this frame. */
+  function takeNudge(dt: number) {
+    if (nudge.zoom === 0 && nudge.rotate === 0) return undefined;
+    const ease = 1 - Math.exp(-dt / NUDGE_EASE_TIME_S);
+    const step = { zoom: nudge.zoom * ease, rotate: nudge.rotate * ease };
+    nudge.zoom -= step.zoom;
+    nudge.rotate -= step.rotate;
+    // Close enough: finish instead of creeping forever.
+    if (Math.abs(nudge.zoom) < 1e-3 && Math.abs(nudge.rotate) < 1e-4) {
+      step.zoom += nudge.zoom;
+      step.rotate += nudge.rotate;
+      nudge.zoom = 0;
+      nudge.rotate = 0;
+    }
+    return step;
+  }
+
+  /** Range factor for a zoom of `steps` (> 1 = closer). */
+  function zoomFactor(steps: number) {
+    return ZOOM_STEP_FACTOR ** steps;
+  }
+
+  /** What the free camera looks at: the scene at the centre of the view. */
+  function viewPivot() {
+    const canvas = scene.canvas;
+    screenCenter.x = canvas.clientWidth / 2;
+    screenCenter.y = canvas.clientHeight / 2;
+    if (scene.pickPositionSupported) {
+      const picked = scene.pickPosition(screenCenter, nudgePivot);
+      if (picked) return picked;
+    }
+    const onEllipsoid = camera.pickEllipsoid(
+      screenCenter,
+      scene.globe.ellipsoid,
+      nudgePivot,
+    );
+    if (onEllipsoid) return onEllipsoid;
+    // Looking at the sky: turn and zoom about a point ahead.
+    return Cesium.Cartesian3.add(
+      camera.positionWC,
+      Cesium.Cartesian3.multiplyByScalar(
+        camera.directionWC,
+        Math.max(camera.positionCartographic.height, 1_000),
+        nudgePivot,
+      ),
+      nudgePivot,
+    );
+  }
+
+  /** Free camera: turn round, and move toward, what is in the middle. */
+  function applyFreeNudge(step: { zoom: number; rotate: number }) {
+    const pivot = viewPivot();
+    if (step.rotate !== 0) {
+      // Orbit the pivot about its vertical, so the view turns in place.
+      Cesium.Transforms.eastNorthUpToFixedFrame(pivot, undefined, nudgeEnu);
+      camera.lookAtTransform(nudgeEnu);
+      camera.rotateLeft(step.rotate);
+      camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+    }
+    if (step.zoom !== 0) {
+      const distance = Cesium.Cartesian3.distance(camera.positionWC, pivot);
+      const target = Cesium.Math.clamp(
+        distance / zoomFactor(step.zoom),
+        MIN_ZOOM_DISTANCE_M,
+        MAX_ZOOM_DISTANCE_M,
+      );
+      camera.moveForward(distance - target);
+    }
+  }
+
   /** Where an aircraft is drawn `offsetS` seconds from `time`. */
   function positionAround(
     track: AircraftTrack,
@@ -1088,7 +1182,11 @@ function createAircraftScene(
     const frame = performance.now();
     const dt = Math.min((frame - lastChaseFrame) / 1000, 1);
     lastChaseFrame = frame;
-    if (cameraMode !== "follow") return;
+    const step = takeNudge(dt);
+    if (cameraMode !== "follow") {
+      if (step) applyFreeNudge(step);
+      return;
+    }
     const track = selectedId === null ? undefined : tracks.get(selectedId);
     const target = track?.entity.position?.getValue(
       clock.currentTime,
@@ -1114,6 +1212,16 @@ function createAircraftScene(
         chase.orbit +
           Cesium.Math.negativePiToPi(camera.heading - chase.applied),
       );
+    }
+
+    if (step) {
+      // The buttons zoom and turn round the aircraft, like the mouse.
+      chase.range = Cesium.Math.clamp(
+        chase.range / zoomFactor(step.zoom),
+        CHASE_MIN_RANGE_M,
+        CHASE_MAX_RANGE_M,
+      );
+      chase.orbit = Cesium.Math.negativePiToPi(chase.orbit + step.rotate);
     }
 
     chase.heading ??= Cesium.Math.toRadians(track.lastHeading);
@@ -1412,6 +1520,7 @@ function createAircraftScene(
     updateAircraft,
     removeAircraft,
     resetCamera,
+    nudgeCamera,
     setZones,
     setAirfield,
     setAirfieldVisible,
@@ -1549,6 +1658,7 @@ export default function AircraftMap({
           setMarkers: aircraftScene.setMarkers,
           flyTo: aircraftScene.flyTo,
           resetCamera: () => aircraftScene.resetCamera(),
+          nudgeCamera: aircraftScene.nudgeCamera,
         });
       })
       .catch((error) => console.error(error));
