@@ -141,6 +141,53 @@ export function AircraftDemo({
     [airfield],
   );
 
+  // Read by updateAircraft without making it change on every event.
+  const eventsRef = useRef(events);
+  useEffect(() => {
+    eventsRef.current = events;
+  });
+
+  /**
+   * Routes on the map belong to the flight in progress only: they start with
+   * it and are cleared once it ends (engine shut down), instead of piling up.
+   * Past flights are on the Flight History page.
+   */
+  const showFlightRoute = useCallback(
+    (
+      id: string,
+      flightId: string | null,
+      reportedAt: number | undefined,
+      isFirstReport: boolean,
+    ) => {
+      if (!mapApi) return;
+      if (!flightId) {
+        mapApi.setFlightStart(id, null);
+        mapApi.setTrail(id, []);
+        return;
+      }
+      // The flight began at its first event (engine start); if that isn't
+      // loaded, now for a flight that starts while watching, or unknown for
+      // one already under way when the page opened.
+      const eventTimes = eventsRef.current
+        .filter((e) => e.aircraftId === id && e.flightId === flightId)
+        .map((e) => e.timestamp);
+      const start = eventTimes.length
+        ? Math.min(...eventTimes)
+        : isFirstReport
+          ? undefined
+          : reportedAt;
+      mapApi.setFlightStart(id, start);
+      const loaded = trails[id] ?? [];
+      mapApi.setTrail(
+        id,
+        start === undefined
+          ? loaded
+          : loaded.filter((point) => point.timestamp >= start),
+      );
+    },
+    [mapApi, trails],
+  );
+
   // Single entry point for tracking data: snapshot, polling and realtime.
   const updateAircraft = useCallback(
     (update: AircraftUpdate) => {
@@ -182,6 +229,11 @@ export function AircraftDemo({
       };
       aircraftById.current.set(id, aircraft);
 
+      const flightId = aircraft.details?.flightId ?? null;
+      if (!known || flightId !== (known.details?.flightId ?? null)) {
+        showFlightRoute(id, flightId, update.timestamp, !known);
+      }
+
       if (!known) setAircraftList(Array.from(aircraftById.current.values()));
       // Refresh the info panel if this is the selected aircraft; the first
       // aircraft to report is selected automatically.
@@ -189,7 +241,7 @@ export function AircraftDemo({
         !selected || selected.id === id ? aircraft : selected,
       );
     },
-    [mapApi],
+    [mapApi, showFlightRoute],
   );
 
   const selectAircraft = useCallback((id: string) => {
@@ -215,11 +267,9 @@ export function AircraftDemo({
   useEffect(() => {
     if (!mapApi) return;
     mapApi.setClockOffset(serverTime - Date.now());
-    for (const [id, points] of Object.entries(trails)) {
-      mapApi.setTrail(id, points);
-    }
+    // Each aircraft's route is drawn by updateAircraft (its flight only).
     for (const update of initialAircraft) updateAircraft(update);
-  }, [mapApi, trails, initialAircraft, updateAircraft, serverTime]);
+  }, [mapApi, initialAircraft, updateAircraft, serverTime]);
 
   // Then keep it live: realtime messages (below), plus the snapshot.
   const realtimeConnected = realtime === "connected";
@@ -331,11 +381,14 @@ export function AircraftDemo({
     [eventPositions],
   );
 
-  // Markers for the selected aircraft's takeoffs, landings and warnings.
+  // Markers for the selected aircraft's takeoffs, landings and warnings,
+  // in the flight in progress (none between flights, like its route).
   const eventLabel = useEventLabel();
+  const currentFlightId = selectedAircraft?.details?.flightId ?? null;
   useEffect(() => {
     mapApi?.setMarkers(
       selectedEvents.flatMap((event) => {
+        if (!currentFlightId || event.flightId !== currentFlightId) return [];
         const point = eventPositions.get(event.id);
         if (!point || !isMapEvent(event)) return [];
         return [
@@ -350,7 +403,7 @@ export function AircraftDemo({
         ];
       }),
     );
-  }, [mapApi, selectedEvents, eventPositions, eventLabel]);
+  }, [mapApi, selectedEvents, eventPositions, eventLabel, currentFlightId]);
 
   const showEvent = useCallback(
     (event: AircraftEvent) => {

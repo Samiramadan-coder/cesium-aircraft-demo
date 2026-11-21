@@ -176,6 +176,11 @@ export type AircraftMapApi = {
   removeAircraft: (id: string) => void;
   /** Replaces the drawn route history of one aircraft. */
   setTrail: (id: string, points: AircraftTrailPoint[]) => void;
+  /**
+   * Where an aircraft's live path begins: its flight's start (Unix ms), null
+   * when it isn't flying (no path), undefined when unknown (the last hour).
+   */
+  setFlightStart: (id: string, startMs: number | null | undefined) => void;
   /** Replaces all markers. */
   setMarkers: (markers: MapMarker[]) => void;
   /** Flies the camera to look at a point. */

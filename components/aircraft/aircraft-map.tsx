@@ -138,6 +138,11 @@ type AircraftTrack = {
   firstSample: CesiumModule.JulianDate;
   lastSample: CesiumModule.JulianDate;
   lastRoll: number;
+  /**
+   * Start of the flight in progress: the drawn path begins there. null when
+   * not flying (no path), undefined when unknown (the last hour).
+   */
+  flightStart: CesiumModule.JulianDate | null | undefined;
   /** The model this aircraft asked for, and the settings of the one shown. */
   modelUrl: string | undefined;
   modelScale: number | undefined;
@@ -987,7 +992,21 @@ function createAircraftScene(
             ),
           false,
         ),
-        trailTime: 60 * 60,
+        // Only the flight in progress; nothing once it has ended.
+        show: new Cesium.CallbackProperty(
+          () => track.flightStart !== null,
+          false,
+        ),
+        trailTime: new Cesium.CallbackProperty(
+          (time) =>
+            track.flightStart
+              ? Math.max(
+                  0,
+                  Cesium.JulianDate.secondsDifference(time!, track.flightStart),
+                )
+              : 60 * 60,
+          false,
+        ),
         width: 6,
         resolution: 1,
         material: trail,
@@ -1009,6 +1028,7 @@ function createAircraftScene(
       firstSample: new Cesium.JulianDate(),
       lastSample: new Cesium.JulianDate(),
       lastRoll: 0,
+      flightStart: undefined,
       modelUrl: undefined,
       modelScale: undefined,
       modelSettings: DEFAULT_MODEL_SETTINGS,
@@ -1273,6 +1293,18 @@ function createAircraftScene(
     }
   }
 
+  /**
+   * Where the drawn path of an aircraft begins: the start of its flight in
+   * progress (Unix ms), null when it isn't flying (no path), or undefined
+   * when unknown (the last hour).
+   */
+  function setFlightStart(id: string, startMs: number | null | undefined) {
+    const track = tracks.get(id);
+    if (!track) return;
+    track.flightStart =
+      startMs == null ? startMs : Cesium.JulianDate.fromDate(new Date(startMs));
+  }
+
   function removeAircraft(id: string) {
     const track = tracks.get(id);
     if (!track) return;
@@ -1384,6 +1416,7 @@ function createAircraftScene(
     setAirfield,
     setAirfieldVisible,
     setTrail,
+    setFlightStart,
     setMarkers,
     flyTo,
     setSelectedAircraft,
@@ -1512,6 +1545,7 @@ export default function AircraftMap({
           updateAircraft: aircraftScene.updateAircraft,
           removeAircraft: aircraftScene.removeAircraft,
           setTrail: aircraftScene.setTrail,
+          setFlightStart: aircraftScene.setFlightStart,
           setMarkers: aircraftScene.setMarkers,
           flyTo: aircraftScene.flyTo,
           resetCamera: () => aircraftScene.resetCamera(),
