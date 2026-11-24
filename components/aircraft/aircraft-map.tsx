@@ -22,6 +22,7 @@ import {
   loadCesium,
 } from "@/lib/aircraft/cesium";
 import { groundedModelUrl } from "@/lib/aircraft/glb-ground";
+import { createTextImage } from "@/lib/aircraft/text-image";
 import { getAircraftZoneState } from "@/lib/aircraft/zones";
 
 // Used for aircraft without a `modelUrl`, and when theirs fails to load.
@@ -782,8 +783,10 @@ function createAircraftScene(
 
   function setMarkers(markers: MapMarker[]) {
     for (const entity of markerEntities) viewer.entities.remove(entity);
-    markerEntities = markers.map((marker) =>
-      viewer.entities.add({
+    markerEntities = markers.map((marker) => {
+      // Drawn by the browser, not a Cesium label, so Arabic reads right.
+      const text = createTextImage(marker.label);
+      return viewer.entities.add({
         position: Cesium.Cartesian3.fromDegrees(
           marker.lng,
           marker.lat,
@@ -796,12 +799,10 @@ function createAircraftScene(
           outlineWidth: 1.5,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
-        label: {
-          text: marker.label,
-          font: "11px sans-serif",
-          fillColor: Cesium.Color.WHITE,
-          showBackground: true,
-          backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
+        billboard: {
+          image: text.canvas,
+          width: text.width,
+          height: text.height,
           verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
           pixelOffset: new Cesium.Cartesian2(0, -10),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -811,8 +812,8 @@ function createAircraftScene(
             15_000,
           ),
         },
-      }),
-    );
+      });
+    });
 
     // Events on or near the ground (takeoff, landing, signal lost while
     // parked...) go on the surface actually there, next to the aircraft,

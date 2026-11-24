@@ -13,7 +13,7 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+    <section className="min-w-0 space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
       <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       {children}
     </section>
@@ -59,7 +59,7 @@ export default function Charts({
     });
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
       <ChartCard title={t("charts.hoursByAircraft")}>
         {hoursByAircraft.length > 0 ? (
           <HoursByAircraftChart data={hoursByAircraft} />

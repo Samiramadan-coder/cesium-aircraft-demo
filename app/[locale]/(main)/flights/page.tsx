@@ -40,20 +40,18 @@ export default async function Page({
 
       <Filters aircraft={aircraft} pilots={pilots} />
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-        <div className="min-w-0 space-y-4 md:col-span-3">
-          <DataPreview
-            flights={flights.data}
-            aircraft={aircraft}
-            pilots={pilots}
-            filtered={hasFlightFilters(filters)}
-          />
+      <div className="min-w-0 space-y-4">
+        <DataPreview
+          flights={flights.data}
+          aircraft={aircraft}
+          pilots={pilots}
+          filtered={hasFlightFilters(filters)}
+        />
 
-          <Pagination meta={flights.meta} />
-        </div>
-
-        <Charts summary={summary} aircraft={aircraft} pilots={pilots} />
+        <Pagination meta={flights.meta} />
       </div>
+
+      <Charts summary={summary} aircraft={aircraft} pilots={pilots} />
     </div>
   );
 }
