@@ -29,15 +29,47 @@ async function getEngineers(): Promise<string[]> {
   }
 }
 
+/**
+ * Airport weather for the header badge. It comes from an outside provider
+ * (503 when unreachable or switched off), so a failure renders the badge's
+ * fallback instead of breaking every page.
+ */
+async function getWeather(): Promise<AirportWeather | null> {
+  try {
+    return await api.get<AirportWeather>("/v1/weather/omef");
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("[layout] Couldn't load weather", error);
+    return null;
+  }
+}
+
+const NO_NOTIFICATIONS: Notifications = { data: [], unreadCount: 0 };
+
+/**
+ * Initial notifications. A failure starts the menu empty; realtime pushes
+ * still arrive through the RealtimeProvider.
+ */
+async function getNotifications(): Promise<Notifications> {
+  try {
+    return await api.get<Notifications>("/v1/notifications");
+  } catch (error) {
+    unstable_rethrow(error);
+    console.error("[layout] Couldn't load notifications", error);
+    return NO_NOTIFICATIONS;
+  }
+}
+
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Only the current user is required; the other loaders never reject.
   const [user, weather, notifications, engineers] = await Promise.all([
     getCurrentUser(),
-    api.get<AirportWeather>("/v1/weather/omef"),
-    api.get<Notifications>("/v1/notifications"),
+    getWeather(),
+    getNotifications(),
     getEngineers(),
   ]);
 
