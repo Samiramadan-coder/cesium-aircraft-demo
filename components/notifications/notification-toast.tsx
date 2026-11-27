@@ -18,9 +18,15 @@ const DURATION_MS: Record<AppNotification["severity"], number> = {
   info: 5_000,
 };
 
-/** Pops up a new notification (with its sound); the bell keeps it too. */
-export function showNotificationToast(item: AppNotification) {
-  playNotificationSound(item.severity);
+/**
+ * Pops up a new notification with its sound (unless `silent`: when several
+ * arrive together one sound is played for all); the bell keeps it too.
+ */
+export function showNotificationToast(
+  item: AppNotification,
+  { silent = false }: { silent?: boolean } = {},
+) {
+  if (!silent) playNotificationSound(item.severity);
   toast.custom((id) => <NotificationToast id={id} item={item} />, {
     id: item.id, // the same notification twice shows once
     duration: DURATION_MS[item.severity] ?? DURATION_MS.info,

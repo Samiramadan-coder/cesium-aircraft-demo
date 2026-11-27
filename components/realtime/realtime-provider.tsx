@@ -15,7 +15,7 @@ import {
 import { useNotifications } from "@/components/notifications/notifications-provider";
 import { showNotificationToast } from "@/components/notifications/notification-toast";
 import { unlockNotificationSound } from "@/components/notifications/notification-sound";
-import type { AppNotification } from "@/types/notifications";
+import type { AppNotification, Notifications } from "@/types/notifications";
 
 /**
  * Realtime from Laravel Reverb, one connection for the whole app. Private
@@ -23,7 +23,7 @@ import type { AppNotification } from "@/types/notifications";
  * can't read the auth token, so Laravel is called from there).
  *
  * Without NEXT_PUBLIC_REVERB_APP_KEY nothing connects and pages fall back to
- * polling (see useRealtimeStatus).
+ * polling (see useRealtimeStatus); notifications are then polled here too.
  */
 
 type RealtimeEcho = Echo<"reverb">;
@@ -54,6 +54,51 @@ function toAppNotification(message: NotificationMessage): AppNotification {
     readAt: message.readAt,
   };
 }
+
+/** While Reverb is unreachable, how often notifications are polled. */
+const NOTIFICATION_POLL_MS = 10_000;
+/** Older ones still reach the bell but don't pop up (e.g. after an outage). */
+const TOAST_MAX_AGE_MS = 10 * 60_000;
+/** At most this many toasts for notifications that arrive together. */
+const MAX_TOASTS_AT_ONCE = 3;
+
+const SEVERITY_RANK: Record<AppNotification["severity"], number> = {
+  info: 0,
+  warning: 1,
+  critical: 2,
+};
+
+/**
+ * Notifications the client already has, so polling only reports new ones.
+ * `newest` is the latest server `createdAt` seen; anything older that the
+ * menu dropped (it keeps 20) isn't mistaken for new.
+ */
+type KnownNotifications = { ids: Set<string>; newest: number };
+
+function createKnown(items: AppNotification[]): KnownNotifications {
+  return {
+    ids: new Set(items.map((item) => item.id)),
+    newest: Math.max(0, ...items.map((item) => item.createdAt)),
+  };
+}
+
+/** Toasts the newest few unread ones, with one sound (the most severe). */
+function toastNew(items: AppNotification[]) {
+  const recent = items
+    .filter(
+      (item) => !item.readAt && item.createdAt > Date.now() - TOAST_MAX_AGE_MS,
+    )
+    .slice(-MAX_TOASTS_AT_ONCE);
+  if (!recent.length) return;
+  const loudest = recent.reduce((a, b) =>
+    SEVERITY_RANK[b.severity] > SEVERITY_RANK[a.severity] ? b : a,
+  );
+  for (const item of recent) {
+    showNotificationToast(item, { silent: item !== loudest });
+  }
+}
+
+const REALTIME_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_REVERB_APP_KEY);
 
 function createEcho(): RealtimeEcho | null {
   const key = process.env.NEXT_PUBLIC_REVERB_APP_KEY;
@@ -106,9 +151,68 @@ export function RealtimeProvider({
   userId: number;
   children: React.ReactNode;
 }) {
-  const { dispatch } = useNotifications();
+  const { items, dispatch } = useNotifications();
   const [echo, setEcho] = useState<RealtimeEcho | null>(null);
   const [store] = useState(createStatusStore);
+  const [known] = useState(() => createKnown(items));
+  const status = useSyncExternalStore(
+    store.subscribeStatus,
+    store.getStatus,
+    () => "off" as const,
+  );
+
+  /**
+   * Fallback for the user channel: while Reverb is unreachable (or not
+   * configured), poll notifications and raise the same toasts and sound.
+   * Once connected, fetch once to catch what was missed meanwhile.
+   */
+  const fallback: "poll" | "catchUp" | null =
+    status === "offline" || !REALTIME_CONFIGURED
+      ? "poll"
+      : status === "connected"
+        ? "catchUp"
+        : null;
+
+  useEffect(() => {
+    if (!fallback) return;
+    const controller = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    async function check() {
+      try {
+        const response = await fetch("/api/notifications", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+        const { data } = (await response.json()) as Notifications;
+        const fresh = data
+          .filter(
+            (item) => !known.ids.has(item.id) && item.createdAt >= known.newest,
+          )
+          .sort((a, b) => a.createdAt - b.createdAt);
+        if (controller.signal.aborted || !fresh.length) return;
+        for (const item of fresh) {
+          known.ids.add(item.id);
+          known.newest = Math.max(known.newest, item.createdAt);
+          dispatch({ type: "added", item });
+        }
+        toastNew(fresh);
+      } catch {
+        // Offline or aborted: try again on the next round.
+      } finally {
+        if (fallback === "poll" && !controller.signal.aborted) {
+          timer = setTimeout(check, NOTIFICATION_POLL_MS);
+        }
+      }
+    }
+    void check();
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [fallback, known, dispatch]);
 
   useEffect(() => {
     const instance = createEcho();
@@ -126,6 +230,9 @@ export function RealtimeProvider({
       .private(userChannel)
       .notification((message: NotificationMessage) => {
         const item = toAppNotification(message);
+        if (known.ids.has(item.id)) return; // already polled
+        known.ids.add(item.id);
+        known.newest = Math.max(known.newest, item.createdAt);
         dispatch({ type: "added", item });
         showNotificationToast(item);
       });
@@ -145,7 +252,7 @@ export function RealtimeProvider({
       store.set("off");
       setEcho(null);
     };
-  }, [userId, dispatch, store]);
+  }, [userId, dispatch, store, known]);
 
   const value = useMemo(
     () => ({

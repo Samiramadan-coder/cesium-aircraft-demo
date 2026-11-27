@@ -12,7 +12,8 @@ export function AppShell({
   children,
 }: {
   user: CurrentUser;
-  weather: AirportWeather;
+  /** Null when the weather provider is unavailable. */
+  weather: AirportWeather | null;
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

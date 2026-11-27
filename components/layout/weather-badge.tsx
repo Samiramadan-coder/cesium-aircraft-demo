@@ -40,15 +40,32 @@ function isDaytime(observedAt: string): boolean {
   return hour >= 6 && hour < 18;
 }
 
-/** Current temperature at the airport. */
-export function WeatherBadge({ weather }: { weather: AirportWeather }) {
+const BADGE_CLASS =
+  "hidden h-9 items-center gap-2 rounded-full border border-border bg-card-2/60 px-3.5 text-sm sm:flex";
+
+/** Current temperature at the airport, or "—" when weather is unavailable. */
+export function WeatherBadge({ weather }: { weather: AirportWeather | null }) {
   const t = useTranslations("Header");
+
+  if (!weather) {
+    const label = t("weatherUnavailable");
+    return (
+      <div className={BADGE_CLASS} title={label}>
+        <Cloud className="size-4.5 text-muted" aria-hidden />
+        <span className="font-semibold text-muted" aria-hidden>
+          —
+        </span>
+        <span className="sr-only">{label}</span>
+      </div>
+    );
+  }
+
   const label = t("weather", { station: weather.station });
   const isDay = isDaytime(weather.observedAt);
 
   return (
     <div
-      className="hidden h-9 items-center gap-2 rounded-full border border-border bg-card-2/60 px-3.5 text-sm sm:flex"
+      className={BADGE_CLASS}
       title={label}
     >
       <WeatherIcon code={weather.weatherCode} isDay={isDay} />

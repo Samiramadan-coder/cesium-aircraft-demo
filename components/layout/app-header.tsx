@@ -10,11 +10,13 @@ import { UserMenu } from "@/components/layout/user-menu";
 import { LocaleSwitcher } from "@/components/common/locale-switcher";
 import { WeatherBadge } from "@/components/layout/weather-badge";
 import { NotificationsMenu } from "@/components/notifications/notifications-menu";
+import { RealtimeIndicator } from "@/components/realtime/realtime-indicator";
 import { NAV_ITEMS, PROFILE_PATH, isActiveHref } from "@/constants/navigation";
 
 type AppHeaderProps = {
   user: CurrentUser;
-  weather: AirportWeather;
+  /** Null when the weather provider is unavailable. */
+  weather: AirportWeather | null;
   sidebarOpen: boolean;
   onOpenSidebar: () => void;
 };
@@ -54,6 +56,7 @@ export function AppHeader({
       </h1>
 
       <div className="flex items-center gap-1 sm:gap-2">
+        <RealtimeIndicator />
         <WeatherBadge weather={weather} />
 
         <NotificationsMenu />
